@@ -44,8 +44,13 @@ export function computeRating(performances: readonly RatedPerformance[]): Rating
   const kda = (kills + assists) / Math.max(deaths, 1);
   const winrate = wins / games;
 
-  const kdaScore = (kda / baseline.kda) * 60;
-  const winrateScore = 60 + (winrate - baseline.winrate) * 78;
+  // Fiabilité : en dessous de 15 parties, on tire vers la médiane du rôle.
+  const reliability = Math.min(games / FULL_RELIABILITY_GAMES, 1);
+  const reliableKda = kda * reliability + baseline.kda * (1 - reliability);
+  const reliableWinrate = winrate * reliability + baseline.winrate * (1 - reliability);
+
+  const kdaScore = (reliableKda / baseline.kda) * 60;
+  const winrateScore = 60 + (reliableWinrate - baseline.winrate) * 78;
 
   const impact = clamp(Math.round(kdaScore), 0, 99);
   const consistency = clamp(Math.round(winrateScore), 0, 99);
@@ -54,6 +59,8 @@ export function computeRating(performances: readonly RatedPerformance[]): Rating
 
   return { rating, impact, consistency, clutch, tier: tierOf(rating) };
 }
+
+const FULL_RELIABILITY_GAMES = 15;
 
 const ROLE_BASELINES: Record<Role, { kda: number; winrate: number }> = {
   TOP: { kda: 2.5, winrate: 0.5 },
