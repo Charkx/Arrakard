@@ -23,3 +23,6 @@ export type {
 } from './standings/event-standings';
 export { rankSeasonMvps } from './standings/season-mvp';
 export type { SeasonMvpEvent, SeasonMvpRow } from './standings/season-mvp';
+export { normalizeAlias, similarity, splitTeamTag } from './identity/names';
+export { resolvePlayer, SUGGESTION_THRESHOLD } from './identity/resolve';
+export type { DirectoryPlayer, Resolution } from './identity/resolve';
