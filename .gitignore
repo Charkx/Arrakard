@@ -10,3 +10,4 @@ coverage
 *.export.json
 localStorage_export.json
 supabase/.temp/
+supabase/snippets/
