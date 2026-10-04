@@ -1,21 +1,13 @@
+import type { Performance, Role } from '../performance';
+
 /** Palier de carte (glossaire). */
 export type Tier = 'bronze' | 'silver' | 'gold' | 'elite';
 
-/** Rôle (glossaire) : un seul énuméré dans tout le code. */
-export type Role = 'TOP' | 'JGL' | 'MID' | 'ADC' | 'SUP';
-
-export type MatchResult = 'win' | 'loss';
-
 /** Ce dont la note a besoin d'une performance. */
-export interface RatedPerformance {
-  readonly role: Role;
-  readonly result: MatchResult;
-  readonly kills: number;
-  readonly deaths: number;
-  readonly assists: number;
-  /** Multiplicateur de prestige de l'édition (1 = normal). */
-  readonly weight: number;
-}
+export type RatedPerformance = Pick<
+  Performance,
+  'role' | 'result' | 'kills' | 'deaths' | 'assists' | 'weight'
+>;
 
 export interface RatingResult {
   readonly rating: number;

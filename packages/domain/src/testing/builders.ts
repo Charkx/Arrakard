@@ -2,15 +2,17 @@
  * Fabriques de données de test. Chaque test ne précise que ce qui compte
  * pour lui ; le reste prend une valeur par défaut neutre.
  */
-import type { RatedPerformance } from '../rating/rating';
+import type { Performance } from '../performance';
 
-export function aPerformance(overrides: Partial<RatedPerformance> = {}): RatedPerformance {
+export function aPerformance(overrides: Partial<Performance> = {}): Performance {
   return {
     role: 'MID',
     result: 'win',
     kills: 0,
     deaths: 0,
     assists: 0,
+    gold: 0,
+    gpm: 0,
     weight: 1,
     ...overrides,
   };
@@ -19,8 +21,8 @@ export function aPerformance(overrides: Partial<RatedPerformance> = {}): RatedPe
 /** `count` performances identiques. */
 export function performances(
   count: number,
-  overrides: Partial<RatedPerformance> = {},
-): RatedPerformance[] {
+  overrides: Partial<Performance> = {},
+): Performance[] {
   return Array.from({ length: count }, () => aPerformance(overrides));
 }
 
@@ -31,13 +33,13 @@ export function performances(
  * totaux.
  */
 export function performancesFrom(totals: {
-  role: RatedPerformance['role'];
+  role: Performance['role'];
   games: number;
   wins: number;
   kills: number;
   deaths: number;
   assists: number;
-}): RatedPerformance[] {
+}): Performance[] {
   return Array.from({ length: totals.games }, (_, i) =>
     aPerformance({
       role: totals.role,
