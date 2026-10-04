@@ -28,11 +28,17 @@ compétitions internes.
 4. **Accueil des contributeurs** : un membre qui connaît TypeScript lance le
    projet et comprend où modifier une règle en moins d'une heure.
 
+## Préparé, mais pas construit
+
+- **Plusieurs structures esport** sur une même instance (multi-tenant), et
+  installation chez un client (on premise). Le modèle de données et la
+  configuration le permettent dès la v2 ; le produit SaaS (inscription,
+  facturation) attendra un premier client. Voir l'[ADR 0008](../adr/0008-multi-tenant-et-portabilite.md).
+
 ## Non-objectifs (v2)
 
 - Application mobile native (le site reste responsive).
 - Temps réel (WebSocket) : un rechargement suffit pour voir un nouveau résultat.
-- Plusieurs communautés / multi-tenant.
 - Import automatique depuis l'API Riot (l'import reste un fichier Excel
   produit par les organisateurs). _Candidat pour une v3._
 
