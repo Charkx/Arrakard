@@ -26,7 +26,10 @@ export interface EditionFact {
   /** Date ISO (AAAA-MM-JJ). */
   readonly date: string;
   readonly splitId: string | null;
+  /** Prestige saisi (règles v1). */
   readonly prestige: Prestige;
+  /** Exception au multiplicateur du type (règles E1), toujours justifiée. */
+  readonly weightOverride?: { readonly multiplier: number; readonly reason: string };
   readonly eventMvpPlayerId?: string;
   readonly scoring?: ScoringRules;
 }
