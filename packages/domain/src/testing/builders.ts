@@ -11,6 +11,7 @@ export function aPerformance(overrides: Partial<RatedPerformance> = {}): RatedPe
     kills: 0,
     deaths: 0,
     assists: 0,
+    weight: 1,
     ...overrides,
   };
 }

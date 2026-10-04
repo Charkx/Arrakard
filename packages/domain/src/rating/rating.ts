@@ -13,6 +13,8 @@ export interface RatedPerformance {
   readonly kills: number;
   readonly deaths: number;
   readonly assists: number;
+  /** Multiplicateur de prestige de l'édition (1 = normal). */
+  readonly weight: number;
 }
 
 export interface RatingResult {
@@ -36,13 +38,19 @@ export function computeRating(performances: readonly RatedPerformance[]): Rating
 
   const baseline = ROLE_BASELINES[role];
   const games = performances.length;
-  const wins = performances.filter((p) => p.result === 'win').length;
-  const kills = sum(performances, (p) => p.kills);
-  const deaths = sum(performances, (p) => p.deaths);
-  const assists = sum(performances, (p) => p.assists);
 
-  const kda = Math.min((kills + assists) / Math.max(deaths, 1), KDA_CAP);
-  const winrate = wins / games;
+  // Pondération par le prestige : n'affecte que les sous-notes.
+  const weightedGames = sum(performances, (p) => p.weight);
+  const weightedWins = sum(performances, (p) => (p.result === 'win' ? p.weight : 0));
+  const weightedKills = sum(performances, (p) => p.kills * p.weight);
+  const weightedDeaths = sum(performances, (p) => p.deaths * p.weight);
+  const weightedAssists = sum(performances, (p) => p.assists * p.weight);
+
+  const kda = Math.min((weightedKills + weightedAssists) / Math.max(weightedDeaths, 1), KDA_CAP);
+  const winrate =
+    weightedGames > 0
+      ? weightedWins / weightedGames
+      : performances.filter((p) => p.result === 'win').length / games;
 
   // Fiabilité : en dessous de 15 parties, on tire vers la médiane du rôle.
   const reliability = Math.min(games / FULL_RELIABILITY_GAMES, 1);

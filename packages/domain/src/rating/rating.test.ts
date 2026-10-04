@@ -134,4 +134,38 @@ describe('computeRating', () => {
     // Clutch = round(80 + 18,3) = 98 (sans plafond, il serait de 99).
     expect(result.clutch).toBe(98);
   });
+
+  describe('prestige : chaque performance pèse selon le multiplicateur de son édition', () => {
+    it('le winrate des sous-notes est pondéré', () => {
+      const lossesInBigEvents = [
+        ...performances(10, { role: 'MID', result: 'win', weight: 1 }),
+        ...performances(5, { role: 'MID', result: 'loss', weight: 1.6 }),
+      ];
+
+      const result = computeRating(lossesInBigEvents);
+
+      // Winrate pondéré 10 / 18 = 55,6 % → 64 (non pondéré, 66,7 % donnerait 73).
+      expect(result.consistency).toBe(64);
+    });
+
+    it('le KDA des sous-notes est pondéré', () => {
+      const deathsInBigEvent = [
+        aPerformance({ role: 'MID', deaths: 10, weight: 1.6 }),
+        ...performances(14, { role: 'MID', assists: 3, weight: 1 }),
+      ];
+
+      const result = computeRating(deathsInBigEvent);
+
+      // KDA pondéré 42 / 16 = 2,625 → 53 (non pondéré, 4,2 donnerait 84).
+      expect(result.impact).toBe(53);
+    });
+  });
+
+  it('si toutes les performances ont un poids nul, le winrate brut est utilisé', () => {
+    const weightless = performances(15, { role: 'MID', result: 'win', weight: 0 });
+
+    const result = computeRating(weightless);
+
+    expect(result.consistency).toBe(99);
+  });
 });
