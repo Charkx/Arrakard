@@ -28,13 +28,13 @@ export interface RatingResult {
  * Spécification : docs/domain/rating-spec.md
  */
 export function computeRating(performances: readonly RatedPerformance[]): RatingResult {
-  const first = performances[0];
-  if (first === undefined) {
+  const role = dominantRole(performances);
+  if (role === undefined) {
     const rating = 60;
     return { rating, impact: 60, consistency: 60, clutch: 60, tier: tierOf(rating) };
   }
 
-  const baseline = ROLE_BASELINES[first.role];
+  const baseline = ROLE_BASELINES[role];
   const games = performances.length;
   const wins = performances.filter((p) => p.result === 'win').length;
   const kills = sum(performances, (p) => p.kills);
@@ -69,6 +69,22 @@ const ROLE_BASELINES: Record<Role, { kda: number; winrate: number }> = {
   ADC: { kda: 3.0, winrate: 0.5 },
   SUP: { kda: 4.0, winrate: 0.5 },
 };
+
+/** Rôle le plus joué ; en cas d'égalité, le premier rencontré (anomalie A6). */
+function dominantRole(performances: readonly RatedPerformance[]): Role | undefined {
+  const counts = new Map<Role, number>();
+  for (const { role } of performances) counts.set(role, (counts.get(role) ?? 0) + 1);
+
+  let best: Role | undefined;
+  let bestCount = 0;
+  for (const [role, count] of counts) {
+    if (count > bestCount) {
+      best = role;
+      bestCount = count;
+    }
+  }
+  return best;
+}
 
 /** Palier d'une note : Élite ≥ 90 · Or ≥ 80 · Argent ≥ 70 · Bronze sinon. */
 export function tierOf(rating: number): Tier {

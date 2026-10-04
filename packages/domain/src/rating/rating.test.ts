@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { performances, performancesFrom } from '../testing/builders';
+import { aPerformance, performances, performancesFrom } from '../testing/builders';
 import { computeRating } from './rating';
 
 describe('computeRating', () => {
@@ -69,12 +69,54 @@ describe('computeRating', () => {
       ['F — note ramenée au plancher de 60', 'JGL', 3, 1, 17, 29, 24, [60, 54, 57, 56, 'bronze']],
     ] as const)(
       'joueur %s',
-      (_label, role, games, wins, kills, deaths, assists, [rating, impact, consistency, clutch, tier]) => {
+      (
+        _label,
+        role,
+        games,
+        wins,
+        kills,
+        deaths,
+        assists,
+        [rating, impact, consistency, clutch, tier],
+      ) => {
         const playerPerformances = performancesFrom({ role, games, wins, kills, deaths, assists });
 
         const result = computeRating(playerPerformances);
 
         expect(result).toEqual({ rating, impact, consistency, clutch, tier });
+      },
+    );
+  });
+
+  describe('rôle dominant : la médiane de référence est celle du rôle le plus joué', () => {
+    it('2 MID puis 4 SUP : jugé comme SUP', () => {
+      const mostlySupport = [
+        ...performances(2, { role: 'MID', result: 'win' }),
+        ...performances(3, { role: 'SUP', result: 'win' }),
+        aPerformance({ role: 'SUP', result: 'win', deaths: 5, assists: 20 }),
+      ];
+
+      const result = computeRating(mostlySupport);
+
+      // KDA 4 = médiane SUP → impact 60 (avec la médiane MID, il serait de 68).
+      expect(result.impact).toBe(60);
+    });
+
+    it.each([
+      ['MID puis SUP', 'MID', 'SUP', 65],
+      ['SUP puis MID', 'SUP', 'MID', 60],
+    ] as const)(
+      'égalité %s : le premier rôle rencontré l’emporte',
+      (_label, first, second, impact) => {
+        const tied = [
+          aPerformance({ role: first, deaths: 4, assists: 16 }),
+          aPerformance({ role: first }),
+          ...performances(2, { role: second }),
+        ];
+
+        const result = computeRating(tied);
+
+        expect(result.impact).toBe(impact);
       },
     );
   });
