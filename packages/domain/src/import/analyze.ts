@@ -74,6 +74,18 @@ export function analyzeImport(sheet: StatsSheet, context: ImportContext): Import
   };
 }
 
+/**
+ * Pseudo d'une performance de la feuille, et sa clé (graphie normalisée) qui
+ * identifie un nom dans l'analyse et dans les décisions de l'admin.
+ */
+export function nameOf(
+  side: { readonly rawName: string; readonly team: string },
+  knownTeamTags: readonly string[],
+): { nickname: string; key: string } {
+  const { nickname } = splitTeamTag(side.rawName, new Set([...knownTeamTags, side.team]));
+  return { nickname, key: normalizeAlias(nickname) };
+}
+
 interface NameAccumulator {
   nickname: string;
   appearances: number;
@@ -89,9 +101,7 @@ function collectNames(
   for (const match of sheet.matches) {
     for (const line of match.lines) {
       for (const side of line.sides) {
-        const tags = new Set([...context.knownTeamTags, side.team]);
-        const { nickname } = splitTeamTag(side.rawName, tags);
-        const alias = normalizeAlias(nickname);
+        const { nickname, key: alias } = nameOf(side, context.knownTeamTags);
         const acc = byAlias.get(alias) ?? {
           nickname,
           appearances: 0,

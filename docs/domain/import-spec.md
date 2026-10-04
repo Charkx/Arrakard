@@ -11,6 +11,21 @@ première touche au fichier.
    ([ADR 0004](../adr/0004-identite-joueur-par-id.md)), les équipes inconnues
    et les transferts sont détectés, puis l'admin tranche.
 
+## Décisions de l'admin (`planImport`)
+
+Après l'analyse (`analyzeImport`), l'admin doit trancher, sans quoi le plan
+est refusé avec la liste des décisions manquantes :
+
+| Cas                               | Décisions possibles                                                                |
+| --------------------------------- | ---------------------------------------------------------------------------------- |
+| Pseudo inconnu ou homonyme ambigu | Nouveau joueur, ou joueur existant (la graphie devient un alias)                   |
+| Pseudo reconnu automatiquement    | Rien à faire, mais une décision peut corriger le rattachement                      |
+| Équipe inconnue (ligue, tournoi)  | Créer ou ignorer. Un nouveau joueur n'est rattaché qu'à une équipe connue ou créée |
+| Transfert détecté                 | Appliquer ou ignorer                                                               |
+
+En In House, les équipes sont éphémères (régions de Runeterra) : il n'y a ni
+équipe inconnue ni transfert.
+
 ## Format de la feuille `LIGUE1_STATS`
 
 - La première ligne (totaux) est ignorée ; la deuxième contient les en-têtes.

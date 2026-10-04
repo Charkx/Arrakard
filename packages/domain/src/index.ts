@@ -43,3 +43,14 @@ export type {
   ImportPlayer,
   RosterStatus,
 } from './import/analyze';
+export { nameOf } from './import/analyze';
+export { planImport } from './import/plan';
+export type {
+  ImportDecisions,
+  ImportPlan,
+  ImportPlanResult,
+  NameDecision,
+  PlannedMatch,
+  PlannedPerformance,
+  PlayerRef,
+} from './import/plan';
