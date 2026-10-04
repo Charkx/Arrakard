@@ -54,3 +54,22 @@ export type {
   PlannedPerformance,
   PlayerRef,
 } from './import/plan';
+export type {
+  EditionFact,
+  EditionType,
+  Facts,
+  MatchFact,
+  PerformanceFact,
+  PlayerFact,
+  Prestige,
+  SplitFact,
+} from './projection/facts';
+export { project } from './projection/project';
+export type {
+  EditionHistoryEntry,
+  EditionStandings,
+  Projections,
+  SplitRating,
+} from './projection/project';
+export { PRESTIGE_MULTIPLIER, V1_RATING_RULES } from './rating/rules';
+export type { RatingRules } from './rating/rules';
