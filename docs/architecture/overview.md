@@ -3,46 +3,12 @@
 Ce document montre les grands blocs et la circulation des données. Le _pourquoi_
 de chaque choix est dans les [ADR](../adr/README.md).
 
-## Contexte (C4 niveau 1)
+## Diagrammes
 
-```mermaid
-flowchart LR
-  V[Visiteur] -->|consulte| A
-  J[Joueur] -->|personnalise sa carte, s'inscrit| A
-  AD[Admin] -->|importe, corrige, gère les splits| A
-  A[Arrakis]
-  A -->|OAuth, rôles du serveur| D[Discord]
-  A -->|notifications| D
-  A -->|statut en direct| T[Twitch]
-  A -->|icônes champions| R[Riot Data Dragon]
-```
+- [Modèle C4](c4.md) : contexte, conteneurs, composants, code.
+- [Modèle de données](data-model.md) : MCD Merise et MLD.
 
-## Conteneurs (C4 niveau 2)
-
-```mermaid
-flowchart TB
-  subgraph Vercel
-    WEB[apps/web<br/>React + Vite<br/>lecture seule + envoi de commandes]
-  end
-  subgraph Supabase
-    AUTH[Auth<br/>Discord OAuth]
-    REST[PostgREST<br/>vues de lecture publiques]
-    FN[Edge Functions<br/>commandes métier]
-    DB[(Postgres<br/>faits + projections<br/>RLS)]
-  end
-  DOM[[packages/domain<br/>TypeScript pur]]
-
-  WEB -->|login| AUTH
-  WEB -->|GET vues par page| REST --> DB
-  WEB -->|POST commande + JWT| FN
-  FN -->|transaction SQL| DB
-  DOM -. importé par .-> FN
-  DOM -. importé par .-> WEB
-```
-
-Le domaine est importé côté web uniquement pour l'**affichage** (aperçu d'un
-import avant validation, par exemple). Il n'y produit jamais une valeur
-enregistrée.
+Ce document se concentre sur la circulation des données.
 
 ## Faits et projections
 
