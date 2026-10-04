@@ -1,4 +1,4 @@
-import { ROLES, type MatchResult, type Role } from '../performance';
+import { ROLES, type MatchResult, type Role } from '../performance.ts';
 
 /** Une ligne brute de la feuille, telle que l'extrait la bibliothèque Excel. */
 export type SheetRow = Readonly<Record<string, unknown>>;

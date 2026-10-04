@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { aMatchPerformance, anEventMatch } from '../testing/builders';
-import { computeEventStandings, OFFICIAL_SCORING } from './event-standings';
+import { aMatchPerformance, anEventMatch } from '../testing/builders.ts';
+import { computeEventStandings, OFFICIAL_SCORING } from './event-standings.ts';
 
 const nicknames: Record<string, string> = { ahri: 'Ahri', bard: 'Bard', zed: 'Zed' };
 const nicknameOf = (playerId: string) => nicknames[playerId] ?? playerId;

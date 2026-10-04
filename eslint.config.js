@@ -40,6 +40,11 @@ export default defineConfig([
               regex: '^(?!\\.{1,2}/)',
               message: 'Le domaine est pur : uniquement des imports relatifs (ADR 0001).',
             },
+            {
+              // Extension explicite : le même code tourne sous Node, Vite et Deno (ADR 0005).
+              regex: '^\\.{1,2}/.*(?<!\\.ts|\\.json)$',
+              message: 'Import relatif avec son extension (.ts) : requis par Deno.',
+            },
           ],
         },
       ],

@@ -2,9 +2,9 @@
  * Fabriques de données de test. Chaque test ne précise que ce qui compte
  * pour lui ; le reste prend une valeur par défaut neutre.
  */
-import type { LeaderboardPlayer } from '../leaderboard/leaderboard';
-import type { Performance } from '../performance';
-import type { EventMatch, MatchPerformance } from '../standings/event-standings';
+import type { LeaderboardPlayer } from '../leaderboard/leaderboard.ts';
+import type { Performance } from '../performance.ts';
+import type { EventMatch, MatchPerformance } from '../standings/event-standings.ts';
 
 export function aPerformance(overrides: Partial<Performance> = {}): Performance {
   return {

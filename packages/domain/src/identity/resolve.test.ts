@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolvePlayer, type DirectoryPlayer } from './resolve';
+import { resolvePlayer, type DirectoryPlayer } from './resolve.ts';
 
 const player = (overrides: Partial<DirectoryPlayer> & { playerId: string }): DirectoryPlayer => ({
   aliases: [],

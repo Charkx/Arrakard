@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeImport, type ImportPlayer } from './analyze';
-import type { SheetMatch, SheetSide, StatsSheet } from './stats-sheet';
+import { analyzeImport, type ImportPlayer } from './analyze.ts';
+import type { SheetMatch, SheetSide, StatsSheet } from './stats-sheet.ts';
 
 const side = (team: string, rawName: string): SheetSide => ({
   team,

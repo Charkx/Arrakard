@@ -1,6 +1,6 @@
-import { normalizeAlias, splitTeamTag } from '../identity/names';
-import { resolvePlayer, type DirectoryPlayer, type Resolution } from '../identity/resolve';
-import type { StatsSheet } from './stats-sheet';
+import { normalizeAlias, splitTeamTag } from '../identity/names.ts';
+import { resolvePlayer, type DirectoryPlayer, type Resolution } from '../identity/resolve.ts';
+import type { StatsSheet } from './stats-sheet.ts';
 
 export type RosterStatus = 'starter' | 'sub' | 'coach';
 

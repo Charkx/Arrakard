@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeAlias, similarity, splitTeamTag } from './names';
+import { normalizeAlias, similarity, splitTeamTag } from './names.ts';
 
 describe('normalizeAlias', () => {
   it('ignore la casse, les accents et les espaces superflus', () => {

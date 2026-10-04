@@ -1,4 +1,4 @@
-import type { Performance, Role } from '../performance';
+import type { Performance, Role } from '../performance.ts';
 
 /** Palier de carte (glossaire). */
 export type Tier = 'bronze' | 'silver' | 'gold' | 'elite';

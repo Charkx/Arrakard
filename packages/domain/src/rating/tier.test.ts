@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { tierOf } from './rating';
+import { tierOf } from './rating.ts';
 
 describe('tierOf', () => {
   it.each([

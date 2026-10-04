@@ -1,4 +1,4 @@
-import type { MatchResult, Role } from '../performance';
+import type { MatchResult, Role } from '../performance.ts';
 
 /** Barème du classement de soirée (glossaire : « Barème »). */
 export interface ScoringRules {

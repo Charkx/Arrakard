@@ -1,5 +1,5 @@
-import type { MatchResult, Role } from '../performance';
-import type { ScoringRules } from '../standings/event-standings';
+import type { MatchResult, Role } from '../performance.ts';
+import type { ScoringRules } from '../standings/event-standings.ts';
 
 /** Faits : ce qui a été saisi. Seules les commandes les écrivent (ADR 0003). */
 
