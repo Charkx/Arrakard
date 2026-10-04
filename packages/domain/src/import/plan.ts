@@ -1,7 +1,7 @@
-import { normalizeAlias } from '../identity/names';
-import type { MatchResult, Role } from '../performance';
-import { nameOf, type ImportAnalysis, type ImportContext } from './analyze';
-import type { StatsSheet } from './stats-sheet';
+import { normalizeAlias } from '../identity/names.ts';
+import type { MatchResult, Role } from '../performance.ts';
+import { nameOf, type ImportAnalysis, type ImportContext } from './analyze.ts';
+import type { StatsSheet } from './stats-sheet.ts';
 
 export type NameDecision =
   { readonly kind: 'existing'; readonly playerId: string } | { readonly kind: 'new' };

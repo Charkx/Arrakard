@@ -1,4 +1,4 @@
-import { normalizeAlias } from './names';
+import { normalizeAlias } from './names.ts';
 
 export interface MergePlayer {
   readonly id: string;

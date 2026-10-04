@@ -1,6 +1,6 @@
 # 0005 — Écritures par commandes transactionnelles
 
-- **Statut** : Proposé — un spike doit valider la faisabilité technique
+- **Statut** : Accepté (spike concluant, 2026-10-05)
 - **Date** : 2026-10-03
 
 ## Contexte
@@ -27,16 +27,21 @@ Chaque commande est une Edge Function qui :
    puis valide (`COMMIT`).
 
 Le rôle `anon` / `authenticated` n'a **aucun droit d'écriture** direct sur les
-tables. Seule la personnalisation de carte d'un joueur passe par une RPC
-dédiée, comme en v1.
+tables, à deux exceptions près, limitées par la RLS à la ligne du joueur
+connecté : ses **inscriptions** (libre-service) et la **personnalisation de
+sa carte** (RPC dédiée, comme en v1).
 
-## Points à valider par le spike
+## Résultats du spike
 
-- Les Edge Functions (Deno) peuvent-elles importer `packages/domain` ?
-  Repli : construire `domain` en un fichier ESM unique, copié dans
-  `supabase/functions/_shared/` à la compilation.
-- Durée d'un recalcul complet sur les données réelles, à l'intérieur d'une
-  transaction : cible < 2 s.
+| Question                                                        | Résultat                                                                                                                                                                        |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Une Edge Function (Deno) peut-elle importer `packages/domain` ? | **Oui**, directement, à condition que les imports relatifs du domaine portent leur extension (`'./rating.ts'`). Une règle de lint l'impose. Pas de bundle ni de fichier généré. |
+| Transaction Postgres depuis une Edge Function ?                 | **Oui**, via `SUPABASE_DB_URL` et le client `npm:postgres` : écriture validée, annulée en cas d'erreur.                                                                         |
+| Durée d'un recalcul complet ?                                   | **83 ms** pour 12 540 performances (3× la production). Cible : < 2 s.                                                                                                           |
+
+Reste à vérifier au premier déploiement sur le projet de staging : le
+bundler de `supabase functions deploy` embarque bien les fichiers du domaine
+situés hors de `supabase/functions/`.
 
 ## Options écartées
 

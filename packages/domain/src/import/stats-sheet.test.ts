@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDuration, parseStatsSheet, type SheetRow } from './stats-sheet';
+import { parseDuration, parseStatsSheet, type SheetRow } from './stats-sheet.ts';
 
 /** Une ligne de rôle de la feuille LIGUE1_STATS (côté A, puis côté B en « .1 »). */
 function aSheetRow(overrides: Partial<Record<string, unknown>> = {}): SheetRow {

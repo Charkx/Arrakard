@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planMerge, type MergeFacts, type MergePlayer } from './merge';
+import { planMerge, type MergeFacts, type MergePlayer } from './merge.ts';
 
 const aPlayer = (id: string, overrides: Partial<MergePlayer> = {}): MergePlayer => ({
   id,

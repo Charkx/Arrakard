@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { EditionFact } from '../projection/facts';
-import { E1_E2_RATING_RULES, TYPE_MULTIPLIER, V1_RATING_RULES } from './rules';
+import type { EditionFact } from '../projection/facts.ts';
+import { E1_E2_RATING_RULES, TYPE_MULTIPLIER, V1_RATING_RULES } from './rules.ts';
 
 const anEdition = (overrides: Partial<EditionFact> = {}): EditionFact => ({
   id: 'e',

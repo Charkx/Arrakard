@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { aPerformance, performances } from '../testing/builders';
-import { computePlayerStats } from './stats';
+import { aPerformance, performances } from '../testing/builders.ts';
+import { computePlayerStats } from './stats.ts';
 
 describe('computePlayerStats', () => {
   it('un joueur sans partie a des statistiques nulles et une forme stable', () => {

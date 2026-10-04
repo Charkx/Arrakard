@@ -1,4 +1,4 @@
-import { normalizeAlias, similarity } from './names';
+import { normalizeAlias, similarity } from './names.ts';
 
 /** Un joueur connu, tel que la résolution d'import le voit. */
 export interface DirectoryPlayer {

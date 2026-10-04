@@ -1,4 +1,4 @@
-import type { Role } from '../performance';
+import type { Role } from '../performance.ts';
 
 export type Division = 'div1' | 'div2';
 export type LeaderboardSort = 'rating' | 'kda' | 'winrate' | 'games';

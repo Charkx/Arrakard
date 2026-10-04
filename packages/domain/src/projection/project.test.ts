@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { computeRating } from '../rating/rating';
-import { V1_RATING_RULES, type RatingRules } from '../rating/rules';
-import { computePlayerStats } from '../stats/stats';
-import type { EditionFact, Facts, MatchFact, PerformanceFact } from './facts';
-import { project } from './project';
+import { computeRating } from '../rating/rating.ts';
+import { V1_RATING_RULES, type RatingRules } from '../rating/rules.ts';
+import { computePlayerStats } from '../stats/stats.ts';
+import type { EditionFact, Facts, MatchFact, PerformanceFact } from './facts.ts';
+import { project } from './project.ts';
 
 // ── Constructeur de faits lisible : éditions → matchs → performances ─────────
 

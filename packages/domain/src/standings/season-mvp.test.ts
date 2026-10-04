@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rankSeasonMvps } from './season-mvp';
+import { rankSeasonMvps } from './season-mvp.ts';
 
 const nicknameOf = (playerId: string) => playerId;
 

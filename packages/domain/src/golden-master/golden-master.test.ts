@@ -4,9 +4,9 @@
  * (anonymisées). Régénérer : `pnpm golden-master:extract` (voir l'outil).
  */
 import { describe, expect, it } from 'vitest';
-import type { Performance } from '../performance';
-import { computeRating } from '../rating/rating';
-import { computePlayerStats } from '../stats/stats';
+import type { Performance } from '../performance.ts';
+import { computeRating } from '../rating/rating.ts';
+import { computePlayerStats } from '../stats/stats.ts';
 import fixture from './v1.json' with { type: 'json' };
 
 interface GoldenMaster {

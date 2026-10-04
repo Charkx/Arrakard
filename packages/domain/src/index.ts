@@ -1,32 +1,32 @@
 // Point d'entrée public du domaine. Chaque module exporte ici son API.
-export { ROLES } from './performance';
-export type { MatchResult, Performance, Role } from './performance';
-export { computeRating, tierOf } from './rating/rating';
-export type { RatedPerformance, RatingResult, Tier } from './rating/rating';
-export { computePlayerStats } from './stats/stats';
-export type { PlayerStats, RecentForm, StatPerformance } from './stats/stats';
-export { LEADERBOARD_MIN_GAMES, rankLeaderboard } from './leaderboard/leaderboard';
+export { ROLES } from './performance.ts';
+export type { MatchResult, Performance, Role } from './performance.ts';
+export { computeRating, tierOf } from './rating/rating.ts';
+export type { RatedPerformance, RatingResult, Tier } from './rating/rating.ts';
+export { computePlayerStats } from './stats/stats.ts';
+export type { PlayerStats, RecentForm, StatPerformance } from './stats/stats.ts';
+export { LEADERBOARD_MIN_GAMES, rankLeaderboard } from './leaderboard/leaderboard.ts';
 export type {
   Division,
   LeaderboardOptions,
   LeaderboardPlayer,
   LeaderboardRow,
   LeaderboardSort,
-} from './leaderboard/leaderboard';
-export { computeEventStandings, OFFICIAL_SCORING } from './standings/event-standings';
+} from './leaderboard/leaderboard.ts';
+export { computeEventStandings, OFFICIAL_SCORING } from './standings/event-standings.ts';
 export type {
   EventFacts,
   EventMatch,
   EventStandingRow,
   MatchPerformance,
   ScoringRules,
-} from './standings/event-standings';
-export { rankSeasonMvps } from './standings/season-mvp';
-export type { SeasonMvpEvent, SeasonMvpRow } from './standings/season-mvp';
-export { normalizeAlias, similarity, splitTeamTag } from './identity/names';
-export { resolvePlayer, SUGGESTION_THRESHOLD } from './identity/resolve';
-export type { DirectoryPlayer, Resolution } from './identity/resolve';
-export { parseDuration, parseStatsSheet } from './import/stats-sheet';
+} from './standings/event-standings.ts';
+export { rankSeasonMvps } from './standings/season-mvp.ts';
+export type { SeasonMvpEvent, SeasonMvpRow } from './standings/season-mvp.ts';
+export { normalizeAlias, similarity, splitTeamTag } from './identity/names.ts';
+export { resolvePlayer, SUGGESTION_THRESHOLD } from './identity/resolve.ts';
+export type { DirectoryPlayer, Resolution } from './identity/resolve.ts';
+export { parseDuration, parseStatsSheet } from './import/stats-sheet.ts';
 export type {
   SheetLine,
   SheetMatch,
@@ -34,17 +34,17 @@ export type {
   SheetRow,
   SheetSide,
   StatsSheet,
-} from './import/stats-sheet';
-export { analyzeImport } from './import/analyze';
+} from './import/stats-sheet.ts';
+export { analyzeImport } from './import/analyze.ts';
 export type {
   ImportAnalysis,
   ImportContext,
   ImportName,
   ImportPlayer,
   RosterStatus,
-} from './import/analyze';
-export { nameOf } from './import/analyze';
-export { planImport } from './import/plan';
+} from './import/analyze.ts';
+export { nameOf } from './import/analyze.ts';
+export { planImport } from './import/plan.ts';
 export type {
   ImportDecisions,
   ImportPlan,
@@ -53,7 +53,7 @@ export type {
   PlannedMatch,
   PlannedPerformance,
   PlayerRef,
-} from './import/plan';
+} from './import/plan.ts';
 export type {
   EditionFact,
   EditionType,
@@ -63,20 +63,20 @@ export type {
   PlayerFact,
   Prestige,
   SplitFact,
-} from './projection/facts';
-export { project } from './projection/project';
+} from './projection/facts.ts';
+export { project } from './projection/project.ts';
 export type {
   EditionHistoryEntry,
   EditionStandings,
   Projections,
   SplitRating,
-} from './projection/project';
+} from './projection/project.ts';
 export {
   E1_E2_RATING_RULES,
   PRESTIGE_MULTIPLIER,
   TYPE_MULTIPLIER,
   V1_RATING_RULES,
-} from './rating/rules';
-export type { RatingRules } from './rating/rules';
-export { planMerge } from './identity/merge';
-export type { MergeFacts, MergePlan, MergePlanResult, MergePlayer } from './identity/merge';
+} from './rating/rules.ts';
+export type { RatingRules } from './rating/rules.ts';
+export { planMerge } from './identity/merge.ts';
+export type { MergeFacts, MergePlan, MergePlanResult, MergePlayer } from './identity/merge.ts';

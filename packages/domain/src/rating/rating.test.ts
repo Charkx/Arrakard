@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { aPerformance, performances, performancesFrom } from '../testing/builders';
-import { computeRating } from './rating';
+import { aPerformance, performances, performancesFrom } from '../testing/builders.ts';
+import { computeRating } from './rating.ts';
 
 describe('computeRating', () => {
   it('un joueur sans partie a une note de 60, des sous-notes à 60 et le palier Bronze', () => {

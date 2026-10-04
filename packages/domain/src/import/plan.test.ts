@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeImport, type ImportContext, type ImportPlayer } from './analyze';
-import { planImport, type ImportDecisions } from './plan';
-import type { SheetSide, StatsSheet } from './stats-sheet';
+import { analyzeImport, type ImportContext, type ImportPlayer } from './analyze.ts';
+import { planImport, type ImportDecisions } from './plan.ts';
+import type { SheetSide, StatsSheet } from './stats-sheet.ts';
 
 const side = (team: string, rawName: string, result: 'win' | 'loss'): SheetSide => ({
   team,

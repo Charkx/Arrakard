@@ -1,4 +1,4 @@
-import type { Performance } from '../performance';
+import type { Performance } from '../performance.ts';
 
 export type RecentForm = 'up' | 'stable' | 'down';
 

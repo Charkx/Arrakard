@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { aLeaderboardPlayer } from '../testing/builders';
-import { rankLeaderboard } from './leaderboard';
+import { aLeaderboardPlayer } from '../testing/builders.ts';
+import { rankLeaderboard } from './leaderboard.ts';
 
 const ids = (rows: readonly { playerId: string }[]) => rows.map((r) => r.playerId);
 

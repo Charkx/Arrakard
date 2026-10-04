@@ -1,13 +1,13 @@
-import type { MatchResult, Performance } from '../performance';
-import { computeRating, type RatingResult } from '../rating/rating';
-import type { RatingRules } from '../rating/rules';
+import type { MatchResult, Performance } from '../performance.ts';
+import { computeRating, type RatingResult } from '../rating/rating.ts';
+import type { RatingRules } from '../rating/rules.ts';
 import {
   computeEventStandings,
   type EventFacts,
   type EventStandingRow,
-} from '../standings/event-standings';
-import { computePlayerStats, type PlayerStats } from '../stats/stats';
-import type { EditionFact, Facts, MatchFact, PerformanceFact } from './facts';
+} from '../standings/event-standings.ts';
+import { computePlayerStats, type PlayerStats } from '../stats/stats.ts';
+import type { EditionFact, Facts, MatchFact, PerformanceFact } from './facts.ts';
 
 /** Note et statistiques d'un joueur sur un split. */
 export interface SplitRating {
