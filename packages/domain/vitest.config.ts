@@ -3,8 +3,6 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['src/**/*.test.ts'],
-    // Tant que le premier test n'existe pas, la CI reste verte.
-    passWithNoTests: true,
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
