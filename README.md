@@ -4,8 +4,9 @@ Plateforme de la communauté esport **Arrakis** (League of Legends) : cartes
 joueurs façon FUT, classements, pages d'événements, inscriptions et
 administration des résultats.
 
-> **Statut : phase 1 — cadrage.** Ce dépôt ne contient encore que de la
-> documentation. Le code arrive en phase 2, écrit en TDD.
+> **Statut : phase 2 terminée (domaine).** Les règles métier sont écrites en
+> TDD dans `packages/domain` et validées contre la production v1 (golden
+> master). Prochaine étape : le backend Supabase (phase 3).
 > L'ancienne version (`arrakis-cards`) reste en production et sert de
 > référence fonctionnelle.
 
@@ -61,6 +62,19 @@ pnpm check             # lint + format + types + tests avec couverture (= la CI)
 ```
 
 Pendant le TDD : `pnpm --filter @arrakis/domain test:watch`.
+
+## Le domaine (`packages/domain`)
+
+| Module           | Rôle                                                        | Cas d'usage |
+| ---------------- | ----------------------------------------------------------- | ----------- |
+| `rating/`        | Note, sous-notes, palier ; règles v1 et E1 + E2             | V1, V2      |
+| `stats/`         | Statistiques affichées, forme récente                       | V2          |
+| `leaderboard/`   | Classement du split, filtres, rang précédent                | V1          |
+| `standings/`     | Classement de soirée au barème, classement MVP de saison    | V4, A8      |
+| `identity/`      | Pseudos, tags, alias, résolution, fusion de profils         | A1, A5      |
+| `import/`        | Lecture de la feuille Excel, analyse, plan d'import         | A1          |
+| `projection/`    | `project(faits)` : recalcul complet des projections         | S1          |
+| `golden-master/` | Preuve que le moteur reproduit la v1 sur les vraies données | —           |
 
 ## Feuille de route
 
