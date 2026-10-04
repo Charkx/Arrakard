@@ -41,7 +41,7 @@ export function computeRating(performances: readonly RatedPerformance[]): Rating
   const deaths = sum(performances, (p) => p.deaths);
   const assists = sum(performances, (p) => p.assists);
 
-  const kda = (kills + assists) / Math.max(deaths, 1);
+  const kda = Math.min((kills + assists) / Math.max(deaths, 1), KDA_CAP);
   const winrate = wins / games;
 
   // Fiabilité : en dessous de 15 parties, on tire vers la médiane du rôle.
@@ -61,6 +61,8 @@ export function computeRating(performances: readonly RatedPerformance[]): Rating
 }
 
 const FULL_RELIABILITY_GAMES = 15;
+/** Au-delà, le KDA n'apporte plus rien aux sous-notes (2 parties à 31 ne font pas un Élite). */
+const KDA_CAP = 8;
 
 const ROLE_BASELINES: Record<Role, { kda: number; winrate: number }> = {
   TOP: { kda: 2.5, winrate: 0.5 },

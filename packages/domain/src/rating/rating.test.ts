@@ -120,4 +120,18 @@ describe('computeRating', () => {
       },
     );
   });
+
+  it('le KDA est plafonné à 8 dans les sous-notes, même sans aucune mort', () => {
+    const stomp = [
+      aPerformance({ role: 'MID', result: 'win', kills: 150, deaths: 0 }),
+      ...performances(2, { role: 'MID', result: 'win' }),
+      ...performances(12, { role: 'MID', result: 'loss' }),
+    ];
+
+    const result = computeRating(stomp);
+
+    // KDA 150 → plafonné à 8 → score KDA 160 ; winrate 20 % → score 36,6.
+    // Clutch = round(80 + 18,3) = 98 (sans plafond, il serait de 99).
+    expect(result.clutch).toBe(98);
+  });
 });
