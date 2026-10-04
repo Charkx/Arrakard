@@ -13,3 +13,13 @@ export type {
   LeaderboardRow,
   LeaderboardSort,
 } from './leaderboard/leaderboard';
+export { computeEventStandings, OFFICIAL_SCORING } from './standings/event-standings';
+export type {
+  EventFacts,
+  EventMatch,
+  EventStandingRow,
+  MatchPerformance,
+  ScoringRules,
+} from './standings/event-standings';
+export { rankSeasonMvps } from './standings/season-mvp';
+export type { SeasonMvpEvent, SeasonMvpRow } from './standings/season-mvp';
