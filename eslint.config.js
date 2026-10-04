@@ -14,7 +14,10 @@ export default defineConfig([
     },
     rules: {
       // Un `_` en tête signale un paramètre volontairement ignoré.
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', ignoreRestSiblings: true },
+      ],
       // Les nombres s'interpolent sans surprise ; undefined et objets restent interdits.
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
     },
