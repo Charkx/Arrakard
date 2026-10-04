@@ -164,6 +164,19 @@ Tri par note décroissante, puis départage dans cet ordre :
 3. nombre de parties (décroissant)
 4. pseudo (ordre alphabétique)
 
+Seuls figurent les joueurs non archivés ayant au moins **5 parties** dans le
+split. Filtres possibles : rôle, division de l'équipe.
+
+**Différences assumées en v2** (le classement n'entre pas dans le golden
+master) :
+
+- Comparaison des pseudos à la française (`Intl.Collator('fr')`, accents et
+  casse ignorés). En v1, elle dépendait de la langue du navigateur.
+- Rang précédent : position selon la note **du split avant sa dernière
+  édition**, pour le seul tri par note. En v1, il reposait sur la note de
+  carrière toutes périodes confondues. Un joueur sans note précédente est
+  « nouveau ».
+
 ## Classement de soirée (système distinct)
 
 Points d'un joueur sur une édition, selon le barème de l'édition :
