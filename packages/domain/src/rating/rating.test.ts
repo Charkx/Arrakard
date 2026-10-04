@@ -59,4 +59,23 @@ describe('computeRating', () => {
       });
     });
   });
+
+  describe('exemples réels de la spec (S3 Split 1, anonymisés)', () => {
+    it.each([
+      ['B — impact plafonné à 99', 'JGL', 24, 19, 165, 74, 219, [92, 99, 83, 93, 'elite']],
+      ['C — médiane TOP à 2,5', 'TOP', 25, 18, 115, 61, 173, [90, 99, 77, 95, 'elite']],
+      ['D — médiane SUP à 4,0', 'SUP', 20, 11, 29, 54, 305, [78, 93, 64, 78, 'silver']],
+      ['E — peu de parties, KDA moyen', 'JGL', 5, 4, 23, 22, 56, [66, 64, 68, 66, 'bronze']],
+      ['F — note ramenée au plancher de 60', 'JGL', 3, 1, 17, 29, 24, [60, 54, 57, 56, 'bronze']],
+    ] as const)(
+      'joueur %s',
+      (_label, role, games, wins, kills, deaths, assists, [rating, impact, consistency, clutch, tier]) => {
+        const playerPerformances = performancesFrom({ role, games, wins, kills, deaths, assists });
+
+        const result = computeRating(playerPerformances);
+
+        expect(result).toEqual({ rating, impact, consistency, clutch, tier });
+      },
+    );
+  });
 });
