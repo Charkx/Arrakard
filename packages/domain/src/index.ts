@@ -1,2 +1,3 @@
 // Point d'entrée public du domaine. Chaque module exporte ici son API.
-export {};
+export { computeRating } from './rating/rating';
+export type { RatingResult, Tier } from './rating/rating';

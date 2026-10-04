@@ -12,6 +12,10 @@ export default defineConfig([
     languageOptions: {
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
+    rules: {
+      // Un `_` en tête signale un paramètre volontairement ignoré.
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
   },
   {
     files: ['**/*.js'],
