@@ -38,16 +38,17 @@ visuelle de la v1.
 
 ## Documentation
 
-| Document                                               | Pour qui / quand                                          |
-| ------------------------------------------------------ | --------------------------------------------------------- |
-| [Vision et périmètre](docs/product/vision.md)          | Comprendre le produit, ses acteurs, ses contraintes       |
-| [Cas d'usage](docs/product/use-cases.md)               | Savoir ce que le système doit faire, par priorité         |
-| [Glossaire](docs/domain/glossary.md)                   | **À lire en premier.** Un mot = une définition, FR ↔ code |
-| [Spécification de la note](docs/domain/rating-spec.md) | Formule exacte, exemples chiffrés, cas limites            |
-| [Vue d'architecture](docs/architecture/overview.md)    | Les blocs du système et comment les données circulent     |
-| [Décisions (ADR)](docs/adr/README.md)                  | Pourquoi l'architecture est ce qu'elle est                |
-| [Contribuer](docs/contributing.md)                     | Workflow TDD, conventions, définition de « terminé »      |
-| [Questions ouvertes](docs/open-questions.md)           | Décisions produit en attente                              |
+| Document                                                | Pour qui / quand                                          |
+| ------------------------------------------------------- | --------------------------------------------------------- |
+| [Vision et périmètre](docs/product/vision.md)           | Comprendre le produit, ses acteurs, ses contraintes       |
+| [Cas d'usage](docs/product/use-cases.md)                | Savoir ce que le système doit faire, par priorité         |
+| [Glossaire](docs/domain/glossary.md)                    | **À lire en premier.** Un mot = une définition, FR ↔ code |
+| [Spécification de la note](docs/domain/rating-spec.md)  | Formule exacte, exemples chiffrés, cas limites            |
+| [Spécification de l'import](docs/domain/import-spec.md) | Format de la feuille Excel et règles de lecture           |
+| [Vue d'architecture](docs/architecture/overview.md)     | Les blocs du système et comment les données circulent     |
+| [Décisions (ADR)](docs/adr/README.md)                   | Pourquoi l'architecture est ce qu'elle est                |
+| [Contribuer](docs/contributing.md)                      | Workflow TDD, conventions, définition de « terminé »      |
+| [Questions ouvertes](docs/open-questions.md)            | Décisions produit en attente                              |
 
 ## Démarrer
 

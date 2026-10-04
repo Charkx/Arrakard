@@ -26,3 +26,12 @@ export type { SeasonMvpEvent, SeasonMvpRow } from './standings/season-mvp';
 export { normalizeAlias, similarity, splitTeamTag } from './identity/names';
 export { resolvePlayer, SUGGESTION_THRESHOLD } from './identity/resolve';
 export type { DirectoryPlayer, Resolution } from './identity/resolve';
+export { parseDuration, parseStatsSheet } from './import/stats-sheet';
+export type {
+  SheetLine,
+  SheetMatch,
+  SheetParseResult,
+  SheetRow,
+  SheetSide,
+  StatsSheet,
+} from './import/stats-sheet';
