@@ -1,6 +1,6 @@
 # 0002 — Supabase comme backend et source de vérité
 
-- **Statut** : Accepté
+- **Statut** : Accepté, amendé par [0008](0008-multi-tenant-et-portabilite.md) (rôle admin par organisation)
 - **Date** : 2026-10-03
 
 ## Contexte

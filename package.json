@@ -14,7 +14,8 @@
     "test": "pnpm -r test",
     "coverage": "pnpm -r coverage",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm coverage",
-    "golden-master:extract": "tsx tools/golden-master/extract-v1.ts"
+    "golden-master:extract": "tsx tools/golden-master/extract-v1.ts",
+    "test:db": "supabase test db"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
