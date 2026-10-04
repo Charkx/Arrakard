@@ -2,6 +2,7 @@
  * Fabriques de données de test. Chaque test ne précise que ce qui compte
  * pour lui ; le reste prend une valeur par défaut neutre.
  */
+import type { LeaderboardPlayer } from '../leaderboard/leaderboard';
 import type { Performance } from '../performance';
 
 export function aPerformance(overrides: Partial<Performance> = {}): Performance {
@@ -46,4 +47,19 @@ export function performancesFrom(totals: {
       assists: i === 0 ? totals.assists : 0,
     }),
   );
+}
+
+export function aLeaderboardPlayer(overrides: Partial<LeaderboardPlayer> = {}): LeaderboardPlayer {
+  return {
+    playerId: 'player',
+    nickname: 'Joueur',
+    role: 'MID',
+    divisions: [],
+    rating: 60,
+    winrate: 50,
+    kda: 3,
+    games: 10,
+    archived: false,
+    ...overrides,
+  };
 }
