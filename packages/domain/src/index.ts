@@ -63,7 +63,7 @@ export type {
   PlayerFact,
   Prestige,
   SplitFact,
-} from './projection/facts.ts';
+} from './facts.ts';
 export { project } from './projection/project.ts';
 export type {
   EditionHistoryEntry,

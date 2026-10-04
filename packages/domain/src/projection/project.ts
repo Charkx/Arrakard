@@ -7,7 +7,7 @@ import {
   type EventStandingRow,
 } from '../standings/event-standings.ts';
 import { computePlayerStats, type PlayerStats } from '../stats/stats.ts';
-import type { EditionFact, Facts, MatchFact, PerformanceFact } from './facts.ts';
+import type { EditionFact, Facts, MatchFact, PerformanceFact } from '../facts.ts';
 
 /** Note et statistiques d'un joueur sur un split. */
 export interface SplitRating {

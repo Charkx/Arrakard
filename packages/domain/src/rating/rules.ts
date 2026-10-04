@@ -1,4 +1,4 @@
-import type { EditionFact, EditionType, Prestige } from '../projection/facts.ts';
+import type { EditionFact, EditionType, Prestige } from '../facts.ts';
 
 /** Règles de note paramétrables (ADR 0007) : la v1 est un jeu de règles parmi d'autres. */
 export interface RatingRules {
