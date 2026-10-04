@@ -15,6 +15,8 @@ export interface LeaderboardPlayer {
   readonly kda: number;
   readonly games: number;
   readonly archived: boolean;
+  /** Note du split avant sa dernière édition ; absente si le joueur n'y avait pas joué. */
+  readonly previousRating?: number;
 }
 
 export interface LeaderboardOptions {
@@ -29,6 +31,8 @@ export const LEADERBOARD_MIN_GAMES = 5;
 export interface LeaderboardRow {
   readonly playerId: string;
   readonly rank: number;
+  /** Rang avant la dernière édition ; null si nouveau ou si le tri n'est pas la note. */
+  readonly previousRank: number | null;
 }
 
 type Criterion = (a: LeaderboardPlayer, b: LeaderboardPlayer) => number;
@@ -79,7 +83,20 @@ export function rankLeaderboard(
     return 0;
   };
 
-  return eligible
-    .sort(compare)
-    .map((player, index) => ({ playerId: player.playerId, rank: index + 1 }));
+  const previousRanks =
+    sort === 'rating' ? rankByPreviousRating(eligible) : new Map<string, number>();
+
+  return eligible.sort(compare).map((player, index) => ({
+    playerId: player.playerId,
+    rank: index + 1,
+    previousRank: previousRanks.get(player.playerId) ?? null,
+  }));
+}
+
+/** Ancien classement : joueurs ayant une note précédente, triés par celle-ci puis par pseudo. */
+function rankByPreviousRating(players: readonly LeaderboardPlayer[]): Map<string, number> {
+  const ranked = players
+    .flatMap((p) => (p.previousRating === undefined ? [] : [{ p, previous: p.previousRating }]))
+    .sort((a, b) => b.previous - a.previous || byNickname(a.p, b.p));
+  return new Map(ranked.map(({ p }, index) => [p.playerId, index + 1]));
 }

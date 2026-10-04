@@ -114,7 +114,7 @@ describe('rankLeaderboard', () => {
 
       const rows = rankLeaderboard(players, { role: 'MID' });
 
-      expect(rows).toEqual([{ playerId: 'mid', rank: 1 }]);
+      expect(rows).toMatchObject([{ playerId: 'mid', rank: 1 }]);
     });
 
     it('le filtre de division garde les joueurs dont l’équipe joue dans cette division', () => {
@@ -125,6 +125,55 @@ describe('rankLeaderboard', () => {
       ];
 
       expect(ids(rankLeaderboard(players, { division: 'div2' }))).toEqual(['both']);
+    });
+  });
+
+  describe('rang précédent : position selon la note avant la dernière édition du split', () => {
+    it('reclasse les joueurs selon leur note précédente', () => {
+      const players = [
+        aLeaderboardPlayer({ playerId: 'riser', rating: 85, previousRating: 70 }),
+        aLeaderboardPlayer({ playerId: 'faller', rating: 80, previousRating: 82 }),
+      ];
+
+      const rows = rankLeaderboard(players);
+
+      expect(rows).toEqual([
+        { playerId: 'riser', rank: 1, previousRank: 2 },
+        { playerId: 'faller', rank: 2, previousRank: 1 },
+      ]);
+    });
+
+    it('un joueur sans note précédente est nouveau et ne compte pas dans l’ancien classement', () => {
+      const players = [
+        aLeaderboardPlayer({ playerId: 'newcomer', rating: 90 }),
+        aLeaderboardPlayer({ playerId: 'regular', rating: 80, previousRating: 75 }),
+      ];
+
+      const rows = rankLeaderboard(players);
+
+      expect(rows.map((r) => r.previousRank)).toEqual([null, 1]);
+    });
+
+    it('à note précédente égale, le pseudo départage', () => {
+      const players = [
+        aLeaderboardPlayer({ playerId: 'b', nickname: 'Bard', rating: 80, previousRating: 70 }),
+        aLeaderboardPlayer({ playerId: 'a', nickname: 'Annie', rating: 75, previousRating: 70 }),
+      ];
+
+      const rows = rankLeaderboard(players);
+
+      expect(rows.map((r) => [r.playerId, r.previousRank])).toEqual([
+        ['b', 2],
+        ['a', 1],
+      ]);
+    });
+
+    it('n’a pas de sens pour les autres tris', () => {
+      const players = [aLeaderboardPlayer({ previousRating: 70 })];
+
+      const rows = rankLeaderboard(players, { sort: 'kda' });
+
+      expect(rows[0]?.previousRank).toBeNull();
     });
   });
 });
