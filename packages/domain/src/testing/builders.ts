@@ -4,6 +4,7 @@
  */
 import type { LeaderboardPlayer } from '../leaderboard/leaderboard';
 import type { Performance } from '../performance';
+import type { EventMatch, MatchPerformance } from '../standings/event-standings';
 
 export function aPerformance(overrides: Partial<Performance> = {}): Performance {
   return {
@@ -62,4 +63,26 @@ export function aLeaderboardPlayer(overrides: Partial<LeaderboardPlayer> = {}): 
     archived: false,
     ...overrides,
   };
+}
+
+export function aMatchPerformance(overrides: Partial<MatchPerformance> = {}): MatchPerformance {
+  return {
+    playerId: 'player',
+    team: 'Demacia',
+    role: 'MID',
+    champion: 'Ahri',
+    result: 'win',
+    kills: 0,
+    deaths: 0,
+    assists: 0,
+    gpm: 0,
+    ...overrides,
+  };
+}
+
+export function anEventMatch(
+  performances: MatchPerformance[],
+  overrides: Partial<Omit<EventMatch, 'performances'>> = {},
+): EventMatch {
+  return { winnerTeam: 'Demacia', durationMinutes: 30, ...overrides, performances };
 }
