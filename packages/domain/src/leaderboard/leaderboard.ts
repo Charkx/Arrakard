@@ -19,7 +19,12 @@ export interface LeaderboardPlayer {
 
 export interface LeaderboardOptions {
   readonly sort?: LeaderboardSort;
+  readonly role?: Role;
+  readonly division?: Division;
 }
+
+/** En dessous, la note n'est pas assez significative pour figurer au classement. */
+export const LEADERBOARD_MIN_GAMES = 5;
 
 export interface LeaderboardRow {
   readonly playerId: string;
@@ -49,11 +54,22 @@ const CASCADES: Record<LeaderboardSort, readonly Criterion[]> = {
   games: [byGames, byRating, byWinrate, byKda, byNickname],
 };
 
-/** Classement du split : tri par critère, départage en cascade, rangs à partir de 1. */
+/**
+ * Classement du split : joueurs éligibles, tri par critère, départage en
+ * cascade, rangs à partir de 1.
+ */
 export function rankLeaderboard(
   players: readonly LeaderboardPlayer[],
-  { sort = 'rating' }: LeaderboardOptions = {},
+  { sort = 'rating', role, division }: LeaderboardOptions = {},
 ): LeaderboardRow[] {
+  const eligible = players.filter(
+    (p) =>
+      !p.archived &&
+      p.games >= LEADERBOARD_MIN_GAMES &&
+      (role === undefined || p.role === role) &&
+      (division === undefined || p.divisions.includes(division)),
+  );
+
   const cascade = CASCADES[sort];
   const compare: Criterion = (a, b) => {
     for (const criterion of cascade) {
@@ -63,7 +79,7 @@ export function rankLeaderboard(
     return 0;
   };
 
-  return [...players]
+  return eligible
     .sort(compare)
     .map((player, index) => ({ playerId: player.playerId, rank: index + 1 }));
 }

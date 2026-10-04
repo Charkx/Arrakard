@@ -25,8 +25,22 @@ describe('rankLeaderboard', () => {
 
   it('départage à note égale : winrate, puis KDA, puis parties, puis pseudo', () => {
     const players = [
-      aLeaderboardPlayer({ playerId: 'pseudo-z', nickname: 'Zed', rating: 80, winrate: 50, kda: 3, games: 10 }),
-      aLeaderboardPlayer({ playerId: 'pseudo-a', nickname: 'Ahri', rating: 80, winrate: 50, kda: 3, games: 10 }),
+      aLeaderboardPlayer({
+        playerId: 'pseudo-z',
+        nickname: 'Zed',
+        rating: 80,
+        winrate: 50,
+        kda: 3,
+        games: 10,
+      }),
+      aLeaderboardPlayer({
+        playerId: 'pseudo-a',
+        nickname: 'Ahri',
+        rating: 80,
+        winrate: 50,
+        kda: 3,
+        games: 10,
+      }),
       aLeaderboardPlayer({ playerId: 'games', rating: 80, winrate: 50, kda: 3, games: 12 }),
       aLeaderboardPlayer({ playerId: 'kda', rating: 80, winrate: 50, kda: 4, games: 5 }),
       aLeaderboardPlayer({ playerId: 'winrate', rating: 80, winrate: 60, kda: 1, games: 5 }),
@@ -62,5 +76,55 @@ describe('rankLeaderboard', () => {
     const rows = rankLeaderboard(players, { sort });
 
     expect(ids(rows).slice(0, 3)).toEqual(expected);
+  });
+
+  it('deux joueurs strictement identiques gardent l’ordre fourni', () => {
+    const twins = [
+      aLeaderboardPlayer({ playerId: 'first' }),
+      aLeaderboardPlayer({ playerId: 'second' }),
+    ];
+
+    expect(ids(rankLeaderboard(twins))).toEqual(['first', 'second']);
+  });
+
+  describe('qui figure au classement', () => {
+    it('un joueur doit avoir au moins 5 parties', () => {
+      const players = [
+        aLeaderboardPlayer({ playerId: 'four', games: 4 }),
+        aLeaderboardPlayer({ playerId: 'five', games: 5 }),
+      ];
+
+      expect(ids(rankLeaderboard(players))).toEqual(['five']);
+    });
+
+    it('les joueurs archivés sont exclus', () => {
+      const players = [
+        aLeaderboardPlayer({ playerId: 'archived', archived: true }),
+        aLeaderboardPlayer({ playerId: 'active' }),
+      ];
+
+      expect(ids(rankLeaderboard(players))).toEqual(['active']);
+    });
+
+    it('le filtre de rôle ne garde que ce rôle, et les rangs repartent de 1', () => {
+      const players = [
+        aLeaderboardPlayer({ playerId: 'top', role: 'TOP', rating: 90 }),
+        aLeaderboardPlayer({ playerId: 'mid', role: 'MID', rating: 80 }),
+      ];
+
+      const rows = rankLeaderboard(players, { role: 'MID' });
+
+      expect(rows).toEqual([{ playerId: 'mid', rank: 1 }]);
+    });
+
+    it('le filtre de division garde les joueurs dont l’équipe joue dans cette division', () => {
+      const players = [
+        aLeaderboardPlayer({ playerId: 'd1', divisions: ['div1'] }),
+        aLeaderboardPlayer({ playerId: 'both', divisions: ['div1', 'div2'] }),
+        aLeaderboardPlayer({ playerId: 'free-agent', divisions: [] }),
+      ];
+
+      expect(ids(rankLeaderboard(players, { division: 'div2' }))).toEqual(['both']);
+    });
   });
 });
