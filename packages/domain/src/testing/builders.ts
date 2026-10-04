@@ -19,10 +19,7 @@ export function aPerformance(overrides: Partial<Performance> = {}): Performance 
 }
 
 /** `count` performances identiques. */
-export function performances(
-  count: number,
-  overrides: Partial<Performance> = {},
-): Performance[] {
+export function performances(count: number, overrides: Partial<Performance> = {}): Performance[] {
   return Array.from({ length: count }, () => aPerformance(overrides));
 }
 
