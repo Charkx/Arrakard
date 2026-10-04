@@ -71,7 +71,12 @@ export type {
   Projections,
   SplitRating,
 } from './projection/project';
-export { PRESTIGE_MULTIPLIER, V1_RATING_RULES } from './rating/rules';
+export {
+  E1_E2_RATING_RULES,
+  PRESTIGE_MULTIPLIER,
+  TYPE_MULTIPLIER,
+  V1_RATING_RULES,
+} from './rating/rules';
 export type { RatingRules } from './rating/rules';
 export { planMerge } from './identity/merge';
 export type { MergeFacts, MergePlan, MergePlanResult, MergePlayer } from './identity/merge';
