@@ -21,6 +21,8 @@ export function playerKey(name: string): string {
 export interface Identities {
   /** Joueur v2 d'une graphie des lignes de match. */
   readonly playerIdOf: (name: string) => string;
+  /** Joueur v2 d'un nom quelconque, s'il a joué au moins un match. */
+  readonly find: (name: string) => string | undefined;
   readonly players: readonly V2Player[];
   readonly aliases: readonly V2PlayerAlias[];
 }
@@ -84,6 +86,7 @@ export function resolveIdentities(
   }
 
   return {
+    find: (name) => playerIdByKey.get(playerKey(name)),
     playerIdOf: (name) => {
       const id = playerIdByKey.get(playerKey(name));
       // Invariant : toute graphie demandée vient des lignes de match, donc a été

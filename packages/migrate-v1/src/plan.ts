@@ -1,7 +1,7 @@
-import type { Role } from '@arrakis/domain';
+import type { EditionType, Role } from '@arrakis/domain';
 import { resolveIdentities, type Sighting } from './identity.ts';
-import type { V1Dump, V1Match, V1MatchRow } from './v1.ts';
-import type { V2Match, V2Performance, V2Rows, V2Split } from './v2.ts';
+import type { V1Dump, V1EditionType, V1Match, V1MatchRow, V1PlayerEventEntry } from './v1.ts';
+import type { V2Edition, V2Match, V2Performance, V2Rows, V2Split } from './v2.ts';
 
 export interface Anomaly {
   readonly code: string;
@@ -12,6 +12,17 @@ export interface MigrationPlan {
   readonly rows: V2Rows;
   readonly report: readonly Anomaly[];
 }
+
+/** Types d'édition : seuls les deux types de ligue changent de nom. */
+const EDITION_TYPE: Record<V1EditionType, EditionType> = {
+  ligue_div1: 'league_div1',
+  ligue_div2: 'league_div2',
+  inhouse: 'inhouse',
+  tournament: 'tournament',
+  lan: 'lan',
+  external_lan: 'external_lan',
+  external_event: 'external_event',
+};
 
 /** Ordre des lignes de rôle dans un match (`performances.line`). */
 const ROLE_ORDER: readonly Role[] = ['TOP', 'JGL', 'MID', 'ADC', 'SUP'];
@@ -46,6 +57,7 @@ export function planMigration(dump: V1Dump): MigrationPlan {
   const performances = placed.flatMap(({ row, match }) =>
     performancesOf(row, match, identities.playerIdOf, report),
   );
+  reportOrphanEventResults(dump, editionById, report);
   for (const match of dump.matches) {
     checkResults(
       match,
@@ -70,12 +82,40 @@ export function planMigration(dump: V1Dump): MigrationPlan {
       players: identities.players,
       player_aliases: identities.aliases,
       team_memberships: [],
-      editions: [],
+      editions: dump.editions.map((e): V2Edition => {
+        const mvp =
+          e.mvp_player_name === null ? null : (identities.find(e.mvp_player_name) ?? null);
+        if (e.mvp_player_name !== null && mvp === null) {
+          report.push({
+            code: 'unknown-mvp',
+            message: `Édition ${e.id} : MVP de soirée « ${e.mvp_player_name} » introuvable, laissé vide.`,
+          });
+        }
+        return {
+          id: e.id,
+          name: e.name,
+          type: EDITION_TYPE[e.type],
+          date: e.date,
+          split_id: e.split_id,
+          prestige: e.prestige,
+          event_mvp_player_id: mvp,
+          display_number: e.display_number,
+          location: e.location,
+          url: e.url,
+          description: e.description,
+          arrakis_won: e.arrakis_won,
+          source_file_hash: e.source_file_hash,
+          created_at: e.created_at,
+        };
+      }),
       matches: dump.matches.map(toMatch),
       performances: sortPerformances(performances),
-      edition_participants: [],
+      edition_participants: dump.edition_participants.map(({ edition_id, player_id }) => ({
+        edition_id,
+        player_id,
+      })),
       card_customizations: [],
-      registrations: [],
+      registrations: dump.registrations.map((r) => ({ ...r })),
     },
     report,
   };
@@ -171,4 +211,31 @@ function sortPerformances(performances: V2Performance[]): V2Performance[] {
     (a, b) =>
       a.match_id.localeCompare(b.match_id) || a.line - b.line || a.side.localeCompare(b.side),
   );
+}
+
+/**
+ * M4 : résultats d'événement (`player_event_entries`) d'un autre type que leur
+ * édition. Ce sont des faits sans match, que la v2 ne sait pas représenter (Q10).
+ */
+function reportOrphanEventResults(
+  dump: V1Dump,
+  editionById: ReadonlyMap<string, { readonly type: V1EditionType }>,
+  report: Anomaly[],
+) {
+  const orphans = dump.player_event_entries.filter(
+    (e) => e.event_type !== editionById.get(e.edition_id)?.type,
+  );
+  const groups = new Map<string, { entry: V1PlayerEventEntry; count: number }>();
+  for (const entry of orphans) {
+    const key = `${entry.edition_id}|${entry.event_name}`;
+    const group = groups.get(key);
+    if (group) group.count += 1;
+    else groups.set(key, { entry, count: 1 });
+  }
+  for (const { entry, count } of groups.values()) {
+    report.push({
+      code: 'orphan-event-results',
+      message: `${count} résultats « ${entry.event_name} » (${entry.event_type}, ${entry.date}) rattachés à l’édition ${entry.edition_id} (${String(editionById.get(entry.edition_id)?.type)}), sans match : non migrés (Q10).`,
+    });
+  }
 }

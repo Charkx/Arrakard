@@ -349,4 +349,112 @@ describe('planMigration', () => {
       expect(plan.rows.player_aliases).toContainEqual({ player_id: 'bench', alias: 'simoun' });
     });
   });
+
+  describe('éditions', () => {
+    it('reprend l’édition en traduisant son type, et résout le MVP de soirée par son nom', () => {
+      const plan = planMigration(
+        aV1Dump({ editions: [aV1Edition({ type: 'ligue_div2', mvp_player_name: 'ARK Zephyr' })] }),
+      );
+
+      expect(plan.rows.editions).toEqual([
+        {
+          id: 'edition-1',
+          name: 'Ligue #1 Div 1',
+          type: 'league_div2',
+          date: '2026-02-01',
+          split_id: 'split-1',
+          prestige: 'championship',
+          event_mvp_player_id: 'player-zephyr',
+          display_number: 1,
+          location: null,
+          url: null,
+          description: null,
+          arrakis_won: null,
+          source_file_hash: null,
+          created_at: '2026-02-01T00:00:00Z',
+        },
+      ]);
+    });
+
+    it.each([
+      ['ligue_div1', 'league_div1'],
+      ['inhouse', 'inhouse'],
+      ['external_lan', 'external_lan'],
+    ] as const)('type %s → %s', (v1, v2) => {
+      const plan = planMigration(aV1Dump({ editions: [aV1Edition({ type: v1 })] }));
+
+      expect(plan.rows.editions[0]?.type).toBe(v2);
+    });
+
+    it('laisse vide et signale un MVP de soirée introuvable', () => {
+      const plan = planMigration(
+        aV1Dump({ editions: [aV1Edition({ mvp_player_name: 'Inconnu' })] }),
+      );
+
+      expect(plan.rows.editions[0]?.event_mvp_player_id).toBeNull();
+      expect(plan.report).toContainEqual({
+        code: 'unknown-mvp',
+        message: 'Édition edition-1 : MVP de soirée « Inconnu » introuvable, laissé vide.',
+      });
+    });
+
+    it('reprend les participants des événements externes et les inscriptions', () => {
+      const registration = {
+        id: 'reg-1',
+        edition_id: 'edition-1',
+        discord_user_id: '42',
+        pseudo: 'Zéphyr',
+        role: 'TOP',
+        secondary_role: null,
+        rank: 'Or',
+        opgg: null,
+        alt_riot_id: null,
+        speaks_english: false,
+        created_at: '2026-01-20T00:00:00Z',
+      };
+      const plan = planMigration(
+        aV1Dump({
+          edition_participants: [{ edition_id: 'edition-1', player_id: 'player-zephyr' }],
+          registrations: [registration],
+        }),
+      );
+
+      expect(plan.rows.edition_participants).toEqual([
+        { edition_id: 'edition-1', player_id: 'player-zephyr' },
+      ]);
+      expect(plan.rows.registrations).toEqual([registration]);
+    });
+
+    it('signale, sans les migrer, les résultats d’un événement rattachés à une édition d’un autre type (M4)', () => {
+      const entry = (id: string, eventType: string) => ({
+        id,
+        player_id: 'player-zephyr',
+        edition_id: 'edition-1',
+        event_type: eventType,
+        event_name: 'Tournoi de printemps',
+        date: '2026-01-18',
+        result: 'W' as const,
+        kills: 5,
+        deaths: 2,
+        assists: 8,
+      });
+      const plan = planMigration(
+        aV1Dump({
+          player_event_entries: [
+            entry('e1', 'tournament'),
+            entry('e2', 'tournament'),
+            entry('e3', 'ligue_div1'),
+          ],
+        }),
+      );
+
+      expect(plan.report).toEqual([
+        {
+          code: 'orphan-event-results',
+          message:
+            '2 résultats « Tournoi de printemps » (tournament, 2026-01-18) rattachés à l’édition edition-1 (ligue_div1), sans match : non migrés (Q10).',
+        },
+      ]);
+    });
+  });
 });
