@@ -25,6 +25,12 @@ gratuite.
 - Le claim admin est **revérifié** à chaque connexion, et retiré si le rôle
   Discord a disparu (cas d'usage S2).
 
+> **Amendé par [0008](0008-multi-tenant-et-portabilite.md).** Il n'y a plus de
+> claim JWT admin global : on est admin _d'une organisation_, par une ligne de
+> `organization_members`, vérifiée par `is_org_admin(organization_id)`. La
+> revérification à chaque connexion demeure : elle met à jour l'adhésion
+> depuis les rôles Discord au lieu de poser un claim.
+
 ## Options écartées
 
 - **Backend Node dédié (Hono + Drizzle)** : plus de contrôle, mais il faut
