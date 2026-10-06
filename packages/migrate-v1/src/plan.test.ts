@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { planMigration } from './plan.ts';
-import { aV1Dump, aV1Match, aV1Row, aV1Split } from './testing/v1-builders.ts';
+import {
+  aV1Dump,
+  aV1Edition,
+  aV1Match,
+  aV1Player,
+  aV1Row,
+  aV1Split,
+} from './testing/v1-builders.ts';
 
 describe('planMigration', () => {
   describe('calendrier', () => {
@@ -104,6 +111,242 @@ describe('planMigration', () => {
         code: 'missing-team',
         message: 'Match match-1, TOP : équipe vide des côtés A et B, complétée depuis le match.',
       });
+    });
+
+    it('signale une équipe vide d’un seul côté', () => {
+      const { report } = planMigration(aV1Dump({ match_rows: [aV1Row({ b_team: '' })] }));
+
+      expect(report).toEqual([
+        {
+          code: 'missing-team',
+          message: 'Match match-1, TOP : équipe vide du côté B, complétée depuis le match.',
+        },
+      ]);
+    });
+
+    it('migre tel quel un match où les deux équipes ont perdu, et le signale (M3)', () => {
+      const { rows, report } = planMigration(
+        aV1Dump({
+          matches: [aV1Match({ winner: 'XYZ' })],
+          match_rows: [aV1Row({ a_result: 'LOSE' })],
+        }),
+      );
+
+      expect(rows.performances.map((p) => p.result)).toEqual(['loss', 'loss']);
+      expect(rows.matches[0]?.winner_team).toBe('XYZ');
+      expect(report).toEqual([
+        {
+          code: 'contradictory-result',
+          message:
+            'Match match-1 (ARK contre DUN) : vainqueur enregistré « XYZ », résultats des lignes A loss / B loss. Migré tel quel, à corriger après la bascule.',
+        },
+      ]);
+    });
+
+    it('signale un vainqueur absent du match même si les lignes sont cohérentes', () => {
+      const { rows, report } = planMigration(
+        aV1Dump({
+          matches: [aV1Match({ winner: 'XYZ' })],
+          match_rows: [aV1Row({ a_result: 'LOSE', b_result: 'WIN' })],
+        }),
+      );
+
+      expect(rows.performances.map((p) => p.result)).toEqual(['loss', 'win']);
+      expect(report.map((a) => a.code)).toEqual(['contradictory-result']);
+    });
+
+    it.each([
+      [
+        'une ligne dont le match n’existe pas',
+        aV1Dump({ matches: [] }),
+        'Ligne row-1 : match match-1 introuvable.',
+      ],
+      [
+        'un match dont l’édition n’existe pas',
+        aV1Dump({ editions: [aV1Edition({ id: 'other' })] }),
+        'Match match-1 : édition edition-1 introuvable.',
+      ],
+      [
+        'une durée illisible',
+        aV1Dump({ matches: [aV1Match({ duration_display: '33.05' })] }),
+        'Match match-1 : durée illisible « 33.05 ».',
+      ],
+    ])('refuse une sauvegarde incohérente : %s', (_label, dump, error) => {
+      expect(() => planMigration(dump)).toThrow(error);
+    });
+  });
+
+  describe('identité des joueurs', () => {
+    const playerOf = (plan: ReturnType<typeof planMigration>, side: 'A' | 'B') =>
+      plan.rows.performances.find((p) => p.side === side)?.player_id;
+
+    it('rattache une graphie au joueur de même clé, à la casse et au tag près (M1)', () => {
+      const plan = planMigration(
+        aV1Dump({ match_rows: [aV1Row({ a_player_name: 'ARK zéPHYR' })] }),
+      );
+
+      expect(playerOf(plan, 'A')).toBe('player-zephyr');
+      expect(plan.report).toEqual([]);
+    });
+
+    it('enregistre le pseudo et chaque graphie rencontrée comme alias normalisés', () => {
+      const plan = planMigration(aV1Dump({ match_rows: [aV1Row({ a_player_name: 'ZEPHYR' })] }));
+
+      expect(plan.rows.player_aliases.filter((a) => a.player_id === 'player-zephyr')).toEqual([
+        { player_id: 'player-zephyr', alias: 'zephyr' },
+      ]);
+    });
+
+    it('crée un joueur pour une clé sans joueur v1, avec un identifiant stable', () => {
+      const dump = aV1Dump({ match_rows: [aV1Row({ b_player_name: 'Harmattan' })] });
+
+      const first = planMigration(dump);
+      const second = planMigration(dump);
+
+      const id = playerOf(first, 'B');
+      expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+      expect(playerOf(second, 'B')).toBe(id);
+      expect(first.rows.players).toContainEqual(
+        expect.objectContaining({
+          id,
+          nickname: 'Harmattan',
+          archived: false,
+          created_at: '2026-02-01T00:00:00Z',
+        }),
+      );
+      expect(first.report).toContainEqual({
+        code: 'new-player',
+        message: `« Harmattan » ne correspond à aucun joueur v1 : joueur créé (${String(id)}).`,
+      });
+    });
+
+    it('nomme le nouveau joueur d’après sa graphie la plus fréquente', () => {
+      const plan = planMigration(
+        aV1Dump({
+          matches: [aV1Match(), aV1Match({ id: 'match-2', match_number: 2 })],
+          match_rows: [
+            aV1Row({ b_player_name: 'harmattan' }),
+            aV1Row({ id: 'row-2', match_id: 'match-2', b_player_name: 'Harmattan' }),
+            aV1Row({ id: 'row-3', match_id: 'match-2', role: 'MID', b_player_name: 'Harmattan' }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.players.map((p) => p.nickname)).toContain('Harmattan');
+    });
+
+    it('à fréquence égale, nomme le nouveau joueur d’après la graphie qui vient en premier', () => {
+      const plan = planMigration(
+        aV1Dump({
+          matches: [aV1Match(), aV1Match({ id: 'match-2', match_number: 2 })],
+          match_rows: [
+            aV1Row({ b_player_name: 'harmattan' }),
+            aV1Row({ id: 'row-2', match_id: 'match-2', b_player_name: 'Harmattan' }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.players.map((p) => p.nickname)).toContain('Harmattan');
+    });
+
+    it('date un joueur créé du jour de sa première édition', () => {
+      const plan = planMigration(
+        aV1Dump({
+          editions: [
+            aV1Edition({ id: 'late', created_at: '2026-03-01T00:00:00Z' }),
+            aV1Edition({ id: 'early', created_at: '2026-01-15T00:00:00Z' }),
+          ],
+          matches: [
+            aV1Match({ edition_id: 'late' }),
+            aV1Match({ id: 'match-2', edition_id: 'early' }),
+          ],
+          match_rows: [
+            aV1Row({ b_player_name: 'Harmattan' }),
+            aV1Row({ id: 'row-2', match_id: 'match-2', b_player_name: 'Harmattan' }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.players.find((p) => p.nickname === 'Harmattan')?.created_at).toBe(
+        '2026-01-15T00:00:00Z',
+      );
+    });
+
+    it('départage des homonymes par l’équipe citée dans les lignes (M2)', () => {
+      const plan = planMigration(
+        aV1Dump({
+          players: [
+            aV1Player({ id: 'zephyr-ark', team_id: 'team-ark', team_tag: 'ARK' }),
+            aV1Player({ id: 'zephyr-dun', team_id: 'team-dun', team_tag: 'DUN' }),
+            aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+          ],
+        }),
+      );
+
+      expect(playerOf(plan, 'A')).toBe('zephyr-ark');
+      expect(plan.rows.players.map((p) => p.id)).toContain('zephyr-dun');
+      expect(plan.report).toContainEqual({
+        code: 'homonyms',
+        message:
+          '« zephyr » : 2 joueurs v1. Performances attribuées à zephyr-ark (équipe ARK) ; zephyr-dun migré sans performance.',
+      });
+    });
+
+    it('refuse de deviner entre des homonymes qu’aucune équipe ne départage', () => {
+      const dump = aV1Dump({
+        players: [
+          aV1Player({ id: 'zephyr-1' }),
+          aV1Player({ id: 'zephyr-2' }),
+          aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+        ],
+      });
+
+      expect(() => planMigration(dump)).toThrow(
+        '« zephyr » : 2 joueurs v1 (zephyr-1, zephyr-2) qu’aucune équipe ne départage.',
+      );
+    });
+
+    it('ne rattache aucune performance à un joueur fusionné, dont les alias passent au joueur conservé', () => {
+      const plan = planMigration(
+        aV1Dump({
+          players: [
+            aV1Player(),
+            aV1Player({ id: 'old-zephyr', name: 'Zephyr Old', merged_into: 'player-zephyr' }),
+            aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.players).toContainEqual(
+        expect.objectContaining({ id: 'old-zephyr', merged_into: 'player-zephyr' }),
+      );
+      expect(plan.rows.player_aliases.filter((a) => a.player_id === 'player-zephyr')).toEqual([
+        { player_id: 'player-zephyr', alias: 'zephyr' },
+        { player_id: 'player-zephyr', alias: 'zephyr old' },
+      ]);
+      expect(plan.rows.player_aliases.some((a) => a.player_id === 'old-zephyr')).toBe(false);
+    });
+
+    it('migre les joueurs sans performance, avec leur pseudo comme alias', () => {
+      const plan = planMigration(
+        aV1Dump({
+          players: [
+            aV1Player(),
+            aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+            aV1Player({ id: 'bench', name: 'Simoun', archived: true, discord_user_id: '42' }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.players).toContainEqual({
+        id: 'bench',
+        nickname: 'Simoun',
+        archived: true,
+        merged_into: null,
+        discord_user_id: '42',
+        created_at: '2026-01-01T00:00:00Z',
+      });
+      expect(plan.rows.player_aliases).toContainEqual({ player_id: 'bench', alias: 'simoun' });
     });
   });
 });
