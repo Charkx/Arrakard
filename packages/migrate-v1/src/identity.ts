@@ -23,6 +23,8 @@ export interface Identities {
   readonly playerIdOf: (name: string) => string;
   /** Joueur v2 d'un nom quelconque, s'il a joué au moins un match. */
   readonly find: (name: string) => string | undefined;
+  /** Clé de joueur v1 → joueur v2, pour chaque clé des lignes de match. */
+  readonly playerIdByKey: ReadonlyMap<string, string>;
   readonly players: readonly V2Player[];
   readonly aliases: readonly V2PlayerAlias[];
 }
@@ -86,6 +88,7 @@ export function resolveIdentities(
   }
 
   return {
+    playerIdByKey,
     find: (name) => playerIdByKey.get(playerKey(name)),
     playerIdOf: (name) => {
       const id = playerIdByKey.get(playerKey(name));

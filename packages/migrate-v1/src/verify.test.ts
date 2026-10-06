@@ -2,33 +2,42 @@ import { project, V1_RATING_RULES } from '@arrakis/domain';
 import { describe, expect, it } from 'vitest';
 import { planMigration } from './plan.ts';
 import { aV1Dump, aV1Edition } from './testing/v1-builders.ts';
-import type { V1PlayerSplitStats } from './v1.ts';
-import { toFacts, verifyRatings } from './verify.ts';
+import { toFacts, verifyRatings, type V1Reference, type V1ReferencePlayer } from './verify.ts';
 
-const { rows } = planMigration(aV1Dump({ editions: [aV1Edition({ mvp_player_name: 'Zéphyr' })] }));
+const plan = planMigration(aV1Dump({ editions: [aV1Edition({ mvp_player_name: 'Zéphyr' })] }));
+const { rows } = plan;
 
-/** Zéphyr d'un côté, les autres joueurs de l'autre. */
-const splitZephyr = () => {
-  const all = asV1();
-  const zephyr = all.find((s) => s.player_id === 'player-zephyr');
-  if (!zephyr) throw new Error('Zéphyr absent des notes recalculées.');
-  return { zephyr, others: all.filter((s) => s !== zephyr) };
+/** La référence v1 telle que la v2 la recalcule : point de départ des tests. */
+const reference = (): V1Reference => {
+  const keyOf = new Map([...plan.playerIdByKey].map(([key, id]) => [id, key]));
+  const ratings = project(toFacts(rows), V1_RATING_RULES).splitRatings;
+  return {
+    splits: [
+      {
+        splitId: 'split-1',
+        players: ratings.map((r) => ({
+          key: keyOf.get(r.playerId) ?? r.playerId,
+          rating: r.rating.rating,
+          impact: r.rating.impact,
+          consistency: r.rating.consistency,
+          clutch: r.rating.clutch,
+          games: r.stats.games,
+          wins: r.stats.wins,
+          losses: r.stats.losses,
+        })),
+      },
+    ],
+  };
 };
 
-/** Les statistiques v1 telles que la v2 les recalcule : point de départ des tests. */
-const asV1 = (): V1PlayerSplitStats[] =>
-  project(toFacts(rows), V1_RATING_RULES).splitRatings.map((r) => ({
-    player_id: r.playerId,
-    split_id: r.splitId,
-    rating: r.rating.rating,
-    impact: r.rating.impact,
-    consistance: r.rating.consistency,
-    clutch: r.rating.clutch,
-    tier: r.rating.tier,
-    games: r.stats.games,
-    wins: r.stats.wins,
-    losses: r.stats.losses,
-  }));
+/** Remplace les joueurs de la référence. */
+const withPlayers = (
+  change: (players: readonly V1ReferencePlayer[]) => V1ReferencePlayer[],
+): V1Reference => {
+  const [split] = reference().splits;
+  if (!split) throw new Error('Référence vide.');
+  return { splits: [{ ...split, players: change(split.players) }] };
+};
 
 describe('toFacts', () => {
   it('traduit les lignes v2 en faits du domaine', () => {
@@ -78,40 +87,36 @@ describe('toFacts', () => {
   });
 });
 
-describe('verifyRatings', () => {
+describe('verifyRatings (référence : le code v1 rejoué sur la sauvegarde)', () => {
   it('ne trouve aucun écart quand la v1 et la v2 concordent', () => {
-    expect(verifyRatings(rows, asV1())).toEqual([]);
-  });
-
-  it('ignore les lignes v1 sans partie', () => {
-    const { zephyr } = splitZephyr();
-    const v1 = [...asV1(), { ...zephyr, player_id: 'idle', games: 0, wins: 0, losses: 0 }];
-
-    expect(verifyRatings(rows, v1)).toEqual([]);
+    expect(verifyRatings(plan, reference())).toEqual([]);
   });
 
   it('signale chaque valeur qui diffère', () => {
-    const { zephyr, others } = splitZephyr();
-    const v1 = [{ ...zephyr, rating: zephyr.rating + 1, wins: 0 }, ...others];
+    const v1 = withPlayers((players) =>
+      players.map((p) => (p.key === 'zephyr' ? { ...p, rating: p.rating + 1, wins: 0 } : p)),
+    );
+    const zephyr = reference().splits[0]?.players.find((p) => p.key === 'zephyr');
 
-    expect(verifyRatings(rows, v1)).toEqual([
+    expect(verifyRatings(plan, v1)).toEqual([
       {
         playerId: 'player-zephyr',
         splitId: 'split-1',
         field: 'rating',
-        v1: zephyr.rating + 1,
-        v2: zephyr.rating,
+        v1: (zephyr?.rating ?? 0) + 1,
+        v2: zephyr?.rating,
       },
-      { playerId: 'player-zephyr', splitId: 'split-1', field: 'wins', v1: 0, v2: zephyr.wins },
+      { playerId: 'player-zephyr', splitId: 'split-1', field: 'wins', v1: 0, v2: zephyr?.wins },
     ]);
   });
 
   it('signale un joueur noté d’un seul côté', () => {
-    const { zephyr, others } = splitZephyr();
-    const v1 = [...others, { ...zephyr, player_id: 'ghost' }];
+    const v1 = withPlayers((players) =>
+      players.map((p) => (p.key === 'zephyr' ? { ...p, key: 'fantome' } : p)),
+    );
 
-    expect(verifyRatings(rows, v1)).toEqual([
-      { playerId: 'ghost', splitId: 'split-1', field: 'presence', v1: 'noté', v2: 'absent' },
+    expect(verifyRatings(plan, v1)).toEqual([
+      { playerId: 'fantome', splitId: 'split-1', field: 'presence', v1: 'noté', v2: 'absent' },
       {
         playerId: 'player-zephyr',
         splitId: 'split-1',

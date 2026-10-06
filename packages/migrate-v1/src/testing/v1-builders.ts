@@ -124,6 +124,5 @@ export const aV1Dump = (overrides: Partial<V1Dump> = {}): V1Dump => ({
   edition_participants: [],
   registrations: [],
   player_event_entries: [],
-  player_split_stats: [],
   ...overrides,
 });

@@ -13,7 +13,6 @@ export interface V1Dump {
   readonly edition_participants: readonly V1EditionParticipant[];
   readonly registrations: readonly V1Registration[];
   readonly player_event_entries: readonly V1PlayerEventEntry[];
-  readonly player_split_stats: readonly V1PlayerSplitStats[];
 }
 
 export interface V1Season {
@@ -157,18 +156,4 @@ export interface V1PlayerEventEntry {
   readonly kills: number;
   readonly deaths: number;
   readonly assists: number;
-}
-
-/** Projection v1 : sert uniquement à vérifier la migration. */
-export interface V1PlayerSplitStats {
-  readonly player_id: string;
-  readonly split_id: string;
-  readonly rating: number;
-  readonly impact: number;
-  readonly consistance: number;
-  readonly clutch: number;
-  readonly tier: string;
-  readonly games: number;
-  readonly wins: number;
-  readonly losses: number;
 }

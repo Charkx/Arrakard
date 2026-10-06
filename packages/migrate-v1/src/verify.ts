@@ -1,5 +1,5 @@
 import { project, V1_RATING_RULES, type Facts, type SplitRating } from '@arrakis/domain';
-import type { V1PlayerSplitStats } from './v1.ts';
+import type { MigrationPlan } from './plan.ts';
 import type { V2Rows } from './v2.ts';
 
 /** Une différence entre la note v1 affichée et la note recalculée en v2. */
@@ -49,11 +49,38 @@ export function toFacts(rows: V2Rows): Facts {
   };
 }
 
-/** Valeurs comparées : nom v1 → lecture dans la projection v2. */
-const COMPARED: readonly (readonly [keyof V1PlayerSplitStats, (r: SplitRating) => number])[] = [
+/**
+ * Notes calculées par le CODE v1 sur la sauvegarde (extracteur du golden
+ * master, option V1_REFERENCE). Les caches v1 (`players`,
+ * `player_split_stats`) ne servent pas de référence : ils sont périmés (M9).
+ */
+export interface V1Reference {
+  readonly splits: readonly {
+    readonly splitId: string;
+    readonly players: readonly V1ReferencePlayer[];
+  }[];
+}
+
+export interface V1ReferencePlayer {
+  /** Clé de joueur v1 (`playerKey`). */
+  readonly key: string;
+  readonly rating: number;
+  readonly impact: number;
+  readonly consistency: number;
+  readonly clutch: number;
+  readonly games: number;
+  readonly wins: number;
+  readonly losses: number;
+}
+
+/** Valeurs comparées : nom dans la référence → lecture dans la projection v2. */
+const COMPARED: readonly (readonly [
+  Exclude<keyof V1ReferencePlayer, 'key'>,
+  (r: SplitRating) => number,
+])[] = [
   ['rating', (r) => r.rating.rating],
   ['impact', (r) => r.rating.impact],
-  ['consistance', (r) => r.rating.consistency],
+  ['consistency', (r) => r.rating.consistency],
   ['clutch', (r) => r.rating.clutch],
   ['games', (r) => r.stats.games],
   ['wins', (r) => r.stats.wins],
@@ -61,33 +88,36 @@ const COMPARED: readonly (readonly [keyof V1PlayerSplitStats, (r: SplitRating) =
 ];
 
 /**
- * Recalcule les notes avec les règles v1 et les compare à celles que la v1
- * affiche (`player_split_stats`). Les lignes v1 sans partie sont ignorées :
- * la v2 ne note pas un joueur qui n'a pas joué.
+ * Recalcule les notes des lignes migrées avec les règles v1, et les compare,
+ * split par split et joueur par joueur, à celles du code v1.
  */
-export function verifyRatings(rows: V2Rows, v1Stats: readonly V1PlayerSplitStats[]): Discrepancy[] {
+export function verifyRatings(plan: MigrationPlan, reference: V1Reference): Discrepancy[] {
   const keyOf = (playerId: string, splitId: string) => `${playerId}|${splitId}`;
   const v2 = new Map(
-    project(toFacts(rows), V1_RATING_RULES).splitRatings.map((r) => [
+    project(toFacts(plan.rows), V1_RATING_RULES).splitRatings.map((r) => [
       keyOf(r.playerId, r.splitId),
       r,
     ]),
   );
   const v1 = new Map(
-    v1Stats.filter((s) => s.games > 0).map((s) => [keyOf(s.player_id, s.split_id), s]),
+    reference.splits.flatMap(({ splitId, players }) =>
+      players.map((p) => {
+        const playerId = plan.playerIdByKey.get(p.key) ?? p.key;
+        return [keyOf(playerId, splitId), { playerId, splitId, values: p }] as const;
+      }),
+    ),
   );
 
   const discrepancies: Discrepancy[] = [];
-  for (const [key, before] of v1) {
+  for (const [key, { playerId, splitId, values }] of v1) {
     const after = v2.get(key);
-    const at = { playerId: before.player_id, splitId: before.split_id };
     if (!after) {
-      discrepancies.push({ ...at, field: 'presence', v1: 'noté', v2: 'absent' });
+      discrepancies.push({ playerId, splitId, field: 'presence', v1: 'noté', v2: 'absent' });
       continue;
     }
     for (const [field, read] of COMPARED) {
-      if (before[field] !== read(after)) {
-        discrepancies.push({ ...at, field, v1: before[field], v2: read(after) });
+      if (values[field] !== read(after)) {
+        discrepancies.push({ playerId, splitId, field, v1: values[field], v2: read(after) });
       }
     }
   }

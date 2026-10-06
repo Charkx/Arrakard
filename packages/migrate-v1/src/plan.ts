@@ -12,6 +12,8 @@ export interface Anomaly {
 export interface MigrationPlan {
   readonly rows: V2Rows;
   readonly report: readonly Anomaly[];
+  /** Clé de joueur v1 → joueur v2 : relie la référence v1 aux lignes migrées. */
+  readonly playerIdByKey: ReadonlyMap<string, string>;
 }
 
 /** Types d'édition : seuls les deux types de ligue changent de nom. */
@@ -138,6 +140,7 @@ export function planMigration(dump: V1Dump): MigrationPlan {
       registrations: dump.registrations.map((r) => ({ ...r })),
     },
     report,
+    playerIdByKey: identities.playerIdByKey,
   };
 }
 
