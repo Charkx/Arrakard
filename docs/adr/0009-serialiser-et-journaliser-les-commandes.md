@@ -14,14 +14,14 @@ Le contrôle de version de l'ADR 0005 (`editions.version`) ne protège qu'une
 édition à la fois. Deux commandes portant sur des éditions **différentes**
 peuvent donc tourner en même temps :
 
-| Temps | Admin A : importe l'édition 12        | Admin B : corrige un match de l'édition 11 |
-| ----- | ------------------------------------- | ------------------------------------------ |
-| t1    | écrit les matchs de l'édition 12      |                                            |
-| t2    |                                       | corrige le match                           |
-| t3    | lit les faits (sans la correction)    |                                            |
-| t4    |                                       | lit les faits (sans l'édition 12)          |
-| t5    | réécrit les projections, `COMMIT`     |                                            |
-| t6    |                                       | réécrit les projections, `COMMIT`          |
+| Temps | Admin A : importe l'édition 12     | Admin B : corrige un match de l'édition 11 |
+| ----- | ---------------------------------- | ------------------------------------------ |
+| t1    | écrit les matchs de l'édition 12   |                                            |
+| t2    |                                    | corrige le match                           |
+| t3    | lit les faits (sans la correction) |                                            |
+| t4    |                                    | lit les faits (sans l'édition 12)          |
+| t5    | réécrit les projections, `COMMIT`  |                                            |
+| t6    |                                    | réécrit les projections, `COMMIT`          |
 
 À t6, les projections ignorent l'édition 12, alors que ses matchs sont bien
 en base. Rien ne signale l'erreur ; elle disparaît seulement à la commande
@@ -57,15 +57,15 @@ on garde les deux :
 `command_log`, **dans la même transaction** que ses écritures : une commande
 annulée ne laisse aucune ligne, une commande validée en laisse toujours une.
 
-| Colonne           | Contenu                                                |
-| ----------------- | ------------------------------------------------------ |
-| `id`              | identifiant                                            |
-| `organization_id` | organisation                                           |
-| `command`         | nom métier (`importEdition`, `mergePlayers`…)          |
-| `actor_user_id`   | utilisateur authentifié qui l'a lancée                 |
-| `input`           | entrée validée par le contrat (JSON)                   |
-| `outcome`         | résumé de ce qui a été écrit (ex. le plan de fusion)   |
-| `created_at`      | date                                                   |
+| Colonne           | Contenu                                              |
+| ----------------- | ---------------------------------------------------- |
+| `id`              | identifiant                                          |
+| `organization_id` | organisation                                         |
+| `command`         | nom métier (`importEdition`, `mergePlayers`…)        |
+| `actor_user_id`   | utilisateur authentifié qui l'a lancée               |
+| `input`           | entrée validée par le contrat (JSON)                 |
+| `outcome`         | résumé de ce qui a été écrit (ex. le plan de fusion) |
+| `created_at`      | date                                                 |
 
 Le journal n'est lisible que par les admins de l'organisation
 (`is_org_admin`). Il est en ajout seul : aucune commande ne le modifie.
