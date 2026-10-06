@@ -26,8 +26,8 @@ Chiffres de la sauvegarde du 2026-10-05 : 3 saisons, 3 splits, 11 éditions,
    matchs gardent leur UUID : les liens existants vers les cartes et les
    éditions restent valides, et chaque ligne v2 se compare à sa ligne v1.
 3. **Les données calculées ne sont pas migrées.** Les notes, statistiques,
-   formes et historiques v1 sont recalculés par `project()`. Ils servent
-   seulement à vérifier le résultat.
+   formes et historiques v1 sont recalculés par `project()`. Les caches v1
+   ne servent même pas à vérifier le résultat : ils sont périmés (M9).
 4. **La migration est rejouable.** Même sauvegarde, même résultat. On la
    répète sur le staging autant que nécessaire.
 
@@ -75,7 +75,7 @@ Chaque graphie rencontrée dans les lignes devient un **alias** normalisé
 | `match_rows`                                 | `performances`                      | Une ligne v1 → deux performances (côtés A et B). `line` : 0 à 4 dans l'ordre TOP, JGL, MID, ADC, SUP. `WIN`/`LOSE` → `win`/`loss`         |
 | `edition_participants`                       | `edition_participants`              | Telle quelle                                                                                                                              |
 | `registrations`                              | `registrations`                     | Telle quelle                                                                                                                              |
-| `player_split_stats`, `player_event_entries` | —                                   | Calculées : servent à la vérification. Exception : les résultats de tournoi sans match (anomalie M4)                                      |
+| `player_split_stats`, `player_event_entries` | —                                   | Caches calculés, non migrés (M9). Exception : les résultats de tournoi sans match (M4)                                                    |
 | `app_settings`                               | —                                   | Chaînes Twitch et lives manuels : cas d'usage P3, non migrés. Conservés dans la sauvegarde                                                |
 
 ## Anomalies de la sauvegarde
@@ -83,28 +83,59 @@ Chaque graphie rencontrée dans les lignes devient un **alias** normalisé
 Constatées par profilage de la sauvegarde du 2026-10-05. Le rapport de
 migration les liste à chaque exécution, ligne par ligne.
 
-| #   | Constat                                                                                                                                                                   | Règle de migration                                                                                                                        |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| M1  | 2 graphies des lignes de match (24 performances) ne correspondent à aucun joueur, à la casse près                                                                         | Résolues par la clé de joueur, qui ignore la casse. Rien à signaler                                                                       |
-| M2  | 2 joueurs v1 portent le même nom, dans deux équipes. Les lignes ne citent qu'une équipe ; en v1, **les deux cartes affichaient les mêmes parties**                        | Performances au joueur de l'équipe citée ; l'autre est migré sans performance. Signalé : fusion ou suppression à décider après la bascule |
-| M3  | 3 matchs de Div 2 où **les deux équipes ont perdu**, et où le vainqueur enregistré n'est aucune des deux. Deux d'entre eux sont identiques (même affiche, même vainqueur) | Migrés tels quels (parité des notes). Signalés : à corriger ou supprimer après la bascule, par commande                                   |
-| M4  | 14 résultats d'un tournoi **sans match** (`player_event_entries` de type `tournament`), rattachés par erreur à une édition Div 1. Ils n'existent nulle part ailleurs      | Non représentables en v2 aujourd'hui : voir Q10. En attendant, listés dans le rapport et conservés dans la sauvegarde                     |
-| M5  | 10 lignes de match sans nom d'équipe (Div 1)                                                                                                                              | Complétées par `matches.team_a` ou `team_b` selon le côté                                                                                 |
-| M6  | Dans les lignes de match, des équipes absentes de `teams` : équipes d'In House, et noms « tag + joueur » (anomalie A7 de la note)                                         | `performances.team` est un texte libre : migré tel quel                                                                                   |
-| M7  | Statuts d'édition périmés : une LAN externe passée est encore « en cours »                                                                                                | Voir Q9                                                                                                                                   |
-| M8  | Aucun historique d'équipe (`player_team_history` vide) : seule l'équipe actuelle est connue                                                                               | Un seul passage par joueur, avec une date d'arrivée estimée (voir la correspondance)                                                      |
+| #   | Constat                                                                                                                                                                                                                                                    | Règle de migration                                                                                                                               |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M1  | 2 graphies des lignes de match (24 performances) ne correspondent à aucun joueur, à la casse près                                                                                                                                                          | Résolues par la clé de joueur, qui ignore la casse. Rien à signaler                                                                              |
+| M2  | 2 joueurs v1 portent le même nom, dans deux équipes. Les lignes ne citent qu'une équipe ; en v1, **les deux cartes affichaient les mêmes parties**                                                                                                         | Performances au joueur de l'équipe citée ; l'autre est migré sans performance. Signalé : fusion ou suppression à décider après la bascule        |
+| M3  | 3 matchs de Div 2 où **les deux équipes ont perdu**, et où le vainqueur enregistré n'est aucune des deux. Deux d'entre eux sont identiques (même affiche, même vainqueur)                                                                                  | Migrés tels quels (parité des notes). Signalés : à corriger ou supprimer après la bascule, par commande                                          |
+| M4  | 14 résultats d'un tournoi **sans match** (`player_event_entries` de type `tournament`), rattachés par erreur à une édition Div 1. Ils n'existent nulle part ailleurs                                                                                       | Non représentables en v2 aujourd'hui : voir Q10. En attendant, listés dans le rapport et conservés dans la sauvegarde                            |
+| M5  | 10 lignes de match sans nom d'équipe (Div 1)                                                                                                                                                                                                               | Complétées par `matches.team_a` ou `team_b` selon le côté                                                                                        |
+| M6  | Dans les lignes de match, des équipes absentes de `teams` : équipes d'In House, et noms « tag + joueur » (anomalie A7 de la note)                                                                                                                          | `performances.team` est un texte libre : migré tel quel                                                                                          |
+| M7  | Statuts d'édition périmés : une LAN externe passée est encore « en cours »                                                                                                                                                                                 | Voir Q9                                                                                                                                          |
+| M8  | Aucun historique d'équipe (`player_team_history` vide) : seule l'équipe actuelle est connue                                                                                                                                                                | Un seul passage par joueur, avec une date d'arrivée estimée (voir la correspondance)                                                             |
+| M9  | **Les caches de notes v1 sont périmés.** `player_split_stats` a été rempli en une fois le 2026-06-08 (carrière rangée dans le split 2024, split 2025 vide) ; les colonnes de `players` datent du 2026-06-29 (124 joueurs à 0 partie alors qu'ils ont joué) | Non migrés, et pas utilisés comme référence. **La vue « toutes saisons » de la v1 les affiche** : des cartes changeront à la bascule, à annoncer |
 
 ## Vérification
 
-La migration est acceptée quand, après recalcul avec les règles `v1` :
+On ne compare pas un calcul à un cache, qui peut être faux (M9) : on le
+compare à **une autre exécution du calcul de référence**.
+
+- **Référence** : le code v1, rejoué sur la sauvegarde par l'extracteur du
+  golden master (option `V1_REFERENCE`). Fichier non anonymisé, local, ignoré
+  par git (`*.local.json`).
+- **Résultat v2** : `project()` avec les règles `v1`, sur les lignes migrées.
+
+La migration est acceptée quand :
 
 1. pour chaque joueur et chaque split, **note, impact, constance, clutch,
-   palier, parties, victoires et défaites** sont égaux aux valeurs de
-   `player_split_stats` v1, sauf les écarts **expliqués** par une anomalie
-   (M2 : le joueur sans performance n'a plus de note) ;
+   parties, victoires et défaites** sont égaux, sauf les écarts **expliqués**
+   par une anomalie connue ;
 2. chaque compte Discord lié en v1 est lié au même joueur ;
 3. les nombres de lignes concordent : 417 matchs, 4 170 performances,
    301 joueurs.
 
 Un écart non expliqué bloque la bascule. Les critères complets sont dans les
 [cas d'usage](../product/use-cases.md#critères-de-bascule).
+
+### Procédure
+
+```sh
+# 1. Référence v1 (code v1 rejoué sur la sauvegarde)
+V1_REPO=../arrakis-cards V1_BACKUP=<sauvegarde> \
+  V1_REFERENCE=packages/migrate-v1/v1-reference.local.json pnpm golden-master:extract
+
+# 2. Plan, anomalies et écarts (rien n'est écrit)
+pnpm --filter @arrakis/migrate-v1 report <sauvegarde> v1-reference.local.json
+```
+
+### Résultat sur la sauvegarde du 2026-10-05
+
+340 notes (joueur × split) comparées : **aucun écart inexpliqué**.
+
+Il reste 2 écarts, tous deux pour un seul joueur du split 2026 (impact 48 → 51
+et clutch 52 → 53 ; note inchangée). Ils sont **expliqués par l'anomalie A6**
+de la [spécification de la note](rating-spec.md) : ce joueur a autant de parties
+en TOP qu'en MID. La v1 lit les éditions dans l'ordre de stockage et
+rencontre MID d'abord ; la v2 les lit dans l'ordre chronologique et rencontre
+TOP d'abord. Le rôle dominant change, et avec lui la médiane de l'impact. Le
+résultat v2 ne dépend plus de l'ordre de stockage : c'est lui qui est retenu.
