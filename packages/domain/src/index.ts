@@ -79,4 +79,11 @@ export {
 } from './rating/rules.ts';
 export type { RatingRules } from './rating/rules.ts';
 export { planMerge } from './identity/merge.ts';
-export type { MergeFacts, MergePlan, MergePlanResult, MergePlayer } from './identity/merge.ts';
+export type {
+  AbsorbedCustomization,
+  MergeFacts,
+  MergeMembership,
+  MergePlan,
+  MergePlanResult,
+  MergePlayer,
+} from './identity/merge.ts';
