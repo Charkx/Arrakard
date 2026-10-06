@@ -54,3 +54,35 @@ Les termes en gras sont définis dans le [glossaire](../domain/glossary.md).
 | S2  | Attribuer le rôle admin d'après le rôle Discord, et le retirer quand il disparaît | P1   |
 | S3  | Notifier Discord à la publication d'un résultat                                   | P3   |
 | S4  | Exposer le statut « en direct » des chaînes Twitch                                | P3   |
+
+## Critères de bascule
+
+La v1 est coupée quand **tous** les critères suivants sont remplis. Chacun se
+vérifie par un test automatisé ou une action datée, pas par une impression.
+
+### Fonctionnels
+
+- [ ] Tous les cas d'usage **P1** fonctionnent sur le staging, avec les données
+      de production migrées.
+- [ ] Une édition réelle est importée sur le staging (A1) avec le même fichier
+      qu'en production, et donne le même classement de soirée.
+- [ ] _À trancher :_ J2 (personnalisation) et J3 (inscriptions) existent en v1.
+      Les livrer à la bascule, ou accepter de les retirer quelques semaines ?
+
+### Données
+
+- [ ] La migration v1 → v2 tourne de bout en bout sur une copie de la
+      production, sans intervention manuelle.
+- [ ] Pour chaque joueur et chaque split, la note v2 est identique à la note
+      v1 (même principe que le golden master, sur toutes les données).
+- [ ] Chaque compte Discord lié en v1 est lié à la même carte en v2.
+
+### Exploitation
+
+- [ ] Une sauvegarde SQL complète de la production v1 (`supabase db dump`)
+      existe, et sa restauration a été essayée.
+- [ ] Le retour arrière est écrit : comment remettre la v1 en ligne, en
+      combien de temps, et ce qui est perdu des écritures faites entre-temps.
+- [ ] La CI est verte sur `main`, et `main` est protégée.
+- [ ] Les admins ont fait une répétition sur le staging : import, correction,
+      fusion.
