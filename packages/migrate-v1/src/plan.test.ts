@@ -143,6 +143,15 @@ describe('planMigration', () => {
       ]);
     });
 
+    it('migre et signale un match sans aucune ligne', () => {
+      const { rows, report } = planMigration(aV1Dump({ match_rows: [] }));
+
+      expect(rows.matches).toHaveLength(1);
+      expect(report).toEqual([
+        { code: 'empty-match', message: 'Match match-1 (ARK contre DUN) : aucune ligne de match.' },
+      ]);
+    });
+
     it('signale un vainqueur absent du match même si les lignes sont cohérentes', () => {
       const { rows, report } = planMigration(
         aV1Dump({
@@ -455,6 +464,202 @@ describe('planMigration', () => {
             '2 résultats « Tournoi de printemps » (tournament, 2026-01-18) rattachés à l’édition edition-1 (ligue_div1), sans match : non migrés (Q10).',
         },
       ]);
+    });
+  });
+
+  describe('équipes et cartes', () => {
+    it('reprend les équipes telles quelles', () => {
+      const plan = planMigration(aV1Dump());
+
+      expect(plan.rows.teams).toEqual([
+        {
+          id: 'team-ark',
+          tag: 'ARK',
+          name: 'Arrakis',
+          divisions: ['div1'],
+          logo_url: null,
+          archived_at: null,
+        },
+        {
+          id: 'team-dun',
+          tag: 'DUN',
+          name: 'Dune',
+          divisions: ['div1'],
+          logo_url: null,
+          archived_at: null,
+        },
+      ]);
+    });
+
+    it('ouvre un passage en équipe, daté de la première édition jouée sous ce tag', () => {
+      const plan = planMigration(
+        aV1Dump({
+          editions: [
+            aV1Edition({ id: 'late', date: '2026-03-01' }),
+            aV1Edition({ id: 'early', date: '2026-01-10' }),
+          ],
+          matches: [
+            aV1Match({ edition_id: 'late' }),
+            aV1Match({ id: 'match-2', edition_id: 'early' }),
+          ],
+          match_rows: [aV1Row(), aV1Row({ id: 'row-2', match_id: 'match-2' })],
+        }),
+      );
+
+      expect(plan.rows.team_memberships).toContainEqual({
+        player_id: 'player-zephyr',
+        team_id: 'team-ark',
+        status: 'starter',
+        joined_on: '2026-01-10',
+        left_on: null,
+      });
+    });
+
+    it('date du début du split actif le passage d’un joueur qui n’a jamais joué sous ce tag', () => {
+      const plan = planMigration(
+        aV1Dump({
+          players: [
+            aV1Player(),
+            aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+            aV1Player({
+              id: 'bench',
+              name: 'Simoun',
+              team_id: 'team-dun',
+              team_tag: 'DUN',
+              status: 'sub',
+            }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.team_memberships).toEqual([
+        {
+          player_id: 'bench',
+          team_id: 'team-dun',
+          status: 'sub',
+          joined_on: '2026-01-01',
+          left_on: null,
+        },
+      ]);
+    });
+
+    it('refuse un passage en équipe impossible à dater (aucune partie, aucun split actif)', () => {
+      const dump = aV1Dump({
+        splits: [aV1Split({ is_active: false })],
+        players: [
+          aV1Player(),
+          aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+          aV1Player({ id: 'bench', name: 'Simoun', team_id: 'team-dun', team_tag: 'DUN' }),
+        ],
+      });
+
+      expect(() => planMigration(dump)).toThrow(
+        'Joueur bench : aucune date d’arrivée dans l’équipe DUN.',
+      );
+    });
+
+    it('ne donne pas d’équipe à un joueur fusionné', () => {
+      const plan = planMigration(
+        aV1Dump({
+          players: [
+            aV1Player(),
+            aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+            aV1Player({
+              id: 'old',
+              name: 'Old',
+              merged_into: 'player-zephyr',
+              team_id: 'team-ark',
+              team_tag: 'ARK',
+            }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.team_memberships).toEqual([]);
+    });
+
+    it('reprend la personnalisation de carte', () => {
+      const plan = planMigration(
+        aV1Dump({
+          players: [
+            aV1Player({
+              customization: {
+                title: 'champion',
+                selectedBadges: ['mvp', 'veteran'],
+                background: 'spice_storm',
+                accounts: [{ riotId: 'Zephyr#EUW', main: true }],
+              },
+            }),
+            aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.card_customizations).toEqual([
+        {
+          player_id: 'player-zephyr',
+          title: 'champion',
+          selected_badges: ['mvp', 'veteran'],
+          background: 'spice_storm',
+          riot_accounts: [{ riotId: 'Zephyr#EUW', main: true }],
+        },
+      ]);
+    });
+
+    it.each([
+      ['sans compte, devient le compte principal', [], [{ riotId: 'Z#EUW', main: true }]],
+      [
+        'absent des comptes, s’ajoute en secondaire',
+        [{ riotId: 'Autre#EUW', main: true }],
+        [
+          { riotId: 'Autre#EUW', main: true },
+          { riotId: 'Z#EUW', main: false },
+        ],
+      ],
+      [
+        'déjà présent, n’est pas dupliqué',
+        [{ riotId: 'Z#EUW', main: false }],
+        [{ riotId: 'Z#EUW', main: false }],
+      ],
+    ])('riot_id %s', (_label, accounts, expected) => {
+      const plan = planMigration(
+        aV1Dump({
+          players: [
+            aV1Player({
+              riot_id: 'Z#EUW',
+              customization: accounts.length > 0 ? { accounts } : null,
+            }),
+            aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.card_customizations[0]?.riot_accounts).toEqual(expected);
+    });
+
+    it('signale une bio, que la v2 ne sait pas encore garder (Q11)', () => {
+      const plan = planMigration(
+        aV1Dump({
+          players: [
+            aV1Player({ customization: { bio: 'Main Ornn' } }),
+            aV1Player({ id: 'player-sirocco', name: 'Sirocco' }),
+          ],
+        }),
+      );
+
+      expect(plan.rows.card_customizations).toEqual([
+        {
+          player_id: 'player-zephyr',
+          title: null,
+          selected_badges: [],
+          background: null,
+          riot_accounts: [],
+        },
+      ]);
+      expect(plan.report).toContainEqual({
+        code: 'dropped-bio',
+        message: 'Joueur player-zephyr : bio non migrée (Q11).',
+      });
     });
   });
 });

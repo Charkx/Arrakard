@@ -1,5 +1,6 @@
 import type { EditionType, Role } from '@arrakis/domain';
 import { resolveIdentities, type Sighting } from './identity.ts';
+import { cardCustomizations, teamMemberships } from './players.ts';
 import type { V1Dump, V1EditionType, V1Match, V1MatchRow, V1PlayerEventEntry } from './v1.ts';
 import type { V2Edition, V2Match, V2Performance, V2Rows, V2Split } from './v2.ts';
 
@@ -54,16 +55,26 @@ export function planMigration(dump: V1Dump): MigrationPlan {
   ]);
   const identities = resolveIdentities(dump, sightings, report);
 
-  const performances = placed.flatMap(({ row, match }) =>
-    performancesOf(row, match, identities.playerIdOf, report),
-  );
+  const played = placed.map(({ row, match, edition }) => ({
+    date: edition.date,
+    performances: performancesOf(row, match, identities.playerIdOf, report),
+  }));
+  const performances = played.flatMap((p) => p.performances);
   reportOrphanEventResults(dump, editionById, report);
+
+  // Première édition jouée par chaque joueur sous chaque tag (date d'arrivée, M8).
+  const firstPlayed = new Map<string, string>();
+  for (const { date, performances: rowPerformances } of played) {
+    for (const p of rowPerformances) {
+      const key = `${p.player_id}|${p.team}`;
+      const known = firstPlayed.get(key);
+      if (known === undefined || date < known) firstPlayed.set(key, date);
+    }
+  }
+
+  const performancesByMatch = Map.groupBy(performances, (p) => p.match_id);
   for (const match of dump.matches) {
-    checkResults(
-      match,
-      performances.filter((p) => p.match_id === match.id),
-      report,
-    );
+    checkResults(match, performancesByMatch.get(match.id) ?? [], report);
   }
 
   return {
@@ -78,10 +89,19 @@ export function planMigration(dump: V1Dump): MigrationPlan {
         end_date: s.end_date,
         status: s.is_active ? 'open' : 'closed',
       })),
-      teams: [],
+      teams: dump.teams.map(({ id, tag, name, divisions, logo_url, archived_at }) => ({
+        id,
+        tag,
+        name,
+        divisions,
+        logo_url,
+        archived_at,
+      })),
       players: identities.players,
       player_aliases: identities.aliases,
-      team_memberships: [],
+      team_memberships: teamMemberships(dump, (playerId, tag) =>
+        firstPlayed.get(`${playerId}|${tag}`),
+      ),
       editions: dump.editions.map((e): V2Edition => {
         const mvp =
           e.mvp_player_name === null ? null : (identities.find(e.mvp_player_name) ?? null);
@@ -114,7 +134,7 @@ export function planMigration(dump: V1Dump): MigrationPlan {
         edition_id,
         player_id,
       })),
-      card_customizations: [],
+      card_customizations: cardCustomizations(dump, report),
       registrations: dump.registrations.map((r) => ({ ...r })),
     },
     report,
@@ -146,6 +166,13 @@ function parseDisplayDuration({ id, duration_display }: V1Match): number {
  * migré tel quel (parité des notes) et signalé.
  */
 function checkResults(match: V1Match, performances: readonly V2Performance[], report: Anomaly[]) {
+  if (performances.length === 0) {
+    report.push({
+      code: 'empty-match',
+      message: `Match ${match.id} (${match.team_a} contre ${match.team_b}) : aucune ligne de match.`,
+    });
+    return;
+  }
   const resultsOf = (side: 'A' | 'B') =>
     [...new Set(performances.filter((p) => p.side === side).map((p) => p.result))].join(',');
   const a = resultsOf('A');
