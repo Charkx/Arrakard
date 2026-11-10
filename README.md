@@ -4,9 +4,12 @@ Plateforme de la communauté esport **Arrakis** (League of Legends) : cartes
 joueurs façon FUT, classements, pages d'événements, inscriptions et
 administration des résultats.
 
-> **Statut : phase 2 terminée (domaine).** Les règles métier sont écrites en
-> TDD dans `packages/domain` et validées contre la production v1 (golden
-> master). Prochaine étape : le backend Supabase (phase 3).
+> **Statut : phase 3 en cours (backend).** Le domaine est terminé : les règles
+> métier sont écrites en TDD dans `packages/domain` et validées contre la
+> production v1 (golden master). Côté backend, le schéma initial et ses droits
+> d'accès sont testés en pgTAP, et la migration v1 → v2 est planifiée et
+> vérifiée (`packages/migrate-v1`). Restent les commandes et l'écriture des
+> données migrées.
 > L'ancienne version (`arrakis-cards`) reste en production et sert de
 > référence fonctionnelle.
 
