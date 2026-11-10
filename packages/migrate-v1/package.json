@@ -1,0 +1,21 @@
+{
+  "name": "@arrakis/migrate-v1",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Migration unique des données v1 vers le schéma v2. Supprimable après la bascule.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc -p tsconfig.json",
+    "report": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@arrakis/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^5.0.3",
+    "vitest": "^5.0.3"
+  }
+}

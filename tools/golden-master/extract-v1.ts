@@ -12,8 +12,18 @@
  *   V1_REPO=../arrakis-cards V1_EXPORT=../arrakis-cards/localStorage_export.json \
  *     pnpm golden-master:extract
  *
+ *   V1_REPO=../arrakis-cards V1_BACKUP=../backups/v1-rest-2026-10-05 \
+ *     pnpm golden-master:extract
+ *
  * V1_EXPORT : export localStorage de la v1 (clé `arrakis_editions`), lu dans
  * l'ordre stocké, comme le faisait la v1 en mode local.
+ * V1_BACKUP : sauvegarde REST (un fichier JSON par table), lue dans l'ordre
+ * de l'export, qui est celui que la v1 voit.
+ *
+ * V1_REFERENCE=<fichier> : au lieu du golden master anonymisé, écrit une
+ * référence NON anonymisée (clés de joueur réelles) pour vérifier la
+ * migration (packages/migrate-v1). Données réelles : jamais dans git
+ * (`*.local.json` est ignoré).
  *
  * Les données sont lues dans l'ordre où la v1 les lit (select paginé sans
  * ORDER BY) : la forme récente et le départage du rôle dominant en dépendent
@@ -24,9 +34,12 @@ import { resolve } from 'node:path';
 
 const OUTPUT = resolve(import.meta.dirname, '../../packages/domain/src/golden-master/v1.json');
 
-const { V1_REPO, V1_EXPORT, SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
-if (!V1_REPO || (!V1_EXPORT && (!SUPABASE_URL || !SUPABASE_ANON_KEY))) {
-  throw new Error('V1_REPO, et V1_EXPORT ou SUPABASE_URL + SUPABASE_ANON_KEY, sont requis.');
+const { V1_REPO, V1_EXPORT, V1_BACKUP, V1_REFERENCE, SUPABASE_URL, SUPABASE_ANON_KEY } =
+  process.env;
+if (!V1_REPO || (!V1_EXPORT && !V1_BACKUP && (!SUPABASE_URL || !SUPABASE_ANON_KEY))) {
+  throw new Error(
+    'V1_REPO, et V1_EXPORT, V1_BACKUP ou SUPABASE_URL + SUPABASE_ANON_KEY, sont requis.',
+  );
 }
 
 type Row = Record<string, unknown>;
@@ -119,7 +132,17 @@ async function fetchAll(table: string): Promise<Row[]> {
   }
 }
 
-const editions = V1_EXPORT ? readEditionsFromExport(V1_EXPORT) : await readEditionsFromSupabase();
+const editions = V1_EXPORT
+  ? readEditionsFromExport(V1_EXPORT)
+  : V1_BACKUP
+    ? readEditionsFromBackup(V1_BACKUP)
+    : await readEditionsFromSupabase();
+
+function readEditionsFromBackup(dir: string): V1Edition[] {
+  const table = (name: string) =>
+    JSON.parse(readFileSync(resolve(dir, `${name}.json`), 'utf8')) as Row[];
+  return buildEditions(table('editions'), table('matches'), table('match_rows'));
+}
 
 function readEditionsFromExport(path: string): V1Edition[] {
   const data = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
@@ -134,6 +157,10 @@ async function readEditionsFromSupabase(): Promise<V1Edition[]> {
     fetchAll('matches'),
     fetchAll('match_rows'),
   ]);
+  return buildEditions(editionRows, matchRows, rowRows);
+}
+
+function buildEditions(editionRows: Row[], matchRows: Row[], rowRows: Row[]): V1Edition[] {
   const rowsByMatch = new Map<string, V1MatchRow[]>();
   for (const r of rowRows) {
     const key = r.match_id as string;
@@ -225,6 +252,36 @@ const splits = splitIds.map((splitId, index) => {
 
   return { split: `split-${index + 1}`, performances, expected };
 });
+
+if (V1_REFERENCE) {
+  const reference = splitIds.map((splitId) => {
+    const matches = editions.filter((e) => e.splitId === splitId).flatMap((e) => e.matches);
+    const keys = new Map<string, string>();
+    for (const row of matches.flatMap((m) => m.rows)) {
+      for (const p of [row.teamA, row.teamB]) {
+        const key = normalizedPlayerName(p.playerName);
+        if (key) keys.set(key, keys.get(key) ?? p.playerName);
+      }
+    }
+    const players = [...keys].map(([key, name]) => {
+      const s = computePlayerStatsFromMatches(name, matches, weightOf);
+      return {
+        key,
+        rating: s.rating,
+        impact: s.impact,
+        consistency: s.consistance,
+        clutch: s.clutch,
+        games: s.games,
+        wins: s.wins,
+        losses: s.losses,
+      };
+    });
+    return { splitId, players };
+  });
+  writeFileSync(resolve(V1_REFERENCE), JSON.stringify({ splits: reference }) + '\n');
+  console.log(`Référence v1 non anonymisée : ${reference.length} splits → ${V1_REFERENCE}`);
+  process.exit(0);
+}
 
 writeFileSync(
   OUTPUT,

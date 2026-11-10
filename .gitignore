@@ -9,5 +9,6 @@ coverage
 # Exports de données réelles — jamais dans git
 *.export.json
 localStorage_export.json
+*.local.json
 supabase/.temp/
 supabase/snippets/
