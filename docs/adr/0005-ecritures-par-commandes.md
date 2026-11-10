@@ -2,6 +2,7 @@
 
 - **Statut** : Accepté (spike concluant, 2026-10-05)
 - **Date** : 2026-10-03
+- **Complété par** : [0009](0009-serialiser-et-journaliser-les-commandes.md) (verrou par organisation, journal)
 
 ## Contexte
 

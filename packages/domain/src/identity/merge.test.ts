@@ -20,6 +20,9 @@ const base: MergeFacts = {
   ],
   eventMvps: [{ editionId: 'e1', playerId: 'maxrai' }],
   matchMvps: [{ matchId: 'm2', playerId: 'maxrai' }],
+  participations: [],
+  memberships: [],
+  customizedPlayerIds: [],
 };
 
 describe('planMerge', () => {
@@ -35,6 +38,11 @@ describe('planMerge', () => {
         matchMvpsReassigned: 1,
         aliasesAdded: ['maxrai'],
         discordUserIdTransferred: null,
+        participationsReassigned: 0,
+        participationsDropped: 0,
+        membershipsReassigned: 0,
+        membershipClosed: null,
+        absorbedCustomization: 'none',
       },
     });
   });
@@ -100,5 +108,60 @@ describe('planMerge', () => {
     ],
   ] as const)('refuse de fusionner %s', (_label, request, facts, error) => {
     expect(planMerge(facts, request)).toEqual({ ok: false, error });
+  });
+
+  describe('les données rattachées au joueur absorbé', () => {
+    const merge = (overrides: Partial<MergeFacts>) => {
+      const result = planMerge({ ...base, ...overrides }, { keepId: 'choco', absorbId: 'maxrai' });
+      if (!result.ok) throw new Error(result.error);
+      return result.plan;
+    };
+
+    it('réattribue ses participations, sans doublon si les deux joueurs étaient à la même édition', () => {
+      const plan = merge({
+        participations: [
+          { editionId: 'e1', playerId: 'choco' },
+          { editionId: 'e1', playerId: 'maxrai' },
+          { editionId: 'e2', playerId: 'maxrai' },
+        ],
+      });
+
+      expect(plan).toMatchObject({ participationsReassigned: 1, participationsDropped: 1 });
+    });
+
+    it('réattribue son historique d’équipes et clôt son passage en cours si le joueur conservé en a un', () => {
+      const plan = merge({
+        memberships: [
+          { id: 't1', playerId: 'choco', current: true },
+          { id: 't2', playerId: 'maxrai', current: false },
+          { id: 't3', playerId: 'maxrai', current: true },
+        ],
+      });
+
+      expect(plan).toMatchObject({ membershipsReassigned: 2, membershipClosed: 't3' });
+    });
+
+    it('garde son passage en cours si le joueur conservé n’en a pas', () => {
+      const plan = merge({
+        memberships: [
+          { id: 't1', playerId: 'choco', current: false },
+          { id: 't3', playerId: 'maxrai', current: true },
+        ],
+      });
+
+      expect(plan).toMatchObject({ membershipsReassigned: 1, membershipClosed: null });
+    });
+
+    it.each([
+      ['n’en a pas', [], 'none'],
+      ['est le seul à en avoir une', ['maxrai'], 'transferred'],
+      ['et le joueur conservé en ont une', ['choco', 'maxrai'], 'dropped'],
+      ['n’en a pas, mais le joueur conservé si', ['choco'], 'none'],
+    ] as const)(
+      'personnalisation de carte, quand le joueur absorbé %s',
+      (_label, customizedPlayerIds, expected) => {
+        expect(merge({ customizedPlayerIds }).absorbedCustomization).toBe(expected);
+      },
+    );
   });
 });

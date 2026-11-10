@@ -14,7 +14,22 @@ export interface MergeFacts {
   readonly performances: readonly { readonly matchId: string; readonly playerId: string }[];
   readonly eventMvps: readonly { readonly editionId: string; readonly playerId: string }[];
   readonly matchMvps: readonly { readonly matchId: string; readonly playerId: string }[];
+  /** Participations aux événements externes. */
+  readonly participations: readonly { readonly editionId: string; readonly playerId: string }[];
+  /** Passages en équipe ; `current` : sans date de départ. */
+  readonly memberships: readonly MergeMembership[];
+  /** Joueurs qui ont personnalisé leur carte. */
+  readonly customizedPlayerIds: readonly string[];
 }
+
+export interface MergeMembership {
+  readonly id: string;
+  readonly playerId: string;
+  readonly current: boolean;
+}
+
+/** Ce que devient la personnalisation de carte du joueur absorbé. */
+export type AbsorbedCustomization = 'none' | 'transferred' | 'dropped';
 
 /** Ce que la commande de fusion doit écrire. Les projections se recalculent ensuite. */
 export interface MergePlan {
@@ -27,6 +42,14 @@ export interface MergePlan {
   /** Graphies du joueur absorbé que le joueur conservé n'avait pas (normalisées). */
   readonly aliasesAdded: readonly string[];
   readonly discordUserIdTransferred: string | null;
+  readonly participationsReassigned: number;
+  /** Participations à une édition où le joueur conservé figurait déjà. */
+  readonly participationsDropped: number;
+  readonly membershipsReassigned: number;
+  /** Passage en cours du joueur absorbé, clos car le joueur conservé en a déjà un. */
+  readonly membershipClosed: string | null;
+  /** Celle du joueur conservé l'emporte toujours. */
+  readonly absorbedCustomization: AbsorbedCustomization;
 }
 
 export type MergePlanResult =
@@ -76,6 +99,25 @@ export function planMerge(
     ...new Set([absorb.nickname, ...absorb.aliases].map(normalizeAlias)),
   ].filter((alias) => !known.has(alias));
 
+  const keepEditions = new Set(
+    facts.participations.filter((p) => p.playerId === keepId).map((p) => p.editionId),
+  );
+  const absorbParticipations = facts.participations.filter((p) => p.playerId === absorbId);
+  const participationsDropped = absorbParticipations.filter((p) =>
+    keepEditions.has(p.editionId),
+  ).length;
+
+  const absorbMemberships = facts.memberships.filter((m) => m.playerId === absorbId);
+  const keepIsInATeam = facts.memberships.some((m) => m.playerId === keepId && m.current);
+  const absorbCurrent = absorbMemberships.find((m) => m.current);
+
+  const customized = new Set(facts.customizedPlayerIds);
+  const absorbedCustomization: AbsorbedCustomization = !customized.has(absorbId)
+    ? 'none'
+    : customized.has(keepId)
+      ? 'dropped'
+      : 'transferred';
+
   return {
     ok: true,
     plan: {
@@ -87,6 +129,11 @@ export function planMerge(
       matchMvpsReassigned: facts.matchMvps.filter((m) => m.playerId === absorbId).length,
       aliasesAdded,
       discordUserIdTransferred: keep.discordUserId ? null : absorb.discordUserId,
+      participationsReassigned: absorbParticipations.length - participationsDropped,
+      participationsDropped,
+      membershipsReassigned: absorbMemberships.length,
+      membershipClosed: keepIsInATeam && absorbCurrent ? absorbCurrent.id : null,
+      absorbedCustomization,
     },
   };
 }
