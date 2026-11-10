@@ -30,9 +30,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Version figée : `latest` a cassé la CI à la sortie de la v3, sans aucun
+      # changement dans le dépôt. Monter de version se fait par une PR.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.1.0
 
       # Postgres seul suffit : applique les migrations, puis lance les tests pgTAP.
       - run: supabase db start
