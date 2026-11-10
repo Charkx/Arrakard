@@ -10,8 +10,8 @@ _Dérivé de `tdd`, mattpocock/skills v1.3.2 (licence MIT). Écarts et licence :
 
 Le cycle rouge, vert, refactor et les conventions de test du projet sont dans
 `docs/contributing.md` : les lire d'abord. Ce skill ajoute ce que ce document ne
-dit pas. Pour le code qui porte une règle métier ou une règle d'accès, le mode de
-travail est le skill `ping-pong`.
+dit pas. En mode Ensemble, le travail suit le skill `ping-pong`. En mode Délégué,
+l'agent applique seul cette référence.
 
 Avant d'écrire un test, lire `docs/domain/glossary.md` : les noms de tests et
 d'interfaces emploient ses termes. Respecter les ADR de la zone touchée.

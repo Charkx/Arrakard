@@ -1,6 +1,6 @@
 ---
 name: ping-pong
-description: TDD en ping-pong entre Charly et l'agent, chacun faisant passer le test rouge de l'autre. À utiliser pour tout code qui porte une règle métier ou une règle d'accès (domaine TypeScript, SQL des commandes, RLS, tests pgTAP), ou quand Charly dit « ping-pong ».
+description: TDD en ping-pong entre Charly et l'agent, chacun faisant passer le test rouge de l'autre. À utiliser pour un ticket en mode Ensemble, donc le premier exemplaire d'une famille de code (une commande, une vue, une règle d'accès), ou quand Charly dit « ping-pong ».
 ---
 
 # Ping-pong
@@ -8,6 +8,10 @@ description: TDD en ping-pong entre Charly et l'agent, chacun faisant passer le 
 Le ping-pong de `docs/contributing.md`, adapté au travail solo : A est Charly, B
 est l'agent. Le but n'est pas d'aller vite : c'est que Charly écrive la moitié du
 code et comprenne l'autre moitié.
+
+Il sert aux tickets en mode Ensemble (`docs/contributing.md`) : ce qu'on écrit
+ainsi une fois devient le modèle que l'agent reproduit seul ensuite, en mode
+Délégué.
 
 Ce qu'est un bon test est décrit dans `docs/contributing.md` et dans le skill
 `tdd`. Ce skill ne fixe que l'alternance.

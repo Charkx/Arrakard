@@ -39,6 +39,14 @@ Chercher ce qu'il faudrait réorganiser d'abord pour rendre le changement facile
 Donner à chaque ticket ses **blocages** : les tickets qui doivent être terminés
 avant qu'il commence. Un ticket sans blocage peut démarrer tout de suite.
 
+Donner aussi à chaque ticket son **mode** (`docs/contributing.md`) :
+
+- **Ensemble** : le premier exemplaire d'une famille de code (une commande, une
+  vue, une règle d'accès), écrit en ping-pong avec Charly ;
+- **Délégué** : les suivants de la même famille, écrits par l'agent seul en TDD.
+  Un ticket Délégué est bloqué par le ticket Ensemble de sa famille ;
+- **Outillage** : CI, scripts, configuration, documentation.
+
 **Exception : le changement mécanique large.** Renommer une colonne ou retyper un
 symbole partagé casse tout d'un coup, et aucune tranche verticale ne peut rester
 verte. Le découper en trois temps : **étendre** (ajouter la nouvelle forme à côté
@@ -51,12 +59,15 @@ ticket bloqué par tous les lots.
 Présenter une liste numérotée. Pour chaque ticket :
 
 - **Titre** : court et descriptif.
+- **Mode** : Ensemble, Délégué ou Outillage.
 - **Bloqué par** : les tickets à terminer avant.
 - **Ce qu'il livre** : le comportement de bout en bout que ce ticket fait
   marcher.
 
 Demander :
 
+- Les modes sont-ils justes : y a-t-il une famille que Charly veut écrire
+  lui-même, ou au contraire déléguer ?
 - Le grain est-il bon : trop gros, trop fin ?
 - Les blocages sont-ils justes : chaque ticket ne dépend-il que de ce qui le
   conditionne vraiment ?
@@ -84,6 +95,10 @@ sert. Pas une liste de tâches par couche.
 
 - [ ] Critère 1
 - [ ] Critère 2
+
+## Mode
+
+Ensemble, Délégué ou Outillage.
 
 ## Bloqué par
 

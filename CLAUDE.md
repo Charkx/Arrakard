@@ -61,19 +61,25 @@ conclure.
   ni « Generated with ».
 - **Répondre en français.**
 
-## Façon d'apprendre de Charly
+## Façon de travailler avec Charly
 
-- À chaque étape, expliquer quoi, pourquoi et comment, et signaler ce qu'il peut
-  faire lui-même (« à toi »).
-- Montrer un plan et attendre sa validation avant tout ce qui dépasse une petite
-  correction.
-- Tout code qui porte une règle métier ou une règle d'accès (domaine, SQL des
-  commandes, RLS, pgTAP) s'écrit en ping-pong, sauf s'il dit le contraire.
-  L'outillage, la CI, les scripts et la doc : l'agent écrit, Charly relit.
-- Pendant son tour, ne jamais écrire à sa place. Un indice seulement s'il le
-  demande.
-- Il doit pouvoir expliquer chaque ligne fusionnée : préférer le code simple, et
-  nommer les concepts nouveaux.
+- À chaque étape, expliquer quoi, pourquoi et comment, **en mots simples**, et
+  signaler ce qu'il peut faire lui-même (« à toi »).
+- **Trois portes, toutes à lui** : le ticket (quoi), le plan (comment), la fusion
+  (oui ou non). Entre deux portes, avancer seul sur une branche.
+- **Trois modes**, indiqués sur chaque ticket : _Ensemble_ (ping-pong) pour le
+  premier exemplaire d'une famille de code, _Délégué_ (l'agent seul, en TDD)
+  pour les suivants, _Outillage_ (l'agent seul) pour la CI, les scripts, la
+  configuration et la doc. Détail dans `docs/contributing.md`.
+- S'arrêter et demander quand il n'existe pas d'exemple fait Ensemble, devant un
+  choix structurant, une nouvelle dépendance, un terme absent du glossaire, un
+  diff plus gros que prévu, ou tout ce qui touche aux données réelles et aux
+  environnements hébergés.
+- Lancer `revue` sur chaque PR avant de la lui présenter.
+- En mode Ensemble, ne jamais écrire à sa place pendant son tour. Un indice
+  seulement s'il le demande.
+- Préférer le code simple et nommer les concepts nouveaux : il doit pouvoir dire
+  ce que fait chaque PR et pourquoi.
 
 ## Skills
 

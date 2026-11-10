@@ -27,8 +27,8 @@ C'était le mode de travail de la phase 2.
 Règle : celui qui fait passer le test n'a pas le droit d'écrire plus de code
 que le test n'en exige. S'il en faut plus, c'est qu'il manque un test.
 
-Seul avec un agent, le ping-pong continue : voir
-[Travailler avec un agent](#travailler-avec-un-agent).
+Seul avec un agent, le ping-pong sert au premier exemplaire de chaque famille de
+code : voir [Travailler avec un agent](#travailler-avec-un-agent).
 
 ## Écrire un bon test
 
@@ -56,17 +56,48 @@ Seul avec un agent, le ping-pong continue : voir
 ## Travailler avec un agent
 
 Le projet se fait seul, avec un agent de code. Les règles que l'agent suit sont
-dans [`CLAUDE.md`](../CLAUDE.md). Cette section fixe les **rituels** : ce qu'on
-fait à chaque fois, sans le rediscuter.
+dans [`CLAUDE.md`](../CLAUDE.md). Cette section fixe la méthode : ce qu'on fait
+à chaque fois, sans le rediscuter.
+
+### Trois portes
+
+L'agent va vite. Ce qui garde le contrôle, ce sont trois décisions qu'il ne
+prend jamais seul :
+
+1. **Le ticket** : quoi construire.
+2. **Le plan** : comment le construire.
+3. **La fusion** : oui ou non, sur une PR dont la CI est verte.
+
+Entre deux portes, l'agent avance seul, sur une branche.
+
+### Trois modes
+
+Chaque ticket porte son mode, fixé au découpage.
+
+| Mode          | Pour quoi                                   | Qui écrit                                        |
+| ------------- | ------------------------------------------- | ------------------------------------------------ |
+| **Ensemble**  | Le premier exemplaire d'une famille de code | À deux, en [ping-pong](#en-binôme--le-ping-pong) |
+| **Délégué**   | Les suivants de la même famille             | L'agent seul, en TDD                             |
+| **Outillage** | CI, scripts, configuration, documentation   | L'agent seul                                     |
+
+Une famille de code est un modèle qui se répète : une commande, une vue, une
+règle d'accès. Un ticket ne passe en Délégué que si un exemple de sa famille a
+déjà été écrit Ensemble. En ping-pong, l'agent tient le rôle de B, et le skill
+`ping-pong` fixe le détail. Si une PR déléguée n'est pas comprise, sa famille
+repasse en Ensemble.
+
+### Les rituels
 
 1. **Partir d'une issue.** Hors petite correction, chaque travail part d'une
    issue GitHub. Sa liste « Done when » sert de critères d'acceptation : chaque
    ligne se vérifie par un test ou une action précise.
 2. **Le plan d'abord.** Pour tout ce qui dépasse une petite correction, l'agent
    montre son plan et attend la validation avant de toucher au dépôt.
-3. **Une revue sur chaque PR.** Seul, il n'y a pas de relecteur : on lance
-   `revue` sur chaque PR, puis on vérifie qu'on peut expliquer chaque ligne. Une
-   ligne qu'on ne sait pas expliquer ne se fusionne pas.
+3. **Une revue avant chaque fusion.** Seul, il n'y a pas de relecteur : l'agent
+   lance `revue` sur chaque PR avant de la présenter, joint les deux rapports et
+   corrige ce qui doit l'être. Avant de fusionner, on vérifie qu'on comprend :
+   chaque ligne en mode Ensemble, ce que fait la PR et pourquoi en mode Délégué.
+   L'agent explique toute ligne sur demande.
 4. **Une maquette avant tout changement visuel.** On valide ce qu'on va voir
    avant d'écrire le code qui l'affiche.
 5. **Un handoff à la fin de chaque session.** `handoff` note l'état, les
@@ -75,14 +106,26 @@ fait à chaque fois, sans le rediscuter.
    gêné, ce qu'on change. Ses conclusions vont dans le dépôt
    (`docs/debriefs/phase-N.md`), pas seulement dans la mémoire locale de l'agent.
 
-### Le ping-pong en solo
+### Une PR déléguée
 
-Le code qui porte une règle métier ou une règle d'accès (domaine, SQL des
-commandes, RLS, tests pgTAP) s'écrit en [ping-pong](#en-binôme--le-ping-pong),
-l'agent tenant le rôle de B. Le skill `ping-pong` en fixe le détail : liste de
-tests tirée du « Done when », vérification du rouge, indices sur demande, un
-commit à chaque vert. L'outillage, la CI, les scripts et la doc sont écrits par
-l'agent et relus.
+Pour que la fusion se décide vite et sans risque, l'agent livre :
+
+- une PR petite : un ticket, une branche ;
+- une description en mots simples : ce que ça fait, le « Done when » coché avec
+  sa preuve, où regarder en priorité, ce qui n'a pas pu être vérifié ;
+- `pnpm check` et `supabase test db` verts en local, et la CI verte ;
+- les deux rapports de `revue`, corrections faites.
+
+### Quand l'agent s'arrête
+
+Il demande avant de continuer quand :
+
+- aucun exemple de cette famille de code n'a été écrit Ensemble ;
+- un choix structurant se présente (donc un ADR), une nouvelle dépendance, ou un
+  terme absent du glossaire ;
+- le diff dépasse nettement la taille annoncée dans le plan ;
+- le travail touche aux données réelles, à un environnement hébergé ou à la
+  production.
 
 ### Les skills
 
