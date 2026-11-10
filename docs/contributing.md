@@ -17,7 +17,7 @@ partie → une partie → plusieurs → cas limites). Les exemples chiffrés de 
 
 ## En binôme : le ping-pong
 
-C'est le mode de travail de la phase 2.
+C'était le mode de travail de la phase 2.
 
 1. **A** écrit un test qui échoue.
 2. **B** le fait passer, puis écrit le test suivant qui échoue.
@@ -47,7 +47,8 @@ Seul avec un agent, le ping-pong continue : voir
 - **Langue** : code en anglais, docs et noms de tests en français. Les termes
   métier suivent le [glossaire](domain/glossary.md).
 - **Commits** : [Conventional Commits](https://www.conventionalcommits.org/fr/)
-  (`feat(domain): …`, `test(rating): …`, `docs(adr): …`).
+  (`feat(domain): …`, `test(rating): …`, `docs(adr): …`), rédigés en français
+  comme les PR.
 - **Branches** : `main` toujours déployable ; une branche courte par sujet,
   fusionnée par PR.
 - **Décisions** : un choix structurant = un [ADR](adr/README.md) dans la même PR.
@@ -92,11 +93,23 @@ recette s'est répétée trois fois.
 
 ### Les garde-fous
 
-[`.claude/settings.json`](../.claude/settings.json) interdit à l'agent de lire
-les fichiers de données réelles et les secrets, de forcer un push et de pousser
-sur `main`. Ses commandes shell tournent dans un bac à sable qui applique les
-mêmes interdictions de lecture. `main` est protégée : une PR et une CI verte sont
-obligatoires, y compris pour l'administrateur du dépôt.
+[`.claude/settings.json`](../.claude/settings.json) pose trois protections, de
+la plus solide à la plus fragile :
+
+- **Le bac à sable.** Les commandes shell de l'agent ne peuvent pas lire les
+  secrets ni les fichiers de données réelles, quel que soit l'outil (`grep`,
+  script…). Trois commandes tournent en dehors : `supabase` et `docker`, qui en
+  sont exclues, et `gh`, qui n'y fonctionne pas et que l'agent relance hors du
+  bac à sable, avec validation.
+- **Les lectures interdites.** L'outil de lecture de l'agent refuse ces mêmes
+  fichiers.
+- **Les commandes interdites.** Le push forcé, le push sur `main` et
+  `git diff --no-index` sont refusés d'après le texte de la commande. Ce filtre
+  se contourne : il évite les erreurs, il ne protège pas `main`.
+
+La vraie barrière pour `main` est sa protection sur GitHub : une PR et une CI
+verte obligatoires, y compris pour l'administrateur du dépôt. Elle se règle une
+fois, à la main, dans les réglages du dépôt.
 
 ## Définition de « terminé »
 

@@ -5,6 +5,9 @@ description: Référence de TDD du projet. Ce qu'est un bon test, à quelle fron
 
 # TDD
 
+_Dérivé de `tdd`, mattpocock/skills v1.3.2 (licence MIT). Écarts et licence :
+`.claude/skills/README.md`._
+
 Le cycle rouge, vert, refactor et les conventions de test du projet sont dans
 `docs/contributing.md` : les lire d'abord. Ce skill ajoute ce que ce document ne
 dit pas. Pour le code qui porte une règle métier ou une règle d'accès, le mode de

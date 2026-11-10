@@ -6,6 +6,9 @@ argument-hint: "Ce qu'il faut découper (ex. la phase 3, une spec, une issue)"
 
 # Tickets
 
+_Dérivé de `to-tickets`, mattpocock/skills v1.3.2 (licence MIT). Écarts et
+licence : `.claude/skills/README.md`._
+
 Découper un plan, une spec ou une conversation en **tickets** : des tranches
 verticales, chacune déclarant les tickets qui la **bloquent**.
 
@@ -94,5 +97,5 @@ par un test ou une action précise.
 Exception : un extrait qui fixe une décision mieux que la prose (schéma, forme
 d'un type, machine à états), réduit à l'essentiel.
 
-On travaille ensuite la **frontière** : tout ticket dont les bloquants sont
+On travaille ensuite les **tickets prêts** : ceux dont les bloquants sont
 terminés.

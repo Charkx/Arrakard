@@ -6,6 +6,9 @@ argument-hint: 'La décision ou les questions ouvertes concernées (ex. Q2 bis e
 
 # Questionnaire
 
+_Dérivé de `to-questionnaire`, mattpocock/skills v1.3.2 (licence MIT). Écarts et
+licence : `.claude/skills/README.md`._
+
 Transformer ce que Charly ne peut pas décider seul en **questionnaire** : un
 document Markdown remis à une personne, qui le remplit de son côté ou avec lui en
 réunion. Le destinataire détient un savoir que Charly n'a pas ; le questionnaire

@@ -52,7 +52,8 @@ conclure.
 - **Fichiers interdits.** Ne jamais lire, afficher ni commiter `.env*`,
   `*.local.json`, `*.export.json`, `localStorage_export.json`, ni aucune donnée
   réelle de joueur. Vaut aussi pour la v1 (`../arrakis-cards`) et pour le shell
-  (`cat`, `grep`, scripts).
+  (`cat`, `grep`, scripts). Seule exception, au commit : un `.env.example` sans
+  secret.
 - **Jamais de travail sur `main`** : une branche, une PR. Charly fusionne
   lui-même. Pas de push forcé.
 - **Pas de nouvelle dépendance** sans demander.

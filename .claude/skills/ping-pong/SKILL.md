@@ -35,14 +35,16 @@ s'arrête avant la fin, la liste part dans le handoff.
    - Si la raison est mauvaise, l'agent l'explique et s'arrête : corriger le test
      est le tour de Charly.
 3. **L'agent passe au vert** avec le minimum de code et relance toute la suite.
-   Il explique ce qu'il a écrit et pourquoi rien de plus, propose un refactor
-   s'il en voit un, puis commite.
+   Il explique ce qu'il a écrit et pourquoi rien de plus, puis commite ce vert.
+   S'il voit un refactor, il le propose : si Charly l'accepte, il le fait, tests
+   verts à chaque pas, et le commite à part.
 4. **L'agent écrit le test rouge suivant**, pris dans la liste. Il le lance,
    montre qu'il échoue pour la bonne raison, dit en une phrase le comportement
    visé, puis rend la main.
 5. **Charly passe au vert.** L'agent relance la suite et relit : si le code
-   dépasse ce que le test exige, il le signale. Charly propose le refactor,
-   commite, puis écrit le test rouge suivant : retour à l'étape 2.
+   dépasse ce que le test exige, il le signale. Charly commite ce vert. S'il
+   propose un refactor, il le fait et le commite à part. Puis il écrit le test
+   rouge suivant : retour à l'étape 2.
 
 ## Règles
 

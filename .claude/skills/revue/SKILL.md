@@ -1,10 +1,16 @@
 ---
 name: revue
 description: Relit les changements d'une branche ou d'une PR selon deux axes séparés. Conventions, le code suit-il les règles écrites du dépôt ? Demande, le code fait-il ce que l'issue demandait ? À utiliser sur chaque PR avant fusion, ou quand Charly demande une revue.
-argument-hint: 'Le point de comparaison (par défaut main)'
+argument-hint: 'Le point de comparaison (par défaut origin/main)'
 ---
 
 # Revue
+
+_Dérivé de `code-review`, mattpocock/skills v1.3.2 (licence MIT). Écarts et
+licence : `.claude/skills/README.md`._
+
+La revue se lance **avant** la fusion. Une fois la PR fusionnée, la moindre
+correction demande une nouvelle branche et une nouvelle PR.
 
 Revue en deux axes du diff entre `HEAD` et un point fixe :
 
@@ -18,7 +24,8 @@ plus, et les deux axes ne se contaminent pas.
 ## 1. Fixer le point de comparaison
 
 Le point fixe est ce que Charly indique (branche, commit, tag). Sans indication,
-c'est `main`.
+c'est `origin/main`, après un `git fetch origin` : le `main` local peut être en
+retard et gonfler le diff avec des changements déjà fusionnés.
 
 - Diff : `git diff <point>...HEAD` (trois points, donc depuis l'ancêtre commun).
 - Commits : `git log <point>..HEAD --oneline`.

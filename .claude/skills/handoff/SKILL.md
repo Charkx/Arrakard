@@ -6,6 +6,9 @@ argument-hint: 'À quoi servira la prochaine session ?'
 
 # Handoff
 
+_Dérivé de `handoff`, mattpocock/skills v1.3.2 (licence MIT). Écarts et licence :
+`.claude/skills/README.md`._
+
 Écrire une note de passation qui permette à un agent sans aucun contexte de
 continuer le travail.
 
