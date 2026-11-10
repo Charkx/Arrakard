@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(gh issue view *)",
+      "Bash(gh pr view *)"
+    ],
+    "deny": [
+      "Read(//**/.env*)",
+      "Read(//**/*.local.json)",
+      "Read(//**/*.export.json)",
+      "Read(//**/localStorage_export.json)",
+      "Bash(git diff --no-index *)",
+      "Bash(git diff * --no-index *)",
+      "Bash(git push --force*)",
+      "Bash(git push * --force*)",
+      "Bash(git push -f *)",
+      "Bash(git push * -f *)",
+      "Bash(git push * -f)",
+      "Bash(git push * +*)",
+      "Bash(git push origin main)",
+      "Bash(git push origin main *)",
+      "Bash(git push * origin main)",
+      "Bash(git push * origin main *)",
+      "Bash(git push *:main)",
+      "Bash(git push *:main *)"
+    ]
+  },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": false,
+    "excludedCommands": ["supabase *", "docker *"],
+    "network": {
+      "allowedDomains": ["github.com", "api.github.com", "registry.npmjs.org"]
+    }
+  }
+}
