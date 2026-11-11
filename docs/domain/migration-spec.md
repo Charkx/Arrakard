@@ -1,7 +1,9 @@
 # Spécification de la migration v1 → v2
 
-La migration transforme une sauvegarde de la base v1 en faits v2, une seule
-fois, à la bascule. Elle est faite par le paquet
+La migration transforme une sauvegarde de la base v1 en faits v2. Elle est
+rejouée à chaque rafraîchissement du site en lecture, puis une dernière fois
+à la bascule ([ADR 0011](../adr/0011-livrer-par-tranches.md)). Elle est faite
+par le paquet
 [`packages/migrate-v1`](../../packages/migrate-v1), en deux temps :
 
 1. **Planification** (`planMigration`, fonction pure) : lit la sauvegarde v1
@@ -59,24 +61,36 @@ Chaque graphie rencontrée dans les lignes devient un **alias** normalisé
 
 ## Correspondance des tables
 
-| v1                                           | v2                                  | Règles                                                                                                                                    |
-| -------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| —                                            | `organizations`                     | Une organisation Arrakis, règles de note `v1`                                                                                             |
-| `seasons`                                    | `seasons`                           | Telle quelle                                                                                                                              |
-| `splits`                                     | `splits`                            | `is_active` → statut `open`, sinon `closed`                                                                                               |
-| `teams`                                      | `teams`                             | Telle quelle (logos compris, voir Q12)                                                                                                    |
-| `players`                                    | `players`                           | `name` → `nickname`. Les colonnes calculées (note, palier, forme…) sont ignorées                                                          |
-| `players.team_id`, `status`                  | `team_memberships`                  | Un passage en cours. `joined_on` : date de la première édition jouée avec ce tag, sinon début du split actif                              |
-| `players.customization`                      | `card_customizations`               | `title`, `selectedBadges`, `background`, `accounts` → `riot_accounts`. `bio` : voir Q11                                                   |
-| `players.riot_id`                            | `card_customizations.riot_accounts` | Ajouté comme compte principal s'il n'y figure pas déjà                                                                                    |
-| `editions`                                   | `editions`                          | `ligue_div1` → `league_div1`, `ligue_div2` → `league_div2`. Prestige conservé. `division`, `status` : voir Q9. `ih_teams` non migré (Q13) |
-| `editions.mvp_player_name`                   | `editions.event_mvp_player_id`      | Résolu par la clé de joueur                                                                                                               |
-| `matches`                                    | `matches`                           | Durée lue dans `duration_display` (`mm:ss`), exacte à la seconde. `journee` → `matchday`                                                  |
-| `match_rows`                                 | `performances`                      | Une ligne v1 → deux performances (côtés A et B). `line` : 0 à 4 dans l'ordre TOP, JGL, MID, ADC, SUP. `WIN`/`LOSE` → `win`/`loss`         |
-| `edition_participants`                       | `edition_participants`              | Telle quelle                                                                                                                              |
-| `registrations`                              | `registrations`                     | Telle quelle                                                                                                                              |
-| `player_split_stats`, `player_event_entries` | —                                   | Caches calculés, non migrés (M9). Exception : les résultats de tournoi sans match (M4)                                                    |
-| `app_settings`                               | —                                   | Chaînes Twitch et lives manuels : cas d'usage P3, non migrés. Conservés dans la sauvegarde                                                |
+| v1                                           | v2                                  | Règles                                                                                                                                                                                                                                                  |
+| -------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| —                                            | `organizations`                     | Une organisation Arrakis, règles de note `v1`                                                                                                                                                                                                           |
+| `seasons`                                    | `seasons`                           | Telle quelle                                                                                                                                                                                                                                            |
+| `splits`                                     | `splits`                            | `is_active` → statut `open`, sinon `closed`                                                                                                                                                                                                             |
+| `teams`                                      | `teams`                             | Telle quelle, sauf le logo : extrait vers le stockage de fichiers, `logo_url` n'en garde que l'adresse (ADR 0015)                                                                                                                                       |
+| `players`                                    | `players`                           | `name` → `nickname`. Les colonnes calculées (note, palier, forme…) sont ignorées                                                                                                                                                                        |
+| `players.team_id`, `status`                  | `team_memberships`                  | Un passage en cours. `joined_on` : date de la première édition jouée avec ce tag, sinon début du split actif                                                                                                                                            |
+| `players.customization`                      | `card_customizations`               | `title`, `selectedBadges`, `background`, `accounts` → `riot_accounts`. `bio` non reprise, signalée dans le rapport (ADR 0016)                                                                                                                           |
+| `players.riot_id`                            | `card_customizations.riot_accounts` | Ajouté comme compte principal s'il n'y figure pas déjà                                                                                                                                                                                                  |
+| `editions`                                   | `editions`                          | `ligue_div1` → `league_div1`, `ligue_div2` → `league_div2`. Prestige conservé. `status` non repris : il se déduit, et une édition `completed` reçoit une clôture (ADR 0013). `division` non reprise : le type la porte. `ih_teams` non migré (ADR 0016) |
+| `editions.mvp_player_name`                   | `editions.event_mvp_player_id`      | Résolu par la clé de joueur                                                                                                                                                                                                                             |
+| `matches`                                    | `matches`                           | Durée lue dans `duration_display` (`mm:ss`), exacte à la seconde. `journee` → `matchday`                                                                                                                                                                |
+| `match_rows`                                 | `performances`                      | Une ligne v1 → deux performances (côtés A et B). `line` : 0 à 4 dans l'ordre TOP, JGL, MID, ADC, SUP. `WIN`/`LOSE` → `win`/`loss`                                                                                                                       |
+| `edition_participants`                       | `edition_participants`              | Telle quelle                                                                                                                                                                                                                                            |
+| `registrations`                              | `registrations`                     | Telle quelle                                                                                                                                                                                                                                            |
+| `player_split_stats`, `player_event_entries` | —                                   | Caches calculés, non migrés (M9). Exception : les résultats de tournoi sans match (M4)                                                                                                                                                                  |
+| `app_settings`                               | —                                   | Chaînes Twitch et lives manuels : cas d'usage de la tranche 3, non migrés. Conservés dans la sauvegarde                                                                                                                                                 |
+| —                                            | publications                        | Une publication par édition de la v1, ou par journée quand `journee` est renseignée (ADR 0012)                                                                                                                                                          |
+
+### Règles décidées, pas encore appliquées
+
+Le code de `packages/migrate-v1` ne les applique pas encore. Chacune fera
+l'objet d'un ticket :
+
+- les logos sont encore recopiés tels quels (ADR 0015) ;
+- les éditions `completed` ne reçoivent pas encore de clôture (ADR 0013,
+  proposé) ;
+- les publications ne sont pas encore créées (ADR 0012, en tranche 2) ;
+- les splits sont encore migrés comme un niveau à part (ADR 0014).
 
 ## Anomalies de la sauvegarde
 
@@ -91,7 +105,7 @@ migration les liste à chaque exécution, ligne par ligne.
 | M4  | 14 résultats d'un tournoi **sans match** (`player_event_entries` de type `tournament`), rattachés par erreur à une édition Div 1. Ils n'existent nulle part ailleurs                                                                                       | Non représentables en v2 aujourd'hui : voir Q10. En attendant, listés dans le rapport et conservés dans la sauvegarde                            |
 | M5  | 10 lignes de match sans nom d'équipe (Div 1)                                                                                                                                                                                                               | Complétées par `matches.team_a` ou `team_b` selon le côté                                                                                        |
 | M6  | Dans les lignes de match, des équipes absentes de `teams` : équipes d'In House, et noms « tag + joueur » (anomalie A7 de la note)                                                                                                                          | `performances.team` est un texte libre : migré tel quel                                                                                          |
-| M7  | Statuts d'édition périmés : une LAN externe passée est encore « en cours »                                                                                                                                                                                 | Voir Q9                                                                                                                                          |
+| M7  | Statuts d'édition périmés : une LAN externe passée est encore « en cours »                                                                                                                                                                                 | Le statut v1 n'est pas repris : il se déduit de la date (ADR 0013)                                                                               |
 | M8  | Aucun historique d'équipe (`player_team_history` vide) : seule l'équipe actuelle est connue                                                                                                                                                                | Un seul passage par joueur, avec une date d'arrivée estimée (voir la correspondance)                                                             |
 | M9  | **Les caches de notes v1 sont périmés.** `player_split_stats` a été rempli en une fois le 2026-06-08 (carrière rangée dans le split 2024, split 2025 vide) ; les colonnes de `players` datent du 2026-06-29 (124 joueurs à 0 partie alors qu'ils ont joué) | Non migrés, et pas utilisés comme référence. **La vue « toutes saisons » de la v1 les affiche** : des cartes changeront à la bascule, à annoncer |
 
@@ -114,8 +128,8 @@ La migration est acceptée quand :
 3. les nombres de lignes concordent : 417 matchs, 4 170 performances,
    301 joueurs.
 
-Un écart non expliqué bloque la bascule. Les critères complets sont dans les
-[cas d'usage](../product/use-cases.md#critères-de-bascule).
+Un écart non expliqué bloque la mise en ligne. Les critères complets sont dans
+les [cas d'usage](../product/use-cases.md#critères-de-mise-en-ligne-de-la-tranche-1).
 
 ### Procédure
 

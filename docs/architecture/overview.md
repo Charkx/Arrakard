@@ -32,7 +32,7 @@ flowchart LR
   Faits --> P --> Projections
 ```
 
-Schéma indicatif, à figer en phase 3 :
+Schéma indicatif, à figer en tranche 1 :
 
 | Faits                                               | Projections                                                                         |
 | --------------------------------------------------- | ----------------------------------------------------------------------------------- |
@@ -112,4 +112,4 @@ arrakis/
 - Le partage du package `domain` avec le runtime Deno des Edge Functions :
   à valider par un spike ([ADR 0005](../adr/0005-ecritures-par-commandes.md)).
 - La formule de note v2 ([Q1](../open-questions.md)).
-- Le schéma SQL exact (phase 3).
+- Le schéma SQL exact (tranches 1 et 2).

@@ -1,7 +1,7 @@
 # 0009 — Sérialiser et journaliser les commandes
 
-- **Statut** : Proposé
-- **Date** : 2026-10-06
+- **Statut** : Accepté
+- **Date** : 2026-10-06 (accepté le 2026-11-11)
 - **Complète** : [0005](0005-ecritures-par-commandes.md)
 
 ## Contexte

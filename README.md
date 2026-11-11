@@ -4,14 +4,14 @@ Plateforme de la communauté esport **Arrakis** (League of Legends) : cartes
 joueurs façon FUT, classements, pages d'événements, inscriptions et
 administration des résultats.
 
-> **Statut : phase 3 en cours (backend).** Le domaine est terminé : les règles
-> métier sont écrites en TDD dans `packages/domain` et validées contre la
-> production v1 (golden master). Côté backend, le schéma initial et ses droits
-> d'accès sont testés en pgTAP, et la migration v1 → v2 est planifiée et
-> vérifiée (`packages/migrate-v1`). Restent les commandes et l'écriture des
-> données migrées.
-> L'ancienne version (`arrakis-cards`) reste en production et sert de
-> référence fonctionnelle.
+> **Statut : tranche 1 en préparation (lecture).** Le domaine est terminé : les
+> règles métier sont écrites en TDD dans `packages/domain` et validées contre
+> la production v1 (golden master). Côté serveur, le schéma initial et ses
+> droits d'accès sont testés en pgTAP, et la migration v1 → v2 est planifiée
+> et vérifiée (`packages/migrate-v1`). Prochaine étape : mettre en ligne un
+> site en lecture seule, nourri par la migration.
+> L'ancienne version (`arrakis-cards`) reste en production : les admins y
+> écrivent jusqu'à la bascule.
 
 ## Pourquoi une v2
 
@@ -45,7 +45,7 @@ visuelle de la v1.
 | Document                                                | Pour qui / quand                                          |
 | ------------------------------------------------------- | --------------------------------------------------------- |
 | [Vision et périmètre](docs/product/vision.md)           | Comprendre le produit, ses acteurs, ses contraintes       |
-| [Cas d'usage](docs/product/use-cases.md)                | Savoir ce que le système doit faire, par priorité         |
+| [Cas d'usage](docs/product/use-cases.md)                | Savoir ce que le système doit faire, par tranche          |
 | [Glossaire](docs/domain/glossary.md)                    | **À lire en premier.** Un mot = une définition, FR ↔ code |
 | [Spécification de la note](docs/domain/rating-spec.md)  | Formule exacte, exemples chiffrés, cas limites            |
 | [Spécification de l'import](docs/domain/import-spec.md) | Format de la feuille Excel et règles de lecture           |
@@ -83,10 +83,17 @@ Pendant le TDD : `pnpm --filter @arrakis/domain test:watch`.
 
 ## Feuille de route
 
-| Phase          | Contenu                                                                 | Livrable                               |
-| -------------- | ----------------------------------------------------------------------- | -------------------------------------- |
-| **1. Cadrage** | Vision, cas d'usage, glossaire, spec de note, ADR                       | Cette documentation                    |
-| **2. Domaine** | Monorepo, `packages/domain` en TDD, golden master v1                    | Moteur de calcul validé contre la prod |
-| **3. Backend** | Schéma faits/projections, commandes, RLS testées, migration des données | Supabase de staging rempli             |
-| **4. Front**   | Pages en lecture sur les vues, admin par commandes, design v1 réutilisé | Site complet en staging                |
-| **5. Bascule** | Migration à blanc, comparaison, mise en production                      | v2 en prod, v1 archivée                |
+Les phases 1 et 2 sont terminées. La suite se livre en trois tranches, chacune
+mise en ligne ([ADR 0011](docs/adr/0011-livrer-par-tranches.md)). Elles
+remplacent les anciennes phases 3 (backend), 4 (front) et 5 (bascule).
+
+| Étape                   | Contenu                                                                                                            | Livrable                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| **Phase 1. Cadrage**    | Vision, cas d'usage, glossaire, spec de note, ADR                                                                  | Cette documentation                                              |
+| **Phase 2. Domaine**    | Monorepo, `packages/domain` en TDD, golden master v1                                                               | Moteur de calcul validé contre la prod                           |
+| **Tranche 1. Lecture**  | Écriture des données migrées, pages publiques, explication de la note, design v1 réutilisé                         | Site v2 en ligne en lecture seule ; les admins restent sur la v1 |
+| **Tranche 2. Soirée**   | Import, corrections, brouillon puis publication, récap, annonce Discord, connexion, inscriptions, personnalisation | Les admins passent sur la v2 ; v1 archivée (bascule)             |
+| **Tranche 3. Histoire** | Album de saison, notes de patch, équipes d'In House proposées, fiche de match                                      | Dans l'ordre que la communauté demande                           |
+
+Le détail de chaque tranche est dans les
+[cas d'usage](docs/product/use-cases.md).
