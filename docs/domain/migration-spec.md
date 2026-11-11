@@ -87,8 +87,9 @@ Le code de `packages/migrate-v1` ne les applique pas encore. Chacune fera
 l'objet d'un ticket :
 
 - les logos sont encore recopiés tels quels (ADR 0015) ;
-- les éditions `completed` ne reçoivent pas encore de clôture (ADR 0013) ;
-- les publications ne sont pas encore créées (ADR 0012) ;
+- les éditions `completed` ne reçoivent pas encore de clôture (ADR 0013,
+  proposé) ;
+- les publications ne sont pas encore créées (ADR 0012, en tranche 2) ;
 - les splits sont encore migrés comme un niveau à part (ADR 0014).
 
 ## Anomalies de la sauvegarde

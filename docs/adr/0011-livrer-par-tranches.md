@@ -23,10 +23,10 @@ La v2 se livre en **trois tranches**, chacune mise en ligne :
 1. **Lecture** : un site public en lecture seule (classement, cartes, profils,
    éditions), à sa propre adresse, nourri par la migration rejouée depuis une
    sauvegarde de la v1. Les admins continuent d'écrire dans la v1.
-2. **Soirée** : les outils d'écriture (import, corrections, publication,
-   inscriptions, personnalisation). À la fin de cette tranche, une dernière
-   migration, les admins passent sur la v2 et la v1 est archivée : c'est la
-   bascule.
+2. **Soirée** : les outils d'écriture (import, corrections, publication avec
+   son récap, inscriptions, personnalisation). À la fin de cette tranche, une
+   dernière migration, les admins passent sur la v2 et la v1 est archivée :
+   c'est la bascule.
 3. **Histoire** : le reste, dans l'ordre que la communauté demande.
 
 Le contenu de chaque tranche est dans les

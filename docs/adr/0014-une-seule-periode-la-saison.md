@@ -24,7 +24,9 @@ Il n'y a plus qu'un niveau : la **saison** (`Season`). Elle s'ouvre et se
 clôture. La note ne compte que les matchs de la **saison active**, et la
 clôture fige les notes dans un **instantané de saison**.
 
-Le mot « split » disparaît du produit, des documents et du code.
+Le mot « split » est appelé à disparaître du produit, des documents et du
+code. Tant que le ticket d'alignement n'est pas fait, le README, les
+spécifications, le modèle de données et le code le disent encore.
 
 ## Options écartées
 
@@ -46,7 +48,6 @@ Le mot « split » disparaît du produit, des documents et du code.
   de données. Il se fait dans un ticket dédié, avant les pages de la
   tranche 1.
 - D'ici là, le [glossaire](../domain/glossary.md) définit déjà la saison
-  seule, et range « split » parmi les termes à ne plus utiliser. Les
-  spécifications et le code disent encore « split ».
+  seule, et range « split » parmi les termes à ne plus utiliser.
 - Le golden master compare des notes par saison au lieu de notes par split,
   avec les mêmes chiffres.

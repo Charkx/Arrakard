@@ -42,12 +42,12 @@ et le code disent encore « split » (`Split`, `activeSplit`, `closeSplit`,
 
 Voir l'[ADR 0012](../adr/0012-publier-les-resultats.md).
 
-| Terme           | Code                 | Définition                                                                                                                 |
-| --------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Brouillon**   | `draft`              | Résultat saisi ou importé, pas encore publié : enregistré, mais ignoré par les projections et invisible du public.         |
-| **Publication** | `Publication`        | Acte par lequel un admin rend publics les brouillons d'une édition. _Fait_ : quelle édition, quels matchs, quand, par qui. |
-| **Aperçu**      | `PublicationPreview` | Ce qu'une publication changera (notes, paliers, classement, badges), montré à l'admin avant qu'il publie. _Projection._    |
-| **Récap**       | `Recap`              | Ce qu'une publication a changé, montré à tous : qui monte, qui change de palier, le MVP, les badges gagnés. _Projection._  |
+| Terme           | Code                 | Définition                                                                                                                                                  |
+| --------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Brouillon**   | `draft`              | Résultat saisi ou importé, pas encore publié : enregistré, mais invisible du public et ignoré par tout ce qu'il voit.                                       |
+| **Publication** | `Publication`        | Acte par lequel un admin rend publics les brouillons d'une édition. _Fait_ : quelle édition, quels matchs, quand, par qui.                                  |
+| **Aperçu**      | `PublicationPreview` | Ce qu'une publication changera (notes, paliers, classement, badges), montré à l'admin avant qu'il publie. _Projection, la seule qui compte les brouillons._ |
+| **Récap**       | `Recap`              | Ce qu'une publication a changé, montré à tous : qui monte, qui change de palier, le MVP, les badges gagnés. _Projection._                                   |
 
 ## Matchs
 
@@ -80,7 +80,7 @@ Voir l'[ADR 0012](../adr/0012-publier-les-resultats.md).
 | Terme                    | Code                              | Définition                                                                                                                  |
 | ------------------------ | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | **Note**                 | `rating`                          | Note de carte, entre 60 et 99, calculée sur la saison active. Voir la [spécification](rating-spec.md).                      |
-| **Historique de note**   | `RatingHistory`                   | La note d'un joueur après chaque publication. _Projection._                                                                 |
+| **Historique de note**   | `editionHistory`                  | La note d'un joueur après chaque édition qu'il a jouée. _Projection._ Passera au grain de la publication (ADR 0012).        |
 | **Explication de note**  | `RatingBreakdown`                 | Le détail du calcul d'une note : ce que chaque sous-note et chaque règle y apporte. _Projection._                           |
 | **Sous-notes**           | `impact`, `consistency`, `clutch` | Les trois composantes de la note (0 à 99). _« Consistance » en v1 ; le code v2 dit `consistency`._                          |
 | **Palier**               | `Tier`                            | Bronze (< 70), Argent (70–79), Or (80–89), Élite (≥ 90). Débloque des options de personnalisation.                          |
@@ -96,13 +96,27 @@ Voir l'[ADR 0012](../adr/0012-publier-les-resultats.md).
 | **Carte**                | `Card`                            | Représentation visuelle d'un joueur : note, sous-notes, palier, personnalisation.                                           |
 | **Personnalisation**     | `CardCustomization`               | Choix du joueur sur sa carte : titre, badges affichés, fond, comptes Riot. _Seule donnée qu'un joueur peut écrire._         |
 
+## Prévu en tranche 3
+
+Ces termes servent déjà dans la [vision](../product/vision.md) et les
+[cas d'usage](../product/use-cases.md). Leur identifiant de code sera fixé à
+l'ouverture de leur ticket.
+
+| Terme                    | Code | Définition                                                                                                                       |
+| ------------------------ | ---- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Album de saison**      | —    | Les cartes de tous les joueurs telles que la clôture d'une saison les a figées, avec les récompenses de cette saison.            |
+| **Récompense de saison** | —    | Badge attribué une fois par saison, à sa clôture : meilleure progression, révélation, meilleur duo.                              |
+| **Bilan de saison**      | —    | Résumé de la saison d'un joueur, en une image à partager.                                                                        |
+| **Note de patch**        | —    | Annonce d'un changement de règle de calcul de la note : ce qui change, pourquoi, et la note de chacun avant et après (ADR 0007). |
+| **Fiche de match**       | —    | Page préparée pour les commentateurs avant un match : les dix cartes, les duels par rôle, l'historique entre les deux équipes.   |
+
 ## Architecture
 
-| Terme          | Code      | Définition                                                                                                                                       |
-| -------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Fait**       | —         | Donnée saisie, source de vérité : éditions, matchs, performances, publications, transferts, personnalisation.                                    |
-| **Projection** | —         | Donnée calculée à partir des faits publiés : notes, historiques, classements, badges, récaps. Peut être supprimée et reconstruite à tout moment. |
-| **Commande**   | `Command` | Une intention d'écriture nommée en langage métier (`importEdition`, `closeSeason`). Exécutée en une transaction côté serveur.                    |
+| Terme          | Code      | Définition                                                                                                                                                                                   |
+| -------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fait**       | —         | Donnée saisie, source de vérité : éditions, matchs, performances, publications, transferts, personnalisation.                                                                                |
+| **Projection** | —         | Donnée calculée à partir des faits : notes, historiques, classements, badges, récaps. Peut être supprimée et reconstruite à tout moment. Les brouillons n'y entrent pas, sauf dans l'aperçu. |
+| **Commande**   | `Command` | Une intention d'écriture nommée en langage métier (`importEdition`, `closeSeason`). Exécutée en une transaction côté serveur.                                                                |
 
 ## Termes à ne plus utiliser
 

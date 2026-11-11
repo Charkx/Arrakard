@@ -108,9 +108,11 @@ détail. Si une PR déléguée n'est pas comprise, sa famille repasse en Ensembl
    avant d'écrire le code qui l'affiche.
 5. **Un handoff à la fin de chaque session.** `handoff` note l'état, les
    décisions et la prochaine étape dans `.handoff/`, ignoré par git.
-6. **Un debrief à la fin de chaque phase.** Court : ce qui a marché, ce qui a
-   gêné, ce qu'on change. Ses conclusions vont dans le dépôt
-   (`docs/debriefs/phase-N.md`), pas seulement dans la mémoire locale de l'agent.
+6. **Un debrief à la fin de chaque tranche.** Court : ce qui a marché, ce qui
+   a gêné, ce qu'on change. Ses conclusions vont dans le dépôt
+   (`docs/debriefs/tranche-N.md`), pas seulement dans la mémoire locale de
+   l'agent. Les tranches ont remplacé les phases
+   ([ADR 0011](adr/0011-livrer-par-tranches.md)).
 
 ### Une PR écrite par l'agent seul
 

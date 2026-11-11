@@ -45,7 +45,7 @@ visuelle de la v1.
 | Document                                                | Pour qui / quand                                          |
 | ------------------------------------------------------- | --------------------------------------------------------- |
 | [Vision et périmètre](docs/product/vision.md)           | Comprendre le produit, ses acteurs, ses contraintes       |
-| [Cas d'usage](docs/product/use-cases.md)                | Savoir ce que le système doit faire, par priorité         |
+| [Cas d'usage](docs/product/use-cases.md)                | Savoir ce que le système doit faire, par tranche          |
 | [Glossaire](docs/domain/glossary.md)                    | **À lire en premier.** Un mot = une définition, FR ↔ code |
 | [Spécification de la note](docs/domain/rating-spec.md)  | Formule exacte, exemples chiffrés, cas limites            |
 | [Spécification de l'import](docs/domain/import-spec.md) | Format de la feuille Excel et règles de lecture           |
@@ -87,13 +87,13 @@ Les phases 1 et 2 sont terminées. La suite se livre en trois tranches, chacune
 mise en ligne ([ADR 0011](docs/adr/0011-livrer-par-tranches.md)). Elles
 remplacent les anciennes phases 3 (backend), 4 (front) et 5 (bascule).
 
-| Étape                   | Contenu                                                                                           | Livrable                                                         |
-| ----------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **Phase 1. Cadrage**    | Vision, cas d'usage, glossaire, spec de note, ADR                                                 | Cette documentation                                              |
-| **Phase 2. Domaine**    | Monorepo, `packages/domain` en TDD, golden master v1                                              | Moteur de calcul validé contre la prod                           |
-| **Tranche 1. Lecture**  | Écriture des données migrées, pages publiques, explication de la note, design v1 réutilisé        | Site v2 en ligne en lecture seule ; les admins restent sur la v1 |
-| **Tranche 2. Soirée**   | Commandes d'écriture, brouillon puis publication, récap, annonce Discord, connexion, inscriptions | Les admins passent sur la v2 ; v1 archivée (bascule)             |
-| **Tranche 3. Histoire** | Album de saison, notes de patch, équipes d'In House proposées, fiche de match                     | Dans l'ordre que la communauté demande                           |
+| Étape                   | Contenu                                                                                                            | Livrable                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| **Phase 1. Cadrage**    | Vision, cas d'usage, glossaire, spec de note, ADR                                                                  | Cette documentation                                              |
+| **Phase 2. Domaine**    | Monorepo, `packages/domain` en TDD, golden master v1                                                               | Moteur de calcul validé contre la prod                           |
+| **Tranche 1. Lecture**  | Écriture des données migrées, pages publiques, explication de la note, design v1 réutilisé                         | Site v2 en ligne en lecture seule ; les admins restent sur la v1 |
+| **Tranche 2. Soirée**   | Import, corrections, brouillon puis publication, récap, annonce Discord, connexion, inscriptions, personnalisation | Les admins passent sur la v2 ; v1 archivée (bascule)             |
+| **Tranche 3. Histoire** | Album de saison, notes de patch, équipes d'In House proposées, fiche de match                                      | Dans l'ordre que la communauté demande                           |
 
 Le détail de chaque tranche est dans les
 [cas d'usage](docs/product/use-cases.md).

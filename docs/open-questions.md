@@ -1,8 +1,8 @@
 # Questions ouvertes
 
-Décisions **produit** en attente. Elles ne bloquent pas la tranche 1 : la v2
-reproduit d'abord les notes de la v1 telles quelles. Chaque réponse donne lieu
-à un ADR et à des tests.
+Décisions **produit** en attente. Sauf Q17, elles ne bloquent pas la
+tranche 1 : la v2 reproduit d'abord les notes de la v1 telles quelles. Chaque
+réponse donne lieu à un ADR et à des tests.
 
 ## Tranchées
 
@@ -14,7 +14,7 @@ reproduit d'abord les notes de la v1 telles quelles. Chaque réponse donne lieu
 | Q6  | Interface bilingue FR/EN ?                     | Oui : une bonne partie de la communauté est anglophone                 | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
 | Q7  | Que deviennent les pages de laboratoire ?      | Non reprises ; leurs idées deviennent des cas d'usage ou disparaissent | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
 | Q8  | Hébergement du dépôt                           | GitHub public ; aucune donnée joueur réelle non anonymisée             | [ADR 0006](adr/0006-tdd-et-golden-master.md)           |
-| Q9  | Comment savoir qu'une édition est à venir ?    | Statut déduit de la date, des publications et d'une éventuelle clôture | [ADR 0013](adr/0013-statut-d-edition-deduit.md)        |
+| Q9  | Comment savoir qu'une édition est à venir ?    | Statut déduit, jamais saisi. La règle exacte est proposée dans l'ADR   | [ADR 0013](adr/0013-statut-d-edition-deduit.md)        |
 | Q11 | Garder la bio des cartes ?                     | Non                                                                    | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
 | Q12 | Où stocker les logos d'équipe ?                | Dans le stockage de fichiers ; la table ne garde que l'adresse         | [ADR 0015](adr/0015-logos-hors-de-la-base.md)          |
 | Q13 | Garder la composition des équipes d'In House ? | Non migrée : ces équipes n'existent que le temps d'une soirée          | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |

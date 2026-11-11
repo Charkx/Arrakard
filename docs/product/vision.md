@@ -18,11 +18,14 @@ Les identifiants renvoient aux [cas d'usage](use-cases.md).
 
 - **Le récap**, cœur du site : après chaque publication de résultats, qui
   monte, qui change de palier, le MVP, les badges gagnés (V11). Un lien à
-  poster sur Discord (S3).
-- **Une carte qui a une histoire** : sa note après chaque publication, et
-  pourquoi elle a bougé (V3, V10).
-- **La saison comme un album** : à la clôture, les cartes sont figées, les
-  récompenses calculées, et chacun reçoit son bilan à partager (V8, V12).
+  poster sur Discord (S3). L'accueil montre la dernière édition, la
+  prochaine, et au joueur connecté où il en est (V7, J5).
+- **Une carte qui a une histoire** : on remonte le temps pour revoir sa
+  carte après chaque édition, on lit pourquoi sa note a bougé, et ce qui
+  manque pour le palier suivant (V3, V10).
+- **La saison comme un album** : à la clôture, les cartes sont figées et les
+  récompenses calculées (meilleure progression, révélation, meilleur duo).
+  Chacun reçoit son bilan à partager (V8, V12).
 
 **Pour la note**
 

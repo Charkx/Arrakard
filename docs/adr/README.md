@@ -32,7 +32,7 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0010](0010-travailler-avec-un-agent.md)                | Travailler avec un agent : trois portes, trois modes | Accepté |
 | [0011](0011-livrer-par-tranches.md)                     | Livrer par tranches, la lecture d'abord              | Accepté |
 | [0012](0012-publier-les-resultats.md)                   | Publier les résultats : brouillon, aperçu, récap     | Accepté |
-| [0013](0013-statut-d-edition-deduit.md)                 | Déduire le statut d'une édition                      | Accepté |
+| [0013](0013-statut-d-edition-deduit.md)                 | Déduire le statut d'une édition                      | Proposé |
 | [0014](0014-une-seule-periode-la-saison.md)             | Une seule période de compétition : la saison         | Accepté |
 | [0015](0015-logos-hors-de-la-base.md)                   | Stocker les logos d'équipe hors de la base           | Accepté |
 | [0016](0016-perimetre-repris-de-la-v1.md)               | Ne reprendre de la v1 que ce qui sert                | Accepté |

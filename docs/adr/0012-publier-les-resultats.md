@@ -16,7 +16,7 @@ ce que la soirée d'hier a changé ».
 ## Décision
 
 1. Un résultat saisi ou importé est d'abord un **brouillon** : enregistré,
-   mais ignoré par les projections et invisible du public.
+   mais invisible du public et ignoré par tout ce qu'il voit.
 2. Une commande **publie** les brouillons d'une édition. Chaque
    **publication** est un fait : quelle édition, quels matchs, quand, par qui.
 3. Avant de publier, l'admin lit un **aperçu** : ce que la publication
@@ -26,7 +26,8 @@ ce que la soirée d'hier a changé ».
 L'aperçu, le récap et l'historique de note sont des **projections** : la
 différence entre l'état avant et l'état après une publication, calculée par
 une fonction pure du domaine
-([ADR 0003](0003-faits-et-projections.md)).
+([ADR 0003](0003-faits-et-projections.md)). L'aperçu est la seule projection
+qui compte les brouillons, et seul l'admin la voit.
 
 ## Options écartées
 
@@ -50,8 +51,14 @@ une fonction pure du domaine
 - Le domaine doit savoir calculer l'état « à la date d'une publication ». À
   ~400 matchs, on recalcule tout à chaque fois ; le seuil de réexamen reste
   2 secondes ([vision](../product/vision.md#volumétrie)).
-- Le schéma gagne les publications et le lien entre un match et sa
-  publication. La migration crée les publications des éditions de la v1, au
-  grain le plus fin que ses données permettent.
-- Le statut d'une édition se déduit en partie des publications
-  ([ADR 0013](0013-statut-d-edition-deduit.md)).
+- Tout cela se construit en tranche 2. En tranche 1, l'historique de note
+  reste celui qui existe déjà, édition par édition.
+- Le schéma gagnera les publications et le lien entre un match et sa
+  publication. La migration créera alors une publication par édition de la
+  v1, ou par journée quand elle est connue.
+- Le [modèle de données](../architecture/data-model.md), la
+  [vue d'architecture](../architecture/overview.md) et le
+  [modèle C4](../architecture/c4.md) ne décrivent pas encore les brouillons
+  ni les publications. Ils seront mis à jour par le ticket qui les crée.
+- Le statut d'une édition se déduirait en partie des publications
+  ([ADR 0013](0013-statut-d-edition-deduit.md), proposé).
