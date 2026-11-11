@@ -5,8 +5,8 @@ Ce document suit la démarche Merise, en deux niveaux :
 1. **MCD** (modèle conceptuel de données) : les entités du métier, leurs
    associations et leurs cardinalités, indépendamment de toute base de données.
 2. **MLD** (modèle logique de données) : sa traduction en tables relationnelles,
-   telle qu'implémentée dans
-   [la migration initiale](../../supabase/migrations/20261005000000_initial_schema.sql).
+   telle que la construisent [les migrations](../../supabase/migrations/),
+   appliquées dans l'ordre.
 
 Les termes suivent le [glossaire](../domain/glossary.md).
 
@@ -38,15 +38,13 @@ flowchart LR
   classDef assoc fill:#f5f5f5,stroke:#666,color:#000
 
   ORG["<b>ORGANISATION</b><hr/><u>id</u><br/>slug<br/>nom<br/>règles de note<br/>serveur Discord<br/>rôle admin Discord"]:::entity
-  SAISON["<b>SAISON</b><hr/><u>id</u><br/>nom<br/>année"]:::entity
-  SPLIT["<b>SPLIT</b><hr/><u>id</u><br/>numéro<br/>nom<br/>début, fin<br/>statut"]:::entity
+  SAISON["<b>SAISON</b><hr/><u>id</u><br/>nom<br/>année<br/>début, fin<br/>statut"]:::entity
   EDITION["<b>ÉDITION</b><hr/><u>id</u><br/>nom, type, date<br/>prestige<br/>multiplicateur exceptionnel<br/>justification<br/>barème<br/>numéro d'affichage<br/>lieu, lien, description<br/>version"]:::entity
   MATCH["<b>MATCH</b><hr/><u>id</u><br/>numéro<br/>équipe gagnante<br/>durée<br/>journée<br/>finale"]:::entity
   JOUEUR["<b>JOUEUR</b><hr/><u>id</u><br/>pseudo<br/>archivé"]:::entity
 
   organiser(["ORGANISER"]):::assoc
   accueillir(["PROGRAMMER"]):::assoc
-  composer(["COMPOSER"]):::assoc
   rattacher(["RATTACHER"]):::assoc
   contenir(["CONTENIR"]):::assoc
   jouer(["JOUER<hr/>ligne, côté<br/>équipe, rôle, champion<br/>résultat<br/>kills, morts, assists<br/>or"]):::assoc
@@ -56,8 +54,7 @@ flowchart LR
 
   ORG ---|"0,n"| organiser ---|"1,1"| SAISON
   ORG ---|"0,n"| accueillir ---|"1,1"| EDITION
-  SAISON ---|"0,n"| composer ---|"1,1"| SPLIT
-  SPLIT ---|"0,n"| rattacher ---|"0,1"| EDITION
+  SAISON ---|"0,n"| rattacher ---|"0,1"| EDITION
   EDITION ---|"0,n"| contenir ---|"1,1"| MATCH
   MATCH ---|"1,10"| jouer ---|"0,n"| JOUEUR
   MATCH ---|"0,1"| mvpMatch ---|"0,n"| JOUEUR
@@ -70,8 +67,8 @@ flowchart LR
 - Un match fait jouer **de 1 à 10** joueurs (5 rôles × 2 équipes) ; un joueur
   joue **0 à n** matchs. Les statistiques du joueur sont des **propriétés de
   l'association** JOUER : elles n'appartiennent ni au joueur ni au match seuls.
-- Une édition est rattachée à **0 ou 1** split : un événement externe peut
-  n'appartenir à aucun split.
+- Une édition est rattachée à **0 ou 1** saison. Sans saison, c'est une
+  édition hors saison : elle ne compte dans aucune note de saison.
 
 ### Vue 2 : les personnes et les équipes
 
@@ -149,8 +146,7 @@ Deux règles propres à Arrakis, non représentées pour alléger le schéma :
 erDiagram
   organizations ||--o{ organization_members : "a pour membres"
   organizations ||--o{ seasons : organise
-  seasons ||--o{ splits : compose
-  splits |o--o{ editions : "rattache"
+  seasons |o--o{ editions : "rattache"
   editions ||--o{ matches : contient
   matches ||--|{ performances : "fait jouer"
   players ||--o{ performances : joue
@@ -181,16 +177,13 @@ erDiagram
     uuid id PK
     text name
     int year
-  }
-  splits {
-    uuid id PK
-    uuid season_id FK
-    int number
+    date start_date
+    date end_date
     text status
   }
   editions {
     uuid id PK
-    uuid split_id FK
+    uuid season_id FK
     uuid event_mvp_player_id FK
     text type
     date date
@@ -271,15 +264,15 @@ tables puis relancer le recalcul redonne le même état.
 
 ```mermaid
 erDiagram
-  splits ||--o{ player_split_ratings : "note par split"
-  players ||--o{ player_split_ratings : ""
+  seasons ||--o{ player_season_ratings : "note par saison"
+  players ||--o{ player_season_ratings : ""
   editions ||--o{ player_edition_history : "historique"
   players ||--o{ player_edition_history : ""
   editions ||--o{ edition_standings : "classement de soirée"
   players ||--o{ edition_standings : ""
 
-  player_split_ratings {
-    uuid split_id PK,FK
+  player_season_ratings {
+    uuid season_id PK,FK
     uuid player_id PK,FK
     int rating
     int impact

@@ -17,14 +17,14 @@ Le cœur du modèle ([ADR 0003](../adr/0003-faits-et-projections.md)).
 ```mermaid
 flowchart LR
   subgraph Faits["Faits (écrits par les commandes)"]
-    F1[saisons, splits]
+    F1[saisons]
     F2[éditions, matchs, performances]
     F3[joueurs, alias, équipes, transferts]
     F4[personnalisation, inscriptions]
   end
   P{{"domain.project(faits)<br/>fonction pure"}}
   subgraph Projections["Projections (jetables)"]
-    P1[notes par joueur et par split]
+    P1[notes par joueur et par saison]
     P2[historique par édition]
     P3[classements de soirée]
     P4[badges]
@@ -34,15 +34,15 @@ flowchart LR
 
 Schéma indicatif, à figer en tranche 1 :
 
-| Faits                                               | Projections                                                                         |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `seasons`, `splits`                                 | `player_split_ratings` (note, sous-notes, palier, forme ; `is_final` après clôture) |
-| `editions` (avec `scoring`, `version`)              | `player_edition_history`                                                            |
-| `matches`, `performances` (`player_id` obligatoire) | `edition_standings`                                                                 |
-| `players`, `player_aliases`                         | `player_badges`                                                                     |
-| `teams`, `team_memberships` (datées)                |                                                                                     |
-| `card_customizations`, `registrations`              |                                                                                     |
-| `edition_participants` (événements externes)        |                                                                                     |
+| Faits                                               | Projections                                               |
+| --------------------------------------------------- | --------------------------------------------------------- |
+| `seasons` (dates, état)                             | `player_season_ratings` (note, sous-notes, palier, forme) |
+| `editions` (avec `scoring`, `version`)              | `player_edition_history`                                  |
+| `matches`, `performances` (`player_id` obligatoire) | `edition_standings`                                       |
+| `players`, `player_aliases`                         | `player_badges`                                           |
+| `teams`, `team_memberships` (datées)                |                                                           |
+| `card_customizations`, `registrations`              |                                                           |
+| `edition_participants` (événements externes)        |                                                           |
 
 Règles :
 
@@ -50,8 +50,8 @@ Règles :
   transaction que la commande qui les a rendues obsolètes.
 - Supprimer toutes les projections puis relancer le recalcul doit redonner
   exactement le même état (test automatique).
-- Les instantanés de split clos sont recalculés comme le reste. « Figé »
-  signifie que le split ne reçoit plus de nouveaux matchs, pas que la valeur
+- Les instantanés de saison clôturée sont recalculés comme le reste. « Figé »
+  signifie que la saison ne reçoit plus de nouveaux matchs, pas que la valeur
   est stockée à part.
 
 ## Chemin d'écriture : une commande
