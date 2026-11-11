@@ -75,12 +75,8 @@ utiliser ».
 
 ### ADR
 
-Proposer un ADR selon la règle de `docs/adr/README.md` : dès que le choix est
-**coûteux à défaire**, ou qu'un nouveau contributeur se demanderait **« pourquoi
-c'est fait comme ça ? »**. Une seule des deux conditions suffit. Un choix facile
-à défaire et sans surprise n'en a pas besoin.
-
-Dans ce cas :
+Proposer un ADR dans les cas prévus par `docs/adr/README.md`, section « Quand en
+écrire un ». Quand un ADR s'impose :
 
 - copier `docs/adr/template.md` vers `docs/adr/NNNN-titre-court.md`, avec le
   numéro qui suit le plus grand existant ;

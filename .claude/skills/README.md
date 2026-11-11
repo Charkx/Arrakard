@@ -35,10 +35,11 @@ Ce qui a changé par rapport à l'origine :
   `docs/contributing.md`. Le renvoi au skill `codebase-design` a été retiré.
 - **`grill-with-docs`** : réunit `grilling` et `domain-modeling`, cherche les
   faits sans sous-agent, et met à jour `docs/open-questions.md`. Un ADR se
-  propose selon la règle de `docs/adr/README.md` (une condition suffit, contre
-  trois à l'origine).
+  propose selon la règle de `docs/adr/README.md`, et non selon les trois
+  conditions d'origine.
 - **`to-tickets`** : GitHub seulement, critères titrés « Done when », pas de
-  label de triage, rien n'est publié avant validation.
+  label de triage, rien n'est publié avant validation. Chaque ticket porte son
+  mode (Ensemble, Délégué ou Outillage).
 - **`to-questionnaire`** : écrit dans `docs/questionnaires/`, sans donnée réelle
   de joueur.
 - **`revue`** : renommé pour ne pas se confondre avec la commande intégrée

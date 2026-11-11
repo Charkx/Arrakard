@@ -1,6 +1,6 @@
 ---
 name: ping-pong
-description: TDD en ping-pong entre Charly et l'agent, chacun faisant passer le test rouge de l'autre. À utiliser pour un ticket en mode Ensemble, donc le premier exemplaire d'une famille de code (une commande, une vue, une règle d'accès), ou quand Charly dit « ping-pong ».
+description: TDD en ping-pong entre Charly et l'agent, chacun faisant passer le test rouge de l'autre. À utiliser pour un ticket en mode Ensemble, donc le premier exemplaire d'une famille de code, ou quand Charly dit « ping-pong ».
 ---
 
 # Ping-pong

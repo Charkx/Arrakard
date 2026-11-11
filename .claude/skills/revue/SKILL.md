@@ -118,6 +118,6 @@ chaque axe.
 ## 6. Rappeler la suite du rituel
 
 La revue ne remplace pas l'étape suivante : avant de fusionner, Charly vérifie
-qu'il comprend. En mode Ensemble, chaque ligne. En mode Délégué, ce que fait la PR
-et pourquoi. Lui proposer de l'interroger sur les passages les plus denses du
-diff, sans donner les réponses d'avance.
+qu'il comprend. En mode Ensemble, chaque ligne. Dans les deux autres modes, ce
+que fait la PR et pourquoi. Lui proposer de l'interroger sur les passages les
+plus denses du diff, sans donner les réponses d'avance.

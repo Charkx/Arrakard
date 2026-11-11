@@ -57,18 +57,22 @@ code : voir [Travailler avec un agent](#travailler-avec-un-agent).
 
 Le projet se fait seul, avec un agent de code. Les règles que l'agent suit sont
 dans [`CLAUDE.md`](../CLAUDE.md). Cette section fixe la méthode : ce qu'on fait
-à chaque fois, sans le rediscuter.
+à chaque fois, sans le rediscuter. Son pourquoi est dans
+l'[ADR 0010](adr/0010-travailler-avec-un-agent.md).
 
 ### Trois portes
 
-L'agent va vite. Ce qui garde le contrôle, ce sont trois décisions qu'il ne
-prend jamais seul :
+L'agent va vite. Ce qui garde le contrôle, ce sont trois décisions qui
+reviennent toujours à Charly, hors petite correction. Les rituels plus bas en
+donnent le détail.
 
 1. **Le ticket** : quoi construire.
 2. **Le plan** : comment le construire.
 3. **La fusion** : oui ou non, sur une PR dont la CI est verte.
 
-Entre deux portes, l'agent avance seul, sur une branche.
+Entre deux portes, le travail avance sans nouvelle validation, sur une branche
+et jamais sur `main` : à deux en mode Ensemble, l'agent seul dans les autres
+modes.
 
 ### Trois modes
 
@@ -80,24 +84,26 @@ Chaque ticket porte son mode, fixé au découpage.
 | **Délégué**   | Les suivants de la même famille             | L'agent seul, en TDD                             |
 | **Outillage** | CI, scripts, configuration, documentation   | L'agent seul                                     |
 
-Une famille de code est un modèle qui se répète : une commande, une vue, une
-règle d'accès. Un ticket ne passe en Délégué que si un exemple de sa famille a
-déjà été écrit Ensemble. En ping-pong, l'agent tient le rôle de B, et le skill
-`ping-pong` fixe le détail. Si une PR déléguée n'est pas comprise, sa famille
-repasse en Ensemble.
+Une famille de code est un modèle qui se répète : une commande, une vue SQL, une
+règle d'accès, un module du domaine. Un ticket ne passe en Délégué que si un
+exemple de sa famille a déjà été écrit Ensemble. Un code métier qui ne ressemble
+à aucun exemple existant est donc le premier de sa famille, et s'écrit Ensemble.
+
+En ping-pong, l'agent tient le rôle de B, et le skill `ping-pong` fixe le
+détail. Si une PR déléguée n'est pas comprise, sa famille repasse en Ensemble.
 
 ### Les rituels
 
-1. **Partir d'une issue.** Hors petite correction, chaque travail part d'une
-   issue GitHub. Sa liste « Done when » sert de critères d'acceptation : chaque
-   ligne se vérifie par un test ou une action précise.
+1. **Partir d'un ticket.** Hors petite correction, chaque travail part d'un
+   ticket : une issue GitHub dont la liste « Done when » sert de critères
+   d'acceptation. Chaque ligne se vérifie par un test ou une action précise.
 2. **Le plan d'abord.** Pour tout ce qui dépasse une petite correction, l'agent
    montre son plan et attend la validation avant de toucher au dépôt.
 3. **Une revue avant chaque fusion.** Seul, il n'y a pas de relecteur : l'agent
    lance `revue` sur chaque PR avant de la présenter, joint les deux rapports et
    corrige ce qui doit l'être. Avant de fusionner, on vérifie qu'on comprend :
-   chaque ligne en mode Ensemble, ce que fait la PR et pourquoi en mode Délégué.
-   L'agent explique toute ligne sur demande.
+   chaque ligne en mode Ensemble, ce que fait la PR et pourquoi dans les deux
+   autres modes.
 4. **Une maquette avant tout changement visuel.** On valide ce qu'on va voir
    avant d'écrire le code qui l'affiche.
 5. **Un handoff à la fin de chaque session.** `handoff` note l'état, les
@@ -106,15 +112,17 @@ repasse en Ensemble.
    gêné, ce qu'on change. Ses conclusions vont dans le dépôt
    (`docs/debriefs/phase-N.md`), pas seulement dans la mémoire locale de l'agent.
 
-### Une PR déléguée
+### Une PR écrite par l'agent seul
 
-Pour que la fusion se décide vite et sans risque, l'agent livre :
+En mode Délégué comme en mode Outillage, pour que la fusion se décide vite et
+sans risque, l'agent livre :
 
 - une PR petite : un ticket, une branche ;
 - une description en mots simples : ce que ça fait, le « Done when » coché avec
   sa preuve, où regarder en priorité, ce qui n'a pas pu être vérifié ;
 - `pnpm check` et `supabase test db` verts en local, et la CI verte ;
-- les deux rapports de `revue`, corrections faites.
+- les deux rapports de `revue`, corrections faites ;
+- l'explication de n'importe quelle ligne, sur demande.
 
 ### Quand l'agent s'arrête
 
@@ -151,8 +159,15 @@ la plus solide à la plus fragile :
   se contourne : il évite les erreurs, il ne protège pas `main`.
 
 La vraie barrière pour `main` est sa protection sur GitHub : une PR et une CI
-verte obligatoires, y compris pour l'administrateur du dépôt. Elle se règle une
-fois, à la main, dans les réglages du dépôt.
+verte obligatoires, y compris pour l'administrateur du dépôt. Elle n'existe que
+si l'administrateur l'a activée dans les réglages du dépôt. Pour le vérifier :
+
+```bash
+curl -s https://api.github.com/repos/Charkx/Arrakard/branches/main | jq .protected
+```
+
+Tant que la réponse n'est pas `true`, seul le filtre ci-dessus retient un push
+direct sur `main`.
 
 ## Définition de « terminé »
 

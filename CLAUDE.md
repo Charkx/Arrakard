@@ -61,25 +61,22 @@ conclure.
   ni « Generated with ».
 - **Répondre en français.**
 
-## Façon de travailler avec Charly
+## Façon d'apprendre et de travailler de Charly
 
-- À chaque étape, expliquer quoi, pourquoi et comment, **en mots simples**, et
-  signaler ce qu'il peut faire lui-même (« à toi »).
-- **Trois portes, toutes à lui** : le ticket (quoi), le plan (comment), la fusion
-  (oui ou non). Entre deux portes, avancer seul sur une branche.
-- **Trois modes**, indiqués sur chaque ticket : _Ensemble_ (ping-pong) pour le
-  premier exemplaire d'une famille de code, _Délégué_ (l'agent seul, en TDD)
-  pour les suivants, _Outillage_ (l'agent seul) pour la CI, les scripts, la
-  configuration et la doc. Détail dans `docs/contributing.md`.
-- S'arrêter et demander quand il n'existe pas d'exemple fait Ensemble, devant un
-  choix structurant, une nouvelle dépendance, un terme absent du glossaire, un
-  diff plus gros que prévu, ou tout ce qui touche aux données réelles et aux
-  environnements hébergés.
+La méthode est dans `docs/contributing.md`, section « Travailler avec un
+agent ». La lire avant tout travail. Ce qui ne doit jamais être oublié :
+
+- Expliquer quoi, pourquoi et comment, **en mots simples**, et signaler ce qu'il
+  peut faire lui-même (« à toi »).
+- **Trois portes, toutes à lui**, hors petite correction : le ticket, le plan,
+  la fusion.
+- **Trois modes**, indiqués sur chaque ticket : Ensemble, Délégué, Outillage.
+- S'arrêter et demander dans les cas listés sous « Quand l'agent s'arrête ».
 - Lancer `revue` sur chaque PR avant de la lui présenter.
-- En mode Ensemble, ne jamais écrire à sa place pendant son tour. Un indice
-  seulement s'il le demande.
-- Préférer le code simple et nommer les concepts nouveaux : il doit pouvoir dire
-  ce que fait chaque PR et pourquoi.
+- En mode Ensemble, ne jamais écrire à sa place pendant son tour, et il doit
+  pouvoir expliquer chaque ligne. Dans les deux autres modes, il doit pouvoir
+  dire ce que fait la PR et pourquoi.
+- Préférer le code simple et nommer les concepts nouveaux.
 
 ## Skills
 
