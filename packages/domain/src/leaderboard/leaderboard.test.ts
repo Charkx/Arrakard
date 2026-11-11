@@ -128,7 +128,7 @@ describe('rankLeaderboard', () => {
     });
   });
 
-  describe('rang précédent : position selon la note avant la dernière édition du split', () => {
+  describe('rang précédent : position selon la note avant la dernière édition de la saison', () => {
     it('reclasse les joueurs selon leur note précédente', () => {
       const players = [
         aLeaderboardPlayer({ playerId: 'riser', rating: 85, previousRating: 70 }),

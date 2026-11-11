@@ -13,10 +13,10 @@ Chaque exemple chiffré de ce document deviendra un test.
 
 ## Entrées
 
-- Les **performances** d'un joueur dans les éditions du **split actif**.
+- Les **performances** d'un joueur dans les éditions de la **saison active**.
 - Le **prestige** de l'édition de chaque match.
 
-Les éditions hors du split actif ne comptent pas dans la note live. Elles
+Les éditions hors de la saison active ne comptent pas dans la note live. Elles
 servent à l'historique.
 
 ## Constantes
@@ -103,12 +103,12 @@ note = clamp(round(impact × 0,35 + consistance × 0,35 + clutch × 0,30), 60, 9
 **9. Forme récente.** Sur les 3 dernières performances : 2 ou 3 victoires →
 `up`, 0 → `down`, sinon `stable`.
 
-## Exemples réels (Saison 3, Split 1)
+## Exemples réels (Saison 3)
 
 Statistiques réelles, joueurs anonymisés (le dépôt est public, voir
 [ADR 0006](../adr/0006-tdd-et-golden-master.md)).
 
-Toutes les éditions de ce split ont le prestige `championship` (×1,6). Comme le
+Toutes les éditions de cette saison ont le prestige `championship` (×1,6). Comme le
 poids est le même pour chaque match, les stats pondérées sont égales aux stats
 brutes.
 
@@ -146,7 +146,7 @@ Sans la fiabilité, un KDA de 7,9 sur 5 parties donnerait une note Élite.
 | clutch      | round(51,89 + 41,375) = round(93,27)      | **93**         |
 | note        | round(34,65 + 29,05 + 27,9) = round(91,6) | **92 — Élite** |
 
-### Autres valeurs de référence (même split)
+### Autres valeurs de référence (même saison)
 
 | Joueur   | Rôle · parties | V   | K/D/A      | Impact | Cons. | Clutch | Note              |
 | -------- | -------------- | --- | ---------- | ------ | ----- | ------ | ----------------- |
@@ -164,15 +164,15 @@ Tri par note décroissante, puis départage dans cet ordre :
 3. nombre de parties (décroissant)
 4. pseudo (ordre alphabétique)
 
-Seuls figurent les joueurs non archivés ayant au moins **5 parties** dans le
-split. Filtres possibles : rôle, division de l'équipe.
+Seuls figurent les joueurs non archivés ayant au moins **5 parties** dans la
+saison. Filtres possibles : rôle, division de l'équipe.
 
 **Différences assumées en v2** (le classement n'entre pas dans le golden
 master) :
 
 - Comparaison des pseudos à la française (`Intl.Collator('fr')`, accents et
   casse ignorés). En v1, elle dépendait de la langue du navigateur.
-- Rang précédent : position selon la note **du split avant sa dernière
+- Rang précédent : position selon la note **de la saison avant sa dernière
   édition**, pour le seul tri par note. En v1, il reposait sur la note de
   carrière toutes périodes confondues. Un joueur sans note précédente est
   « nouveau ».
@@ -201,7 +201,7 @@ Le golden master les reproduit. Les corriger est une décision produit
 | --- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | A1  | Le prestige est saisi à la main pour chaque édition                                | La Div 2 était `premium` en S1–S2 et `championship` en S3 : une même performance vaut plus selon l'année |
 | A2  | Le plancher à 60 écrase le bas du classement                                       | Le joueur F (sous-notes ~55,6) et un joueur à ~50 affichent tous deux 60                                 |
-| A3  | L'impact sature vite (KDA fiabilisé ≥ ~1,64 × médiane → 99)                        | Les 3 premiers du split ont tous 99 d'impact : la sous-note ne les départage plus                        |
+| A3  | L'impact sature vite (KDA fiabilisé ≥ ~1,64 × médiane → 99)                        | Les 3 premiers de la saison ont tous 99 d'impact : la sous-note ne les départage plus                    |
 | A4  | Arrondis mélangés (clutch non arrondi, note arrondie)                              | Écarts de ±1 selon l'implémentation : à reproduire exactement                                            |
 | A5  | Forme récente prise dans l'ordre de stockage des matchs, pas l'ordre chronologique | Peut être fausse si les éditions ne sont pas stockées par date                                           |
 | A6  | Égalité de rôle dominant tranchée par ordre de rencontre                           | Résultat dépendant de l'ordre des données                                                                |

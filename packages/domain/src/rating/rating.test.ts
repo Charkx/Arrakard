@@ -60,7 +60,7 @@ describe('computeRating', () => {
     });
   });
 
-  describe('exemples réels de la spec (S3 Split 1, anonymisés)', () => {
+  describe('exemples réels de la spec (Saison 3, anonymisés)', () => {
     it.each([
       ['B — impact plafonné à 99', 'JGL', 24, 19, 165, 74, 219, [92, 99, 83, 93, 'elite']],
       ['C — médiane TOP à 2,5', 'TOP', 25, 18, 115, 61, 173, [90, 99, 77, 95, 'elite']],

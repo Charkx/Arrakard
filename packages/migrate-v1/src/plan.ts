@@ -1,8 +1,9 @@
 import type { EditionType, Role } from '@arrakis/domain';
+import { planCalendar } from './calendar.ts';
 import { resolveIdentities, type Sighting } from './identity.ts';
 import { cardCustomizations, teamMemberships } from './players.ts';
 import type { V1Dump, V1EditionType, V1Match, V1MatchRow, V1PlayerEventEntry } from './v1.ts';
-import type { V2Edition, V2Match, V2Performance, V2Rows, V2Split } from './v2.ts';
+import type { V2Edition, V2Match, V2Performance, V2Rows } from './v2.ts';
 
 export interface Anomaly {
   readonly code: string;
@@ -14,6 +15,8 @@ export interface MigrationPlan {
   readonly report: readonly Anomaly[];
   /** Clé de joueur v1 → joueur v2 : relie la référence v1 aux lignes migrées. */
   readonly playerIdByKey: ReadonlyMap<string, string>;
+  /** Split v1 → saison v2 : la référence v1 note par split, la v2 par saison. */
+  readonly seasonIdBySplitId: ReadonlyMap<string, string>;
 }
 
 /** Types d'édition : seuls les deux types de ligue changent de nom. */
@@ -79,18 +82,11 @@ export function planMigration(dump: V1Dump): MigrationPlan {
     checkResults(match, performancesByMatch.get(match.id) ?? [], report);
   }
 
+  const calendar = planCalendar(dump, report);
+
   return {
     rows: {
-      seasons: dump.seasons.map(({ id, name, year }) => ({ id, name, year })),
-      splits: dump.splits.map((s): V2Split => ({
-        id: s.id,
-        season_id: s.season_id,
-        number: s.number,
-        name: s.name,
-        start_date: s.start_date,
-        end_date: s.end_date,
-        status: s.is_active ? 'open' : 'closed',
-      })),
+      seasons: calendar.seasons,
       teams: dump.teams.map(({ id, tag, name, divisions, logo_url, archived_at }) => ({
         id,
         tag,
@@ -101,8 +97,10 @@ export function planMigration(dump: V1Dump): MigrationPlan {
       })),
       players: identities.players,
       player_aliases: identities.aliases,
-      team_memberships: teamMemberships(dump, (playerId, tag) =>
-        firstPlayed.get(`${playerId}|${tag}`),
+      team_memberships: teamMemberships(
+        dump,
+        (playerId, tag) => firstPlayed.get(`${playerId}|${tag}`),
+        calendar.activeSeasonStart,
       ),
       editions: dump.editions.map((e): V2Edition => {
         const mvp =
@@ -118,7 +116,7 @@ export function planMigration(dump: V1Dump): MigrationPlan {
           name: e.name,
           type: EDITION_TYPE[e.type],
           date: e.date,
-          split_id: e.split_id,
+          season_id: calendar.seasonIdOf(e),
           prestige: e.prestige,
           event_mvp_player_id: mvp,
           display_number: e.display_number,
@@ -141,6 +139,7 @@ export function planMigration(dump: V1Dump): MigrationPlan {
     },
     report,
     playerIdByKey: identities.playerIdByKey,
+    seasonIdBySplitId: calendar.seasonIdBySplitId,
   };
 }
 

@@ -14,10 +14,9 @@ export type EditionType =
 
 export type Prestige = 'normal' | 'premium' | 'championship';
 
-export interface SplitFact {
+/** Période de compétition : une note ne compte que les matchs d'une saison (ADR 0014). */
+export interface SeasonFact {
   readonly id: string;
-  readonly seasonId: string;
-  readonly number: number;
 }
 
 export interface EditionFact {
@@ -25,7 +24,8 @@ export interface EditionFact {
   readonly type: EditionType;
   /** Date ISO (AAAA-MM-JJ). */
   readonly date: string;
-  readonly splitId: string | null;
+  /** Saison de l'édition ; null si elle est hors saison et ne compte dans aucune note de saison. */
+  readonly seasonId: string | null;
   /** Prestige saisi (règles v1). */
   readonly prestige: Prestige;
   /** Exception au multiplicateur du type (règles E1), toujours justifiée. */
@@ -65,7 +65,7 @@ export interface PlayerFact {
 }
 
 export interface Facts {
-  readonly splits: readonly SplitFact[];
+  readonly seasons: readonly SeasonFact[];
   readonly editions: readonly EditionFact[];
   readonly matches: readonly MatchFact[];
   readonly performances: readonly PerformanceFact[];

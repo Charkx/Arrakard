@@ -9,13 +9,13 @@ import {
 import { computePlayerStats, type PlayerStats } from '../stats/stats.ts';
 import type { EditionFact, Facts, MatchFact, PerformanceFact } from '../facts.ts';
 
-/** Note et statistiques d'un joueur sur un split. */
-export interface SplitRating {
+/** Note et statistiques d'un joueur sur une saison. */
+export interface SeasonRating {
   readonly playerId: string;
-  readonly splitId: string;
+  readonly seasonId: string;
   readonly rating: RatingResult;
   readonly stats: PlayerStats;
-  /** Note avant la dernière édition du split ; null si le joueur la découvrait. */
+  /** Note avant la dernière édition de la saison ; null si le joueur la découvrait. */
   readonly previousRating: number | null;
 }
 
@@ -37,7 +37,7 @@ export interface EditionStandings {
 
 /** Projections : tout ce qui se recalcule à partir des faits (ADR 0003). */
 export interface Projections {
-  readonly splitRatings: readonly SplitRating[];
+  readonly seasonRatings: readonly SeasonRating[];
   readonly editionHistory: readonly EditionHistoryEntry[];
   readonly editionStandings: readonly EditionStandings[];
 }
@@ -64,7 +64,7 @@ export function project(facts: Facts, rules: RatingRules): Projections {
   const played = chronological(facts, editions, rules);
 
   return {
-    splitRatings: projectSplitRatings(played),
+    seasonRatings: projectSeasonRatings(played),
     editionHistory: projectEditionHistory(played, editions),
     editionStandings: projectEditionStandings(played, editions, facts),
   };
@@ -114,19 +114,19 @@ function chronological(
   );
 }
 
-function projectSplitRatings(played: readonly Played[]): SplitRating[] {
-  const bySplit = new Map<string, Played[]>();
+function projectSeasonRatings(played: readonly Played[]): SeasonRating[] {
+  const bySeason = new Map<string, Played[]>();
   for (const p of played) {
-    const { splitId } = p.edition;
-    if (!p.counts || splitId === null) continue;
-    bySplit.set(splitId, [...(bySplit.get(splitId) ?? []), p]);
+    const { seasonId } = p.edition;
+    if (!p.counts || seasonId === null) continue;
+    bySeason.set(seasonId, [...(bySeason.get(seasonId) ?? []), p]);
   }
 
-  return [...bySplit]
+  return [...bySeason]
     .sort(([a], [b]) => compareStrings(a, b))
-    .flatMap(([splitId, splitPlayed]) => {
-      const lastEditionId = splitPlayed.at(-1)?.edition.id;
-      return [...Map.groupBy(splitPlayed, (p) => p.fact.playerId)]
+    .flatMap(([seasonId, seasonPlayed]) => {
+      const lastEditionId = seasonPlayed.at(-1)?.edition.id;
+      return [...Map.groupBy(seasonPlayed, (p) => p.fact.playerId)]
         .sort(([a], [b]) => compareStrings(a, b))
         .map(([playerId, own]) => {
           const performances = own.map((p) => p.performance);
@@ -135,7 +135,7 @@ function projectSplitRatings(played: readonly Played[]): SplitRating[] {
             .map((p) => p.performance);
           return {
             playerId,
-            splitId,
+            seasonId,
             rating: computeRating(performances),
             stats: computePlayerStats(performances),
             previousRating: before.length > 0 ? computeRating(before).rating : null,

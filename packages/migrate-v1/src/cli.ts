@@ -65,7 +65,7 @@ for (const [field, list] of Map.groupBy(discrepancies, (d) => d.field)) {
   console.log(`### ${field} (${list.length})`);
   for (const d of list.slice(0, 15)) {
     console.log(
-      `- ${names.get(d.playerId) ?? d.playerId} · split ${d.splitId.slice(0, 8)} : v1 ${d.v1} → v2 ${d.v2}`,
+      `- ${names.get(d.playerId) ?? d.playerId} · saison ${d.seasonId.slice(0, 8)} : v1 ${d.v1} → v2 ${d.v2}`,
     );
   }
   if (list.length > 15) console.log(`- … et ${list.length - 15} autres`);

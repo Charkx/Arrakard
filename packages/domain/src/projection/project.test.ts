@@ -22,7 +22,7 @@ function anEdition(
     id: `e${++sequence}`,
     type: 'league_div1',
     date: '2026-01-01',
-    splitId: 's1',
+    seasonId: 's1',
     prestige: 'normal',
     ...overrides,
   };
@@ -56,10 +56,7 @@ function anEdition(
 function facts(...parts: Pick<Facts, 'editions' | 'matches' | 'performances'>[]): Facts {
   const ids = new Set(parts.flatMap((p) => p.performances.map((x) => x.playerId)));
   return {
-    splits: [
-      { id: 's1', seasonId: 'season-1', number: 1 },
-      { id: 's2', seasonId: 'season-2', number: 1 },
-    ],
+    seasons: [{ id: 's1' }, { id: 's2' }],
     editions: parts.flatMap((p) => p.editions),
     matches: parts.flatMap((p) => p.matches),
     performances: parts.flatMap((p) => p.performances),
@@ -67,26 +64,26 @@ function facts(...parts: Pick<Facts, 'editions' | 'matches' | 'performances'>[])
   };
 }
 
-const ratingOf = (playerId: string, splitId: string, projections: ReturnType<typeof project>) =>
-  projections.splitRatings.find((r) => r.playerId === playerId && r.splitId === splitId);
+const ratingOf = (playerId: string, seasonId: string, projections: ReturnType<typeof project>) =>
+  projections.seasonRatings.find((r) => r.playerId === playerId && r.seasonId === seasonId);
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('project', () => {
   it('sans faits, aucune projection', () => {
     expect(project(facts(), V1_RATING_RULES)).toEqual({
-      splitRatings: [],
+      seasonRatings: [],
       editionHistory: [],
       editionStandings: [],
     });
   });
 
-  describe('notes par split', () => {
-    it('chaque split a sa propre note, calculée sur ses seules performances', () => {
+  describe('notes par saison', () => {
+    it('chaque saison a sa propre note, calculée sur ses seules performances', () => {
       const projections = project(
         facts(
-          anEdition({ splitId: 's1' }, [[{ playerId: 'meta', kills: 9, deaths: 1 }]]),
-          anEdition({ splitId: 's2' }, [[{ playerId: 'meta', result: 'loss', deaths: 5 }]]),
+          anEdition({ seasonId: 's1' }, [[{ playerId: 'meta', kills: 9, deaths: 1 }]]),
+          anEdition({ seasonId: 's2' }, [[{ playerId: 'meta', result: 'loss', deaths: 5 }]]),
         ),
         V1_RATING_RULES,
       );
@@ -149,7 +146,7 @@ describe('project', () => {
       expect(ratingOf('meta', 's1', projections)?.stats.games).toBe(1);
     });
 
-    it('un joueur qui n’a joué que des éditions exclues n’a pas de note pour ce split', () => {
+    it('un joueur qui n’a joué que des éditions exclues n’a pas de note pour cette saison', () => {
       const withoutInhouse: RatingRules = {
         ...V1_RATING_RULES,
         countsTowardRating: (e) => e.type !== 'inhouse',
@@ -160,16 +157,16 @@ describe('project', () => {
         withoutInhouse,
       );
 
-      expect(projections.splitRatings).toEqual([]);
+      expect(projections.seasonRatings).toEqual([]);
     });
 
-    it('une édition hors split ne produit pas de note de split', () => {
+    it('une édition hors saison ne produit pas de note de saison', () => {
       const projections = project(
-        facts(anEdition({ splitId: null }, [[{ playerId: 'meta' }]])),
+        facts(anEdition({ seasonId: null }, [[{ playerId: 'meta' }]])),
         V1_RATING_RULES,
       );
 
-      expect(projections.splitRatings).toEqual([]);
+      expect(projections.seasonRatings).toEqual([]);
     });
 
     it('les performances sont prises dans l’ordre chronologique, pas dans l’ordre de stockage (anomalie A5)', () => {
@@ -190,7 +187,7 @@ describe('project', () => {
       expect(ratingOf('meta', 's1', projections)?.stats.recentForm).toBe('up');
     });
 
-    describe('note précédente : avant la dernière édition du split', () => {
+    describe('note précédente : avant la dernière édition de la saison', () => {
       const earlier = anEdition({ date: '2026-01-01' }, [
         [
           { playerId: 'regular', result: 'loss' },
@@ -222,10 +219,10 @@ describe('project', () => {
 
   describe('historique par édition', () => {
     it('une entrée par édition jouée, avec la note de carrière cumulée jusqu’à elle', () => {
-      const first = anEdition({ date: '2026-01-01', splitId: 's1' }, [
+      const first = anEdition({ date: '2026-01-01', seasonId: 's1' }, [
         [{ playerId: 'meta', kills: 4, deaths: 1 }],
       ]);
-      const second = anEdition({ date: '2026-06-01', splitId: 's2' }, [
+      const second = anEdition({ date: '2026-06-01', seasonId: 's2' }, [
         [{ playerId: 'meta', result: 'loss', deaths: 3, assists: 2 }],
         [{ playerId: 'meta', result: 'loss' }],
       ]);
@@ -304,10 +301,10 @@ describe('project', () => {
           { playerId: 'zed', side: 'B', deaths: 2 },
         ],
       ]),
-      anEdition({ date: '2026-02-01', splitId: 's2' }, [[{ playerId: 'zed', assists: 7 }]]),
+      anEdition({ date: '2026-02-01', seasonId: 's2' }, [[{ playerId: 'zed', assists: 7 }]]),
     );
     const reversed: Facts = {
-      splits: [...all.splits].reverse(),
+      seasons: [...all.seasons].reverse(),
       editions: [...all.editions].reverse(),
       matches: [...all.matches].reverse(),
       performances: [...all.performances].reverse(),
@@ -331,14 +328,14 @@ describe('project', () => {
         V1_RATING_RULES,
       );
 
-      expect(projections.splitRatings.map((r) => r.playerId)).toEqual(['meta']);
+      expect(projections.seasonRatings.map((r) => r.playerId)).toEqual(['meta']);
     });
 
     it('une édition sans match (événement externe) ne produit ni historique ni classement', () => {
       const external = anEdition({ type: 'external_lan' }, []);
 
       expect(project(facts(external), V1_RATING_RULES)).toEqual({
-        splitRatings: [],
+        seasonRatings: [],
         editionHistory: [],
         editionStandings: [],
       });

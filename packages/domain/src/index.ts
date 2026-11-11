@@ -62,14 +62,14 @@ export type {
   PerformanceFact,
   PlayerFact,
   Prestige,
-  SplitFact,
+  SeasonFact,
 } from './facts.ts';
 export { project } from './projection/project.ts';
 export type {
   EditionHistoryEntry,
   EditionStandings,
   Projections,
-  SplitRating,
+  SeasonRating,
 } from './projection/project.ts';
 export {
   E1_E2_RATING_RULES,

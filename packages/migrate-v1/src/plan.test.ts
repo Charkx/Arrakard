@@ -6,26 +6,76 @@ import {
   aV1Match,
   aV1Player,
   aV1Row,
+  aV1Season,
   aV1Split,
 } from './testing/v1-builders.ts';
 
 describe('planMigration', () => {
   describe('calendrier', () => {
-    it('reprend les saisons, et ferme tous les splits sauf le split actif', () => {
+    it('chaque saison reprend les dates et l’état de son split v1', () => {
       const { rows } = planMigration(
         aV1Dump({
-          splits: [
-            aV1Split({ id: 'old', is_active: false, end_date: '2025-12-31' }),
-            aV1Split({ id: 'current', number: 2 }),
-          ],
+          splits: [aV1Split({ start_date: '2026-01-01', end_date: null, is_active: true })],
         }),
       );
 
-      expect(rows.seasons).toEqual([{ id: 'season-1', name: 'Saison 1', year: 2026 }]);
-      expect(rows.splits.map((s) => [s.id, s.status])).toEqual([
-        ['old', 'closed'],
-        ['current', 'open'],
+      expect(rows.seasons).toEqual([
+        {
+          id: 'season-1',
+          name: 'Saison 1',
+          year: 2026,
+          start_date: '2026-01-01',
+          end_date: null,
+          status: 'open',
+        },
       ]);
+    });
+
+    it('une saison dont le split v1 n’est plus actif est clôturée', () => {
+      const { rows } = planMigration(
+        aV1Dump({ splits: [aV1Split({ is_active: false, end_date: '2026-06-30' })] }),
+      );
+
+      expect(rows.seasons.map((s) => [s.id, s.status, s.end_date])).toEqual([
+        ['season-1', 'closed', '2026-06-30'],
+      ]);
+    });
+
+    it('s’arrête si une saison v1 contient plusieurs splits : la v2 n’a qu’un niveau de période', () => {
+      const dump = aV1Dump({
+        splits: [aV1Split({ id: 'old', is_active: false }), aV1Split({ id: 'current', number: 2 })],
+      });
+
+      expect(() => planMigration(dump)).toThrow(
+        'Saison season-1 : 2 splits en v1 (old, current). La v2 n’a qu’un niveau de période (ADR 0014).',
+      );
+    });
+
+    it('s’arrête si un split cite une saison absente de la sauvegarde', () => {
+      const dump = aV1Dump({ splits: [aV1Split({ season_id: 'fantome' })] });
+
+      expect(() => planMigration(dump)).toThrow('Split split-1 : saison fantome introuvable.');
+    });
+
+    it('reprend clôturée et sans dates une saison v1 sans split, et la signale', () => {
+      const plan = planMigration(
+        aV1Dump({
+          seasons: [aV1Season(), aV1Season({ id: 'season-0', name: 'Saison 0', year: 2025 })],
+        }),
+      );
+
+      expect(plan.rows.seasons).toContainEqual({
+        id: 'season-0',
+        name: 'Saison 0',
+        year: 2025,
+        start_date: null,
+        end_date: null,
+        status: 'closed',
+      });
+      expect(plan.report).toContainEqual({
+        code: 'season-without-split',
+        message: 'Saison season-0 (Saison 0) : aucun split en v1, reprise clôturée et sans dates.',
+      });
     });
   });
 
@@ -371,7 +421,7 @@ describe('planMigration', () => {
           name: 'Ligue #1 Div 1',
           type: 'league_div2',
           date: '2026-02-01',
-          split_id: 'split-1',
+          season_id: 'season-1',
           prestige: 'championship',
           event_mvp_player_id: 'player-zephyr',
           display_number: 1,
@@ -405,6 +455,43 @@ describe('planMigration', () => {
         code: 'unknown-mvp',
         message: 'Édition edition-1 : MVP de soirée « Inconnu » introuvable, laissé vide.',
       });
+    });
+
+    it('migre hors saison, et signale, une édition qui n’avait pas de split en v1', () => {
+      const plan = planMigration(aV1Dump({ editions: [aV1Edition({ split_id: null })] }));
+
+      expect(plan.rows.editions[0]?.season_id).toBeNull();
+      expect(plan.report).toContainEqual({
+        code: 'edition-outside-season',
+        message:
+          'Édition edition-1 : sans split en v1 (saison v1 season-1), migrée hors saison : elle ne compte dans aucune note de saison.',
+      });
+    });
+
+    it('retient la saison du split, et le signale, quand l’édition v1 en citait une autre', () => {
+      const plan = planMigration(
+        aV1Dump({
+          seasons: [aV1Season(), aV1Season({ id: 'season-2', name: 'Saison 2', year: 2027 })],
+          splits: [
+            aV1Split(),
+            aV1Split({ id: 'split-2', season_id: 'season-2', is_active: false }),
+          ],
+          editions: [aV1Edition({ season_id: 'season-2' })],
+        }),
+      );
+
+      expect(plan.rows.editions[0]?.season_id).toBe('season-1');
+      expect(plan.report).toContainEqual({
+        code: 'season-mismatch',
+        message:
+          'Édition edition-1 : rattachée à la saison season-2, mais son split split-1 appartient à la saison season-1. Saison season-1 retenue.',
+      });
+    });
+
+    it('s’arrête si une édition cite un split absent de la sauvegarde', () => {
+      const dump = aV1Dump({ editions: [aV1Edition({ split_id: 'fantome' })] });
+
+      expect(() => planMigration(dump)).toThrow('Édition edition-1 : split fantome introuvable.');
     });
 
     it('reprend les participants des événements externes et les inscriptions', () => {
@@ -515,7 +602,7 @@ describe('planMigration', () => {
       });
     });
 
-    it('date du début du split actif le passage d’un joueur qui n’a jamais joué sous ce tag', () => {
+    it('date du début de la saison active le passage d’un joueur qui n’a jamais joué sous ce tag', () => {
       const plan = planMigration(
         aV1Dump({
           players: [
@@ -543,7 +630,7 @@ describe('planMigration', () => {
       ]);
     });
 
-    it('refuse un passage en équipe impossible à dater (aucune partie, aucun split actif)', () => {
+    it('refuse un passage en équipe impossible à dater (aucune partie, aucune saison active)', () => {
       const dump = aV1Dump({
         splits: [aV1Split({ is_active: false })],
         players: [

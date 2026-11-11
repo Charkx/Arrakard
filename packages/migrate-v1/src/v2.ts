@@ -3,10 +3,12 @@ import type { EditionType, Prestige, Role } from '@arrakis/domain';
 /**
  * Lignes v2 à insérer, une propriété par colonne SQL (même nom, voir la
  * migration initiale). `organization_id` est ajouté à l'écriture.
+ *
+ * Les saisons et `editions.season_id` devancent le schéma, qui porte encore
+ * deux niveaux de période : l'ADR 0014 en supprime un.
  */
 export interface V2Rows {
   readonly seasons: readonly V2Season[];
-  readonly splits: readonly V2Split[];
   readonly teams: readonly V2Team[];
   readonly players: readonly V2Player[];
   readonly player_aliases: readonly V2PlayerAlias[];
@@ -19,17 +21,11 @@ export interface V2Rows {
   readonly registrations: readonly V2Registration[];
 }
 
+/** Seul niveau de période (ADR 0014) : la saison porte ses dates et son état. */
 export interface V2Season {
   readonly id: string;
   readonly name: string;
   readonly year: number;
-}
-
-export interface V2Split {
-  readonly id: string;
-  readonly season_id: string;
-  readonly number: number;
-  readonly name: string;
   readonly start_date: string | null;
   readonly end_date: string | null;
   readonly status: 'open' | 'closed';
@@ -71,7 +67,8 @@ export interface V2Edition {
   readonly name: string;
   readonly type: EditionType;
   readonly date: string;
-  readonly split_id: string | null;
+  /** null : édition hors saison, qui ne compte dans aucune note de saison. */
+  readonly season_id: string | null;
   readonly prestige: Prestige;
   readonly event_mvp_player_id: string | null;
   readonly display_number: number | null;
