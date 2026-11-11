@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
@@ -49,6 +50,17 @@ export default defineConfig([
         },
       ],
     },
+  },
+  // Le site : les règles des hooks React. La v1 a connu un appel conditionnel
+  // de hook qu'aucun outil ne signalait (ADR 0006).
+  {
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    extends: [reactHooks.configs.flat.recommended],
+  },
+  // Scripts lancés par Node, hors du navigateur.
+  {
+    files: ['apps/web/scripts/**/*.js'],
+    languageOptions: { globals: { console: 'readonly', process: 'readonly' } },
   },
   prettier,
 ]);

@@ -24,6 +24,11 @@ jobs:
 
       - run: pnpm check
 
+      # Le site se construit, et son JavaScript initial reste sous la limite.
+      - run: pnpm build
+
+      - run: pnpm size
+
   database:
     name: schéma · RLS (pgTAP)
     runs-on: ubuntu-latest

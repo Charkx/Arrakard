@@ -68,6 +68,14 @@ pnpm check             # lint + format + types + tests avec couverture (= la CI)
 
 Pendant le TDD : `pnpm --filter @arrakis/domain test:watch`.
 
+Le site (`apps/web`) :
+
+```bash
+pnpm dev               # démarre le site sur http://localhost:5173
+pnpm build             # construit le site dans apps/web/dist
+pnpm size              # poids du JavaScript initial (limite : 250 kB compressé)
+```
+
 ## Le domaine (`packages/domain`)
 
 | Module           | Rôle                                                        | Cas d'usage |
