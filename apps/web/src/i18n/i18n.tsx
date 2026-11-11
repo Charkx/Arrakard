@@ -18,9 +18,27 @@ function isLanguage(value: string | null): value is Language {
   return (LANGUAGES as readonly (string | null)[]).includes(value);
 }
 
+// Un navigateur peut refuser le stockage local (navigation privée, réglage
+// strict). Le site doit alors marcher quand même, sans mémoire du choix.
+function readSavedLanguage(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveLanguage(language: Language): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, language);
+  } catch {
+    // Choix non gardé : il vaudra jusqu'au prochain rechargement.
+  }
+}
+
 /** Le choix déjà fait par le visiteur, sinon la langue de son navigateur. */
 function initialLanguage(): Language {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = readSavedLanguage();
   if (isLanguage(saved)) return saved;
   return navigator.language.toLowerCase().startsWith('fr') ? 'fr' : 'en';
 }
@@ -37,7 +55,7 @@ export function I18nProvider({ children }: { readonly children: ReactNode }) {
     language,
     otherLanguage: language === 'fr' ? 'en' : 'fr',
     setLanguage: (next) => {
-      localStorage.setItem(STORAGE_KEY, next);
+      saveLanguage(next);
       setLanguage(next);
     },
     t: (key) => DICTIONARY[language][key],

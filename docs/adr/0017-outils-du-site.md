@@ -22,12 +22,6 @@ Le site vit dans `apps/web`. Il est écrit avec **React**, construit par
 **Vite** et stylé avec **Tailwind**. Ses composants sont testés avec Vitest,
 Testing Library et jsdom.
 
-Les couleurs et la typographie de la v1 sont des variables de style, déclarées
-une seule fois dans `apps/web/src/styles.css`.
-
-La CI construit le site et mesure le JavaScript chargé à l'ouverture : elle
-échoue au-delà de 250 kB compressé.
-
 Toute autre dépendance (navigation entre pages, accès à la base, cache)
 s'ajoute avec la première page qui en a besoin, après validation.
 
@@ -43,6 +37,10 @@ s'ajoute avec la première page qui en a besoin, après validation.
 ## Conséquences
 
 - Les composants de la v1 se reprennent presque tels quels.
+- Les couleurs et la typographie de la v1 sont des variables de style,
+  déclarées une seule fois dans `apps/web/src/styles.css`.
+- La CI construit le site et mesure son JavaScript : elle échoue au-delà de
+  250 kB compressé.
 - Le site est un ensemble de fichiers statiques : n'importe quel hébergeur
   convient ([Q17](../open-questions.md)).
 - Le lint applique les règles des hooks React, qui avaient manqué à la v1

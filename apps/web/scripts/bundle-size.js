@@ -1,5 +1,9 @@
-// Poids du JavaScript chargé à l'ouverture du site, une fois compressé.
+// Poids du JavaScript du site, une fois compressé (gzip, 1 kB = 1000 octets).
 // Lancé par la CI après la construction : elle échoue au-delà de la limite.
+//
+// Le site tient aujourd'hui dans un seul fichier, chargé à l'ouverture. Le jour
+// où des pages seront chargées à la demande, ce script comptera aussi leurs
+// fichiers : il faudra alors ne mesurer que ceux que cite index.html.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';

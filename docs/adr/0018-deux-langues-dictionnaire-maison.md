@@ -23,7 +23,8 @@ français est la langue de référence.
 - À la première visite, la langue est le français si le navigateur est en
   français, l'anglais sinon. C'est la règle de la v1.
 - Un bouton change la langue. Le choix est gardé dans le navigateur
-  (`localStorage`) et retrouvé au rechargement.
+  (`localStorage`) et retrouvé au rechargement. Si le navigateur refuse ce
+  stockage, le site marche quand même, sans mémoire du choix.
 - La page déclare sa langue (`<html lang>`), pour les lecteurs d'écran.
 
 ## Options écartées
@@ -36,7 +37,7 @@ français est la langue de référence.
 
 ## Conséquences
 
-- Aucune dépendance, et environ 50 lignes à comprendre.
+- Aucune dépendance, et moins de 100 lignes à comprendre.
 - Un texte ne peut pas manquer dans une langue.
 - Les textes avec une variable ou un pluriel (« 3 inscrits ») ne sont pas
   encore gérés : ils s'ajouteront avec la première page qui en a besoin.

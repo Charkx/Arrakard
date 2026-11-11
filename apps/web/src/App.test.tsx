@@ -11,53 +11,97 @@ function renderSite() {
   );
 }
 
-function browserLanguageIs(language: string) {
+function givenBrowserLanguage(language: string) {
   vi.spyOn(navigator, 'language', 'get').mockReturnValue(language);
+}
+
+/** Un navigateur qui refuse le stockage local : navigation privée, réglage strict. */
+function givenStorageIsBlocked() {
+  const refuse = () => {
+    throw new DOMException('Stockage refusé', 'SecurityError');
+  };
+  vi.spyOn(Storage.prototype, 'getItem').mockImplementation(refuse);
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(refuse);
+}
+
+function switchToEnglish() {
+  fireEvent.click(screen.getByRole('button', { name: 'English' }));
+}
+
+function pageTitle() {
+  return screen.getByRole('heading', { level: 1 }).textContent;
 }
 
 afterEach(() => {
   cleanup();
-  localStorage.clear();
   vi.restoreAllMocks();
+  localStorage.clear();
 });
 
 describe('la page provisoire', () => {
   it('s’affiche en français pour un navigateur en français', () => {
-    browserLanguageIs('fr-FR');
+    givenBrowserLanguage('fr-FR');
 
     renderSite();
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Le site arrive bientôt');
+    expect(pageTitle()).toBe('Le site arrive bientôt');
   });
 
   it('s’affiche en anglais pour un navigateur dans une autre langue', () => {
-    browserLanguageIs('de-DE');
+    givenBrowserLanguage('de-DE');
 
     renderSite();
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('The site is coming soon');
+    expect(pageTitle()).toBe('The site is coming soon');
+  });
+
+  it('déclare sa langue dès le premier affichage', () => {
+    givenBrowserLanguage('de-DE');
+
+    renderSite();
+
+    expect(document.documentElement.lang).toBe('en');
   });
 });
 
 describe('le bouton de langue', () => {
   it('passe la page du français à l’anglais', () => {
-    browserLanguageIs('fr-FR');
+    givenBrowserLanguage('fr-FR');
     renderSite();
 
-    fireEvent.click(screen.getByRole('button', { name: 'English' }));
+    switchToEnglish();
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('The site is coming soon');
+    expect(pageTitle()).toBe('The site is coming soon');
+  });
+
+  it('change aussi la langue que la page déclare', () => {
+    givenBrowserLanguage('fr-FR');
+    renderSite();
+
+    switchToEnglish();
+
     expect(document.documentElement.lang).toBe('en');
   });
 
+  // Un vrai rechargement est simulé : la page est retirée, puis affichée de nouveau.
   it('garde le choix au rechargement de la page', () => {
-    browserLanguageIs('fr-FR');
+    givenBrowserLanguage('fr-FR');
     const firstVisit = renderSite();
-    fireEvent.click(screen.getByRole('button', { name: 'English' }));
+    switchToEnglish();
     firstVisit.unmount();
 
     renderSite();
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('The site is coming soon');
+    expect(pageTitle()).toBe('The site is coming soon');
+  });
+
+  it('fonctionne même si le navigateur refuse de garder le choix', () => {
+    givenBrowserLanguage('fr-FR');
+    givenStorageIsBlocked();
+    renderSite();
+
+    switchToEnglish();
+
+    expect(pageTitle()).toBe('The site is coming soon');
   });
 });

@@ -8,8 +8,9 @@ administration des résultats.
 > règles métier sont écrites en TDD dans `packages/domain` et validées contre
 > la production v1 (golden master). Côté serveur, le schéma et ses
 > droits d'accès sont testés en pgTAP, et la migration v1 → v2 est planifiée
-> et vérifiée (`packages/migrate-v1`). Prochaine étape : mettre en ligne un
-> site en lecture seule, nourri par la migration.
+> et vérifiée (`packages/migrate-v1`). Le socle du site existe (`apps/web`),
+> encore sans page. Prochaine étape : mettre en ligne un site en lecture
+> seule, nourri par la migration.
 > L'ancienne version (`arrakis-cards`) reste en production : les admins y
 > écrivent jusqu'à la bascule.
 
