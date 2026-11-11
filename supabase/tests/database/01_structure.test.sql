@@ -45,15 +45,20 @@ select is_empty(
 
 -- Aucune écriture directe (ADR 0005). Supabase accorde tout par défaut à chaque
 -- nouvelle table : une migration qui en crée une doit retirer ces droits.
--- Seule exception : les inscriptions, en libre-service.
+-- Seule exception : les inscriptions, en libre-service (mais jamais vidées).
 select is_empty(
   $$ select c.relname, r.rolname, p.privilege
      from pg_class c
      join pg_namespace n on n.oid = c.relnamespace
      cross join (values ('anon'), ('authenticated')) as r (rolname)
      cross join (values ('INSERT'), ('UPDATE'), ('DELETE'), ('TRUNCATE')) as p (privilege)
-     where n.nspname = 'public' and c.relkind = 'r' and c.relname <> 'registrations'
-       and has_table_privilege(r.rolname, c.oid, p.privilege) $$,
+     where n.nspname = 'public' and c.relkind = 'r'
+       and not (c.relname = 'registrations' and p.privilege <> 'TRUNCATE')
+       and case
+             -- INSERT et UPDATE peuvent aussi s'accorder colonne par colonne.
+             when p.privilege in ('INSERT', 'UPDATE') then has_any_column_privilege(r.rolname, c.oid, p.privilege)
+             else has_table_privilege(r.rolname, c.oid, p.privilege)
+           end $$,
   'aucune écriture directe hors inscriptions (ADR 0005)'
 );
 

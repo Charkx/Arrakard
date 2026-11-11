@@ -38,7 +38,7 @@ flowchart LR
   classDef assoc fill:#f5f5f5,stroke:#666,color:#000
 
   ORG["<b>ORGANISATION</b><hr/><u>id</u><br/>slug<br/>nom<br/>règles de note<br/>serveur Discord<br/>rôle admin Discord"]:::entity
-  SAISON["<b>SAISON</b><hr/><u>id</u><br/>nom<br/>année<br/>début, fin<br/>statut"]:::entity
+  SAISON["<b>SAISON</b><hr/><u>id</u><br/>nom<br/>année<br/>début, fin<br/>état"]:::entity
   EDITION["<b>ÉDITION</b><hr/><u>id</u><br/>nom, type, date<br/>prestige<br/>multiplicateur exceptionnel<br/>justification<br/>barème<br/>numéro d'affichage<br/>lieu, lien, description<br/>version"]:::entity
   MATCH["<b>MATCH</b><hr/><u>id</u><br/>numéro<br/>équipe gagnante<br/>durée<br/>journée<br/>finale"]:::entity
   JOUEUR["<b>JOUEUR</b><hr/><u>id</u><br/>pseudo<br/>archivé"]:::entity
@@ -69,6 +69,8 @@ flowchart LR
   l'association** JOUER : elles n'appartiennent ni au joueur ni au match seuls.
 - Une édition est rattachée à **0 ou 1** saison. Sans saison, c'est une
   édition hors saison : elle ne compte dans aucune note de saison.
+- Une saison est ouverte ou clôturée (son état). Une organisation a **au plus
+  une** saison ouverte : la saison active.
 
 ### Vue 2 : les personnes et les équipes
 

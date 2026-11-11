@@ -1,6 +1,6 @@
 -- Intégrité : isolation entre organisations et règles métier portées par la base.
 begin;
-select plan(12);
+select plan(13);
 
 insert into organizations (id, slug, name) values
   ('00000000-0000-0000-0000-00000000000a', 'arrakis', 'Arrakis'),
@@ -63,6 +63,17 @@ select lives_ok(
   $$ insert into editions (organization_id, name, type, date, season_id) values
        ('00000000-0000-0000-0000-00000000000a', 'LAN d''été', 'external_lan', '2026-07-04', null) $$,
   'une édition peut rester hors saison'
+);
+
+-- Une note par saison se rattache à une saison de l'organisation du joueur.
+select throws_ok(
+  $$ insert into player_season_ratings (
+       organization_id, season_id, player_id, rating, impact, consistency, clutch, tier,
+       games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form)
+     select '00000000-0000-0000-0000-00000000000a', s.id, '30000000-0000-0000-0000-000000000001',
+            78, 80, 75, 70, 'gold', 10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up'
+     from seasons s where s.organization_id = '00000000-0000-0000-0000-00000000000b' $$,
+  '23503', null, 'pas de note rattachée à la saison d''une autre organisation'
 );
 
 -- Un joueur n'apparaît qu'une fois par match (cohérent avec la règle de fusion).

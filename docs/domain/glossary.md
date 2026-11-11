@@ -19,7 +19,7 @@ donne l'identifiant à utiliser, et il n'y en a qu'un.
 Il n'y a qu'un niveau de période
 ([ADR 0014](../adr/0014-une-seule-periode-la-saison.md)). Le calcul, la
 migration, la base et les documents sont alignés : « split » ne reste que pour
-décrire la v1.
+décrire la v1, et dans les ADR antérieurs, qui ne se réécrivent pas.
 
 ## Événements
 
