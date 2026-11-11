@@ -1,6 +1,6 @@
 ---
 name: ping-pong
-description: TDD en ping-pong entre Charly et l'agent, chacun faisant passer le test rouge de l'autre. À utiliser pour tout code qui porte une règle métier ou une règle d'accès (domaine TypeScript, SQL des commandes, RLS, tests pgTAP), ou quand Charly dit « ping-pong ».
+description: TDD en ping-pong entre Charly et l'agent, chacun faisant passer le test rouge de l'autre. À utiliser pour un ticket en mode Ensemble, donc le premier exemplaire d'une famille de code, ou quand Charly dit « ping-pong ».
 ---
 
 # Ping-pong
@@ -8,6 +8,10 @@ description: TDD en ping-pong entre Charly et l'agent, chacun faisant passer le 
 Le ping-pong de `docs/contributing.md`, adapté au travail solo : A est Charly, B
 est l'agent. Le but n'est pas d'aller vite : c'est que Charly écrive la moitié du
 code et comprenne l'autre moitié.
+
+Il sert aux tickets en mode Ensemble (`docs/contributing.md`) : ce qu'on écrit
+ainsi une fois devient le modèle que l'agent reproduit seul ensuite, en mode
+Délégué.
 
 Ce qu'est un bon test est décrit dans `docs/contributing.md` et dans le skill
 `tdd`. Ce skill ne fixe que l'alternance.
@@ -35,14 +39,16 @@ s'arrête avant la fin, la liste part dans le handoff.
    - Si la raison est mauvaise, l'agent l'explique et s'arrête : corriger le test
      est le tour de Charly.
 3. **L'agent passe au vert** avec le minimum de code et relance toute la suite.
-   Il explique ce qu'il a écrit et pourquoi rien de plus, propose un refactor
-   s'il en voit un, puis commite.
+   Il explique ce qu'il a écrit et pourquoi rien de plus, puis commite ce vert.
+   S'il voit un refactor, il le propose : si Charly l'accepte, il le fait, tests
+   verts à chaque pas, et le commite à part.
 4. **L'agent écrit le test rouge suivant**, pris dans la liste. Il le lance,
    montre qu'il échoue pour la bonne raison, dit en une phrase le comportement
    visé, puis rend la main.
 5. **Charly passe au vert.** L'agent relance la suite et relit : si le code
-   dépasse ce que le test exige, il le signale. Charly propose le refactor,
-   commite, puis écrit le test rouge suivant : retour à l'étape 2.
+   dépasse ce que le test exige, il le signale. Charly commite ce vert. S'il
+   propose un refactor, il le fait et le commite à part. Puis il écrit le test
+   rouge suivant : retour à l'étape 2.
 
 ## Règles
 

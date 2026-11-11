@@ -6,6 +6,9 @@ argument-hint: "Ce qu'il faut découper (ex. la phase 3, une spec, une issue)"
 
 # Tickets
 
+_Dérivé de `to-tickets`, mattpocock/skills v1.3.2 (licence MIT). Écarts et
+licence : `.claude/skills/README.md`._
+
 Découper un plan, une spec ou une conversation en **tickets** : des tranches
 verticales, chacune déclarant les tickets qui la **bloquent**.
 
@@ -36,6 +39,10 @@ Chercher ce qu'il faudrait réorganiser d'abord pour rendre le changement facile
 Donner à chaque ticket ses **blocages** : les tickets qui doivent être terminés
 avant qu'il commence. Un ticket sans blocage peut démarrer tout de suite.
 
+Donner aussi à chaque ticket son **mode**, défini dans `docs/contributing.md`
+(« Trois modes ») : Ensemble, Délégué ou Outillage. Un ticket Délégué est bloqué
+par le ticket Ensemble de sa famille.
+
 **Exception : le changement mécanique large.** Renommer une colonne ou retyper un
 symbole partagé casse tout d'un coup, et aucune tranche verticale ne peut rester
 verte. Le découper en trois temps : **étendre** (ajouter la nouvelle forme à côté
@@ -48,12 +55,15 @@ ticket bloqué par tous les lots.
 Présenter une liste numérotée. Pour chaque ticket :
 
 - **Titre** : court et descriptif.
+- **Mode** : Ensemble, Délégué ou Outillage.
 - **Bloqué par** : les tickets à terminer avant.
 - **Ce qu'il livre** : le comportement de bout en bout que ce ticket fait
   marcher.
 
 Demander :
 
+- Les modes sont-ils justes : y a-t-il une famille que Charly veut écrire en
+  entier lui-même ? Une famille ne se délègue qu'après son exemple Ensemble.
 - Le grain est-il bon : trop gros, trop fin ?
 - Les blocages sont-ils justes : chaque ticket ne dépend-il que de ce qui le
   conditionne vraiment ?
@@ -82,6 +92,10 @@ sert. Pas une liste de tâches par couche.
 - [ ] Critère 1
 - [ ] Critère 2
 
+## Mode
+
+Ensemble, Délégué ou Outillage.
+
 ## Bloqué par
 
 - #<numéro> pour chaque ticket bloquant, ou « Rien : peut démarrer tout de suite ».
@@ -94,5 +108,5 @@ par un test ou une action précise.
 Exception : un extrait qui fixe une décision mieux que la prose (schéma, forme
 d'un type, machine à états), réduit à l'essentiel.
 
-On travaille ensuite la **frontière** : tout ticket dont les bloquants sont
+On travaille ensuite les **tickets prêts** : ceux dont les bloquants sont
 terminés.

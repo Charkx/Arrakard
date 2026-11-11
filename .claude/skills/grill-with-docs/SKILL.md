@@ -6,6 +6,9 @@ argument-hint: 'Le plan, la décision ou les questions à trancher (ex. Q9 et Q1
 
 # Grill, avec la doc
 
+_Dérivé de `grilling` et `domain-modeling`, mattpocock/skills v1.3.2 (licence
+MIT). Écarts et licence : `.claude/skills/README.md`._
+
 Deux disciplines menées ensemble : interroger jusqu'à une compréhension partagée,
 et écrire le modèle du domaine au moment où il se précise.
 
@@ -14,11 +17,10 @@ et écrire le modèle du domaine au moment où il se précise.
 Voir la décision comme un **arbre** : chaque choix ouvre les choix qui en
 dépendent.
 
-Avancer par **tours**. La **frontière** est l'ensemble des décisions dont les
-prérequis sont déjà réglés, donc les questions qu'on peut poser maintenant sans
-deviner une réponse pas encore entendue. Poser toute la frontière en un tour,
-chaque question numérotée et suivie d'une recommandation, puis attendre les
-réponses.
+Avancer par **tours**. Les **questions prêtes** sont les décisions dont les
+prérequis sont déjà réglés, donc celles qu'on peut poser maintenant sans deviner
+une réponse pas encore entendue. Les poser toutes en un tour, chacune numérotée
+et suivie d'une recommandation, puis attendre les réponses.
 
 ```
 **Q1 — <titre>** : <la question, avec ses options et ce qu'elles coûtent>
@@ -29,16 +31,16 @@ réponses.
 - Formuler chaque question pour que « oui » accepte la recommandation.
 - Une question qui dépend d'une autre encore ouverte dans ce tour appartient au
   tour suivant.
-- Chaque réponse redessine l'arbre : recalculer la frontière, puis poser le tour
-  suivant.
+- Chaque réponse redessine l'arbre : refaire la liste des questions prêtes, puis
+  poser le tour suivant.
 
 **Les faits sont le travail de l'agent, les décisions celui de Charly.** Quand une
 question dépend d'un fait (fichier, code, outil, documentation), aller le chercher
 au lieu de le demander. Pendant cette recherche, seules les questions qui en
-dépendent attendent : poser le reste de la frontière.
+dépendent attendent : poser les autres questions prêtes.
 
-La session est finie quand la frontière est vide : chaque branche visitée, rien
-de supposé en silence. Ne rien exécuter avant que Charly ait confirmé qu'on se
+La session est finie quand il ne reste aucune question : chaque branche visitée,
+rien de supposé en silence. Ne rien exécuter avant que Charly ait confirmé qu'on se
 comprend.
 
 ## Pendant la session
@@ -73,13 +75,8 @@ utiliser ».
 
 ### ADR
 
-Ne proposer un ADR que si les trois conditions sont réunies :
-
-1. **Difficile à défaire** : changer d'avis plus tard coûterait cher.
-2. **Surprenant sans contexte** : un lecteur futur se demanderait pourquoi.
-3. **Fruit d'un vrai arbitrage** : il existait d'autres options sérieuses.
-
-Dans ce cas :
+Proposer un ADR dans les cas prévus par `docs/adr/README.md`, section « Quand en
+écrire un ». Quand un ADR s'impose :
 
 - copier `docs/adr/template.md` vers `docs/adr/NNNN-titre-court.md`, avec le
   numéro qui suit le plus grand existant ;

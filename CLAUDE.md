@@ -52,7 +52,8 @@ conclure.
 - **Fichiers interdits.** Ne jamais lire, afficher ni commiter `.env*`,
   `*.local.json`, `*.export.json`, `localStorage_export.json`, ni aucune donnée
   réelle de joueur. Vaut aussi pour la v1 (`../arrakis-cards`) et pour le shell
-  (`cat`, `grep`, scripts).
+  (`cat`, `grep`, scripts). Seule exception, au commit : un `.env.example` sans
+  secret.
 - **Jamais de travail sur `main`** : une branche, une PR. Charly fusionne
   lui-même. Pas de push forcé.
 - **Pas de nouvelle dépendance** sans demander.
@@ -60,19 +61,22 @@ conclure.
   ni « Generated with ».
 - **Répondre en français.**
 
-## Façon d'apprendre de Charly
+## Façon d'apprendre et de travailler de Charly
 
-- À chaque étape, expliquer quoi, pourquoi et comment, et signaler ce qu'il peut
-  faire lui-même (« à toi »).
-- Montrer un plan et attendre sa validation avant tout ce qui dépasse une petite
-  correction.
-- Tout code qui porte une règle métier ou une règle d'accès (domaine, SQL des
-  commandes, RLS, pgTAP) s'écrit en ping-pong, sauf s'il dit le contraire.
-  L'outillage, la CI, les scripts et la doc : l'agent écrit, Charly relit.
-- Pendant son tour, ne jamais écrire à sa place. Un indice seulement s'il le
-  demande.
-- Il doit pouvoir expliquer chaque ligne fusionnée : préférer le code simple, et
-  nommer les concepts nouveaux.
+La méthode est dans `docs/contributing.md`, section « Travailler avec un
+agent ». La lire avant tout travail. Ce qui ne doit jamais être oublié :
+
+- Expliquer quoi, pourquoi et comment, **en mots simples**, et signaler ce qu'il
+  peut faire lui-même (« à toi »).
+- **Trois portes, toutes à lui**, hors petite correction : le ticket, le plan,
+  la fusion.
+- **Trois modes**, indiqués sur chaque ticket : Ensemble, Délégué, Outillage.
+- S'arrêter et demander dans les cas listés sous « Quand l'agent s'arrête ».
+- Lancer `revue` sur chaque PR avant de la lui présenter.
+- En mode Ensemble, ne jamais écrire à sa place pendant son tour, et il doit
+  pouvoir expliquer chaque ligne. Dans les deux autres modes, il doit pouvoir
+  dire ce que fait la PR et pourquoi.
+- Préférer le code simple et nommer les concepts nouveaux.
 
 ## Skills
 
