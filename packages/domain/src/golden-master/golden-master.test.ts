@@ -9,6 +9,10 @@ import { computeRating } from '../rating/rating.ts';
 import { computePlayerStats } from '../stats/stats.ts';
 import fixture from './v1.json' with { type: 'json' };
 
+/**
+ * Le fichier garde les mots de la v1, qui notait par split. Chaque split y
+ * est une saison de la v2 (ADR 0014) : la comparaison se fait donc par saison.
+ */
 interface GoldenMaster {
   splits: {
     split: string;
@@ -22,7 +26,7 @@ const goldenMaster = fixture as unknown as GoldenMaster;
 describe('golden master v1', () => {
   it.each(goldenMaster.splits.map((s) => [s.split, s] as const))(
     '%s : chaque joueur a la même note et les mêmes statistiques qu’en v1',
-    (_split, { performances, expected }) => {
+    (_season, { performances, expected }) => {
       const byPlayer = Map.groupBy(performances, (p) => p.player);
 
       const mismatches = [...byPlayer].flatMap(([player, playerPerformances]) => {

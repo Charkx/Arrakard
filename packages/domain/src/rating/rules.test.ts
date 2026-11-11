@@ -6,7 +6,7 @@ const anEdition = (overrides: Partial<EditionFact> = {}): EditionFact => ({
   id: 'e',
   type: 'league_div1',
   date: '2026-01-01',
-  splitId: 's',
+  seasonId: 's',
   prestige: 'normal',
   ...overrides,
 });

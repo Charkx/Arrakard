@@ -5,16 +5,16 @@ import type { V2CardCustomization, V2TeamMembership } from './v2.ts';
 /**
  * Passage en cours de chaque joueur qui a une équipe en v1. La v1 n'a pas
  * d'historique (M8) : on date l'arrivée de la première édition jouée sous ce
- * tag, sinon du début du split actif.
+ * tag, sinon du début de la saison active.
  */
 export function teamMemberships(
   dump: V1Dump,
   firstPlayedOn: (playerId: string, teamTag: string) => string | undefined,
+  activeSeasonStart: string | null,
 ): V2TeamMembership[] {
-  const splitStart = dump.splits.find((s) => s.is_active)?.start_date ?? null;
   return dump.players.flatMap((p) => {
     if (p.merged_into !== null || p.team_id === null || p.team_tag === null) return [];
-    const joinedOn = firstPlayedOn(p.id, p.team_tag) ?? splitStart;
+    const joinedOn = firstPlayedOn(p.id, p.team_tag) ?? activeSeasonStart;
     if (joinedOn === null) {
       throw new Error(`Joueur ${p.id} : aucune date d’arrivée dans l’équipe ${p.team_tag}.`);
     }

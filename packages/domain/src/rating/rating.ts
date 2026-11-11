@@ -18,7 +18,7 @@ export interface RatingResult {
 }
 
 /**
- * Note de carte d'un joueur à partir de ses performances du split actif.
+ * Note de carte d'un joueur à partir de ses performances de la saison active.
  * Spécification : docs/domain/rating-spec.md
  */
 export function computeRating(performances: readonly RatedPerformance[]): RatingResult {

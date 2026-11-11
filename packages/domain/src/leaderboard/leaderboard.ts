@@ -3,7 +3,7 @@ import type { Role } from '../performance.ts';
 export type Division = 'div1' | 'div2';
 export type LeaderboardSort = 'rating' | 'kda' | 'winrate' | 'games';
 
-/** Un joueur tel que le classement le voit : ses valeurs du split, déjà calculées. */
+/** Un joueur tel que le classement le voit : ses valeurs de la saison, déjà calculées. */
 export interface LeaderboardPlayer {
   readonly playerId: string;
   readonly nickname: string;
@@ -15,7 +15,7 @@ export interface LeaderboardPlayer {
   readonly kda: number;
   readonly games: number;
   readonly archived: boolean;
-  /** Note du split avant sa dernière édition ; absente si le joueur n'y avait pas joué. */
+  /** Note de la saison avant sa dernière édition ; absente si le joueur n'y avait pas joué. */
   readonly previousRating?: number;
 }
 
@@ -59,7 +59,7 @@ const CASCADES: Record<LeaderboardSort, readonly Criterion[]> = {
 };
 
 /**
- * Classement du split : joueurs éligibles, tri par critère, départage en
+ * Classement de la saison : joueurs éligibles, tri par critère, départage en
  * cascade, rangs à partir de 1.
  */
 export function rankLeaderboard(
