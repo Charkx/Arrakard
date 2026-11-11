@@ -1,11 +1,8 @@
 import type { EditionType, Prestige, Role } from '@arrakis/domain';
 
 /**
- * Lignes v2 à insérer, une propriété par colonne SQL (même nom, voir la
- * migration initiale). `organization_id` est ajouté à l'écriture.
- *
- * Les saisons et `editions.season_id` devancent le schéma, qui porte encore
- * deux niveaux de période : l'ADR 0014 en supprime un.
+ * Lignes v2 à insérer, une propriété par colonne SQL (même nom, voir
+ * `supabase/migrations`). `organization_id` est ajouté à l'écriture.
  */
 export interface V2Rows {
   readonly seasons: readonly V2Season[];

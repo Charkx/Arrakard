@@ -1,13 +1,13 @@
 -- Intégrité : isolation entre organisations et règles métier portées par la base.
 begin;
-select plan(8);
+select plan(12);
 
 insert into organizations (id, slug, name) values
   ('00000000-0000-0000-0000-00000000000a', 'arrakis', 'Arrakis'),
   ('00000000-0000-0000-0000-00000000000b', 'autre', 'Autre structure');
 
-insert into seasons (id, organization_id, name, year) values
-  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'Saison 3', 2026);
+insert into seasons (id, organization_id, name, year, status) values
+  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'Saison 3', 2026, 'open');
 
 insert into editions (id, organization_id, name, type, date, prestige) values
   ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'Ligue #7', 'league_div1', '2026-02-09', 'championship');
@@ -35,13 +35,34 @@ select throws_ok(
   '23505', null, 'tag unique dans une organisation'
 );
 
--- Un seul split ouvert par organisation.
-insert into splits (organization_id, season_id, number, name, status) values
-  ('00000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-000000000001', 1, 'Split 1', 'open');
+-- Une seule saison ouverte par organisation : c'est la saison active (ADR 0014).
 select throws_ok(
-  $$ insert into splits (organization_id, season_id, number, name, status) values
-       ('00000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-000000000001', 2, 'Split 2', 'open') $$,
-  '23505', null, 'un seul split ouvert par organisation'
+  $$ insert into seasons (organization_id, name, year, status) values
+       ('00000000-0000-0000-0000-00000000000a', 'Saison 4', 2027, 'open') $$,
+  '23505', null, 'une seule saison ouverte par organisation'
+);
+select lives_ok(
+  $$ insert into seasons (organization_id, name, year, status) values
+       ('00000000-0000-0000-0000-00000000000a', 'Saison 2', 2025, 'closed'),
+       ('00000000-0000-0000-0000-00000000000b', 'Saison 1', 2026, 'open') $$,
+  'des saisons clôturées à volonté, et une saison ouverte dans chaque organisation'
+);
+
+-- Une édition se rattache à une saison de son organisation, ou à aucune.
+select lives_ok(
+  $$ update editions set season_id = '10000000-0000-0000-0000-000000000001'
+     where id = '20000000-0000-0000-0000-000000000001' $$,
+  'une édition se rattache à une saison de son organisation'
+);
+select throws_ok(
+  $$ insert into editions (organization_id, name, type, date, season_id) values
+       ('00000000-0000-0000-0000-00000000000b', 'IH #1', 'inhouse', '2026-03-01', '10000000-0000-0000-0000-000000000001') $$,
+  '23503', null, 'pas d''édition rattachée à la saison d''une autre organisation'
+);
+select lives_ok(
+  $$ insert into editions (organization_id, name, type, date, season_id) values
+       ('00000000-0000-0000-0000-00000000000a', 'LAN d''été', 'external_lan', '2026-07-04', null) $$,
+  'une édition peut rester hors saison'
 );
 
 -- Un joueur n'apparaît qu'une fois par match (cohérent avec la règle de fusion).

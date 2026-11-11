@@ -1,12 +1,11 @@
 -- Structure du schéma : ADR 0003 (faits / projections) et ADR 0008 (multi-tenant).
 begin;
-select plan(17);
+select plan(20);
 
 -- Faits
 select has_table('public', 'organizations', 'organisations');
 select has_table('public', 'organization_members', 'adhésions');
 select has_table('public', 'seasons', 'saisons');
-select has_table('public', 'splits', 'splits');
 select has_table('public', 'teams', 'équipes');
 select has_table('public', 'players', 'joueurs');
 select has_table('public', 'player_aliases', 'alias de joueurs');
@@ -18,8 +17,13 @@ select has_table('public', 'card_customizations', 'personnalisations de carte');
 select has_table('public', 'registrations', 'inscriptions');
 
 -- Projections
-select has_table('public', 'player_split_ratings', 'notes par split');
+select has_table('public', 'player_season_ratings', 'notes par saison');
 select has_table('public', 'player_edition_history', 'historique par édition');
+
+-- Un seul niveau de période, la saison (ADR 0014) : plus rien ne parle de split.
+select hasnt_table('public', 'splits', 'plus de table des splits');
+select hasnt_table('public', 'player_split_ratings', 'plus de notes par split');
+select hasnt_column('public', 'editions', 'split_id', 'une édition ne cite plus de split');
 
 -- Toutes les tables ont la RLS activée.
 select is_empty(
@@ -37,6 +41,20 @@ select is_empty(
          where a.attrelid = c.oid and a.attname = 'organization_id' and a.attnotnull
        ) $$,
   'organization_id obligatoire partout (ADR 0008)'
+);
+
+-- Aucune écriture directe (ADR 0005). Supabase accorde tout par défaut à chaque
+-- nouvelle table : une migration qui en crée une doit retirer ces droits.
+-- Seule exception : les inscriptions, en libre-service.
+select is_empty(
+  $$ select c.relname, r.rolname, p.privilege
+     from pg_class c
+     join pg_namespace n on n.oid = c.relnamespace
+     cross join (values ('anon'), ('authenticated')) as r (rolname)
+     cross join (values ('INSERT'), ('UPDATE'), ('DELETE'), ('TRUNCATE')) as p (privilege)
+     where n.nspname = 'public' and c.relkind = 'r' and c.relname <> 'registrations'
+       and has_table_privilege(r.rolname, c.oid, p.privilege) $$,
+  'aucune écriture directe hors inscriptions (ADR 0005)'
 );
 
 select * from finish();
