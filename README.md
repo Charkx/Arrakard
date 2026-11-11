@@ -74,7 +74,7 @@ Pendant le TDD : `pnpm --filter @arrakis/domain test:watch`.
 | ---------------- | ----------------------------------------------------------- | ----------- |
 | `rating/`        | Note, sous-notes, palier ; règles v1 et E1 + E2             | V1, V2      |
 | `stats/`         | Statistiques affichées, forme récente                       | V2          |
-| `leaderboard/`   | Classement du split, filtres, rang précédent                | V1          |
+| `leaderboard/`   | Classement de la saison, filtres, rang précédent            | V1          |
 | `standings/`     | Classement de soirée au barème, classement MVP de saison    | V4, A8      |
 | `identity/`      | Pseudos, tags, alias, résolution, fusion de profils         | A1, A5      |
 | `import/`        | Lecture de la feuille Excel, analyse, plan d'import         | A1          |

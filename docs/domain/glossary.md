@@ -8,17 +8,19 @@ donne l'identifiant à utiliser, et il n'y en a qu'un.
 
 ## Calendrier
 
-| Terme                    | Code             | Définition                                                                                                                                                                        |
-| ------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Saison**               | `Season`         | Période de compétition, ouverte puis clôturée par un admin. **La note live d'un joueur ne compte que les matchs de la saison active** : chaque saison remet le classement à zéro. |
-| **Saison active**        | `activeSeason`   | La seule saison ouverte à un instant donné. Il en existe au plus une.                                                                                                             |
-| **Clôture de saison**    | `closeSeason`    | Action admin qui fige la note de chaque joueur pour cette saison (instantané de saison) et ouvre la suivante.                                                                     |
-| **Instantané de saison** | `SeasonSnapshot` | Note et statistiques d'un joueur, figées à la clôture d'une saison. _Projection, recalculable._                                                                                   |
+| Terme                    | Code             | Définition                                                                                                                                                                                                               |
+| ------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Saison**               | `Season`         | Période de compétition, ouverte puis clôturée par un admin. **La note live d'un joueur ne compte que les matchs de la saison active** : chaque saison remet le classement à zéro.                                        |
+| **Saison active**        | `activeSeason`   | La seule saison ouverte à un instant donné. Il en existe au plus une.                                                                                                                                                    |
+| **Clôture de saison**    | `closeSeason`    | Action admin qui fige la note de chaque joueur pour cette saison (instantané de saison) et ouvre la suivante.                                                                                                            |
+| **Instantané de saison** | `SeasonSnapshot` | Note et statistiques d'un joueur, figées à la clôture d'une saison. _Projection, recalculable._                                                                                                                          |
+| **Édition hors saison**  | `seasonId: null` | Édition rattachée à aucune saison. Elle ne compte dans aucune note de saison, mais reste dans l'historique du joueur. _À ne pas confondre avec une édition d'une saison clôturée, qui n'est plus dans la saison active._ |
 
 Il n'y a qu'un niveau de période
-([ADR 0014](../adr/0014-une-seule-periode-la-saison.md)). Les spécifications
-et le code disent encore « split » (`Split`, `activeSplit`, `closeSplit`,
-`SplitSnapshot`) : ils seront alignés par un ticket dédié.
+([ADR 0014](../adr/0014-une-seule-periode-la-saison.md)). Le calcul et la
+migration sont alignés : ils ne disent plus « split » que pour décrire la v1.
+Le schéma de la base et les documents d'architecture le disent encore : ils
+seront alignés par le ticket qui retire la table des splits.
 
 ## Événements
 
@@ -120,10 +122,10 @@ l'ouverture de leur ticket.
 
 ## Termes à ne plus utiliser
 
-| Ne pas dire                      | Dire plutôt               | Pourquoi                                   |
-| -------------------------------- | ------------------------- | ------------------------------------------ |
-| événement / event (dans le code) | édition                   | Trois mots désignaient la même chose en v1 |
-| soirée (dans le code)            | édition de type `inhouse` | Idem                                       |
-| `JUNGLE`, `SUPPORT`              | `JGL`, `SUP`              | Un seul énuméré de rôles                   |
-| `playerName` comme identifiant   | `playerId`                | Le pseudo change, l'identifiant non        |
-| split                            | saison                    | Un seul niveau de période (ADR 0014)       |
+| Ne pas dire                      | Dire plutôt               | Pourquoi                                                                     |
+| -------------------------------- | ------------------------- | ---------------------------------------------------------------------------- |
+| événement / event (dans le code) | édition                   | Trois mots désignaient la même chose en v1                                   |
+| soirée (dans le code)            | édition de type `inhouse` | Idem                                                                         |
+| `JUNGLE`, `SUPPORT`              | `JGL`, `SUP`              | Un seul énuméré de rôles                                                     |
+| `playerName` comme identifiant   | `playerId`                | Le pseudo change, l'identifiant non                                          |
+| split                            | saison                    | Un seul niveau de période (ADR 0014). Le mot ne reste que pour décrire la v1 |
