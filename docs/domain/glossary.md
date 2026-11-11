@@ -17,10 +17,9 @@ donne l'identifiant à utiliser, et il n'y en a qu'un.
 | **Édition hors saison**  | `seasonId: null` | Édition rattachée à aucune saison. Elle ne compte dans aucune note de saison, mais reste dans l'historique du joueur. _À ne pas confondre avec une édition d'une saison clôturée, qui n'est plus dans la saison active._ |
 
 Il n'y a qu'un niveau de période
-([ADR 0014](../adr/0014-une-seule-periode-la-saison.md)). Le calcul et la
-migration sont alignés : ils ne disent plus « split » que pour décrire la v1.
-Le schéma de la base et les documents d'architecture le disent encore : ils
-seront alignés par le ticket qui retire la table des splits.
+([ADR 0014](../adr/0014-une-seule-periode-la-saison.md)). Le calcul, la
+migration, la base et les documents sont alignés : « split » ne reste que pour
+décrire la v1, et dans les ADR antérieurs, qui ne se réécrivent pas.
 
 ## Événements
 

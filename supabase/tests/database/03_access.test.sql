@@ -1,7 +1,7 @@
 -- Droits d'accès : lecture publique, aucune écriture directe (ADR 0005),
 -- adhésions par organisation (ADR 0008), inscriptions en libre-service.
 begin;
-select plan(12);
+select plan(18);
 
 -- ── Données ──────────────────────────────────────────────────────────────────
 insert into organizations (id, slug, name) values
@@ -12,6 +12,15 @@ insert into players (organization_id, nickname) values
   ('00000000-0000-0000-0000-00000000000a', 'Zed');
 insert into editions (id, organization_id, name, type, date, prestige) values
   ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'IH #2', 'inhouse', '2026-11-01', 'normal');
+insert into seasons (id, organization_id, name, year, status) values
+  ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'Saison 3', 2026, 'open');
+insert into player_season_ratings (
+  organization_id, season_id, player_id, rating, impact, consistency, clutch, tier,
+  games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form
+)
+select organization_id, '10000000-0000-0000-0000-000000000001', id, 78, 80, 75, 70, 'gold',
+       10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up'
+from players where nickname = 'Meta';
 
 -- Deux utilisateurs connectés via Discord ; « admin » est admin d'Arrakis seulement.
 insert into auth.users (id, email) values
@@ -36,6 +45,17 @@ select throws_ok(
   $$ select discord_user_id from registrations $$,
   '42501', null, 'l''identifiant Discord des inscrits n''est pas public'
 );
+select is((select count(*)::int from seasons), 1, 'un visiteur lit les saisons');
+select is((select count(*)::int from player_season_ratings), 1, 'un visiteur lit les notes par saison');
+select throws_ok(
+  $$ insert into seasons (organization_id, name, year, status)
+     values ('00000000-0000-0000-0000-00000000000a', 'Pirate', 2030, 'closed') $$,
+  '42501', 'permission denied for table seasons', 'un visiteur ne crée pas de saison'
+);
+select throws_ok(
+  $$ update player_season_ratings set rating = 99 $$,
+  '42501', 'permission denied for table player_season_ratings', 'un visiteur ne modifie pas une note'
+);
 
 -- ── Admin d'Arrakis ──────────────────────────────────────────────────────────
 reset role;
@@ -51,6 +71,14 @@ select throws_ok(
 select is(
   (select count(*)::int from organization_members), 1,
   'un utilisateur ne voit que ses propres adhésions'
+);
+select throws_ok(
+  $$ update seasons set status = 'closed' $$,
+  '42501', 'permission denied for table seasons', 'un admin ne clôture pas une saison sans commande (ADR 0005)'
+);
+select throws_ok(
+  $$ update player_season_ratings set rating = 99 $$,
+  '42501', 'permission denied for table player_season_ratings', 'seul le recalcul écrit les notes (ADR 0003)'
 );
 
 -- ── Joueur connecté (Discord 222) ────────────────────────────────────────────

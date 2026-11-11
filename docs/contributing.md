@@ -52,6 +52,11 @@ code : voir [Travailler avec un agent](#travailler-avec-un-agent).
 - **Branches** : `main` toujours déployable ; une branche courte par sujet,
   fusionnée par PR.
 - **Décisions** : un choix structurant = un [ADR](adr/README.md) dans la même PR.
+- **Base de données** : une migration fusionnée ne se modifie plus. Tout
+  changement de schéma est une nouvelle migration, écrite après ses tests
+  pgTAP. Une migration qui crée une table lui retire d'abord les droits que
+  Supabase accorde par défaut (`revoke all … from anon, authenticated`) : un
+  test le vérifie.
 
 ## Travailler avec un agent
 

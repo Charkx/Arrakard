@@ -100,10 +100,7 @@ l'objet d'un ticket :
 - les logos sont encore recopiés tels quels (ADR 0015) ;
 - les éditions `completed` ne reçoivent pas encore de clôture (ADR 0013,
   proposé) ;
-- les publications ne sont pas encore créées (ADR 0012, en tranche 2) ;
-- le schéma de la base a encore deux niveaux de période : les lignes de
-  saison et `editions.season_id` produites par la migration le devancent
-  (ADR 0014).
+- les publications ne sont pas encore créées (ADR 0012, en tranche 2).
 
 ## Anomalies de la sauvegarde
 
