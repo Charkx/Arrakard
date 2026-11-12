@@ -248,4 +248,15 @@ describe('explainRating', () => {
       expect(breakdown.steps?.kda.reliable).toBeCloseTo(4);
     });
   });
+
+  describe('apport des sous-notes', () => {
+    it('dit combien de points chaque sous-note apporte à la note (exemple A de la spec)', () => {
+      const breakdown = explainRating(exampleA);
+
+      // 93 × 0,35 + 68 × 0,35 + 80 × 0,30 = 32,55 + 23,8 + 24 = 80,35 → 80.
+      expect(breakdown.steps?.contributions.impact).toBeCloseTo(32.55);
+      expect(breakdown.steps?.contributions.consistency).toBeCloseTo(23.8);
+      expect(breakdown.steps?.contributions.clutch).toBeCloseTo(24);
+    });
+  });
 });
