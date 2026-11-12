@@ -155,6 +155,25 @@ Sans la fiabilité, un KDA de 7,9 sur 5 parties donnerait une note Élite.
 | Joueur E | JGL · 5        | 4   | 23/22/56   | 64     | 68    | 66     | 66                |
 | Joueur F | JGL · 3        | 1   | 17/29/24   | 54     | 57    | 56     | **60** (plancher) |
 
+## Explication de note
+
+`explainRating` fait le calcul ci-dessus et en garde chaque étape
+(`RatingBreakdown`, voir le [glossaire](glossary.md)). `computeRating` en est le
+résultat : il n'existe qu'un seul calcul.
+
+| Ce que dit l'explication             | Étape | Champ                                        |
+| ------------------------------------ | ----- | -------------------------------------------- |
+| Le rôle dominant et sa médiane       | 3     | `steps.role`, `steps.roleBaseline`           |
+| Ce que le prestige a changé          | 1 → 2 | `unweighted` → `weighted` (KDA et winrate)   |
+| Un KDA ramené au plafond de 8        | 2     | `steps.kda.capped`                           |
+| La fiabilité et son effet            | 4     | `steps.reliability`, `weighted` → `reliable` |
+| Une sous-note bornée à 99            | 5 → 6 | `steps.scores` comparé aux sous-notes        |
+| Une note remontée au plancher de 60  | 7     | `steps.ratingBeforeFloor`                    |
+| Ce qui manque pour le palier suivant | 8     | `nextTier` (`null` pour un joueur Élite)     |
+
+Un joueur sans partie n'a aucune étape (`steps` vaut `null`) : sa note est 60
+par convention.
+
 ## Classement
 
 Tri par note décroissante, puis départage dans cet ordre :
