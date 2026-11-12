@@ -210,4 +210,26 @@ describe('explainRating', () => {
       expect(breakdown.nextTier).toBeNull();
     });
   });
+
+  describe('cas limites relevés à la revue', () => {
+    it('le rôle dominant est le plus joué, pas le premier rencontré : 2 MID puis 4 SUP donnent SUP', () => {
+      const mostlySupport = [
+        ...performances(2, { role: 'MID' }),
+        ...performances(4, { role: 'SUP' }),
+      ];
+
+      const breakdown = explainRating(mostlySupport);
+
+      expect(breakdown.steps?.role).toBe('SUP');
+      expect(breakdown.steps?.roleBaseline).toEqual({ kda: 4, winrate: 0.5 });
+    });
+
+    it('un KDA de 8 tout juste n’est pas signalé comme plafonné', () => {
+      const exactlyEight = performances(15, { role: 'MID', kills: 8, deaths: 1 });
+
+      const breakdown = explainRating(exactlyEight);
+
+      expect(breakdown.steps?.kda).toMatchObject({ weighted: 8, capped: false });
+    });
+  });
 });
