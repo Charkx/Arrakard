@@ -34,7 +34,7 @@ export async function readProjectionRows(db: Db, organizationId: string): Promis
   const ratings = await db<ProjectionRows['player_season_ratings'][number][]>`
     select season_id, player_id, dominant_role, rating, impact, consistency, clutch, tier, games, wins, losses,
            winrate, kda::float8 as kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form,
-           previous_rating
+           previous_rating, breakdown
     from player_season_ratings where organization_id = ${organizationId}
     order by season_id, player_id`;
   const history = await db<ProjectionRows['player_edition_history'][number][]>`

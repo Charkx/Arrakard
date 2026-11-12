@@ -6,7 +6,7 @@ import type { Projections } from '@arrakis/domain';
  * ajouté à l'écriture.
  */
 export interface ProjectionRows {
-  readonly player_season_ratings: readonly Record<string, string | number | null>[];
+  readonly player_season_ratings: readonly Record<string, unknown>[];
   readonly player_edition_history: readonly Record<string, string | number | null>[];
   readonly edition_standings: readonly Record<string, string | number | boolean | null>[];
 }
@@ -34,6 +34,7 @@ export function toProjectionRows(projections: Projections): ProjectionRows {
       avg_gpm: r.stats.avgGpm,
       recent_form: r.stats.recentForm,
       previous_rating: r.previousRating,
+      breakdown: r.breakdown,
     })),
     player_edition_history: projections.editionHistory.map((h) => ({
       edition_id: h.editionId,

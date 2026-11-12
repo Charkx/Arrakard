@@ -70,17 +70,17 @@ insert into seasons (id, organization_id, name, year, status) values
   ('10000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000b', 'Saison 1', 2026, 'open');
 insert into player_season_ratings (
   organization_id, season_id, player_id, dominant_role, rating, impact, consistency, clutch, tier,
-  games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form
+  games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form, breakdown
 )
 select organization_id, '10000000-0000-0000-0000-00000000000b', id, 'TOP', 65, 65, 65, 65, 'bronze',
-       5, 2, 3, 40, 2.0, 5, 5, 5, 9000, 300, 'stable'
+       5, 2, 3, 40, 2.0, 5, 5, 5, 9000, 300, 'stable', '{}'
 from players where nickname = 'Ailleurs';
 insert into player_season_ratings (
   organization_id, season_id, player_id, dominant_role, rating, impact, consistency, clutch, tier,
-  games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form
+  games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form, breakdown
 )
 select organization_id, '10000000-0000-0000-0000-000000000001', id, 'MID', 78, 80, 75, 70, 'gold',
-       10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up'
+       10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up', '{}'
 from players where nickname = 'Meta';
 
 -- Deux utilisateurs connectés via Discord ; « admin » est admin d'Arrakis seulement.

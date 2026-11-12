@@ -69,9 +69,9 @@ select lives_ok(
 select throws_ok(
   $$ insert into player_season_ratings (
        organization_id, season_id, player_id, dominant_role, rating, impact, consistency, clutch, tier,
-       games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form)
+       games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form, breakdown)
      select '00000000-0000-0000-0000-00000000000a', s.id, '30000000-0000-0000-0000-000000000001',
-            'MID', 78, 80, 75, 70, 'gold', 10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up'
+            'MID', 78, 80, 75, 70, 'gold', 10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up', '{}'
      from seasons s where s.organization_id = '00000000-0000-0000-0000-00000000000b' $$,
   '23503', null, 'pas de note rattachée à la saison d''une autre organisation'
 );

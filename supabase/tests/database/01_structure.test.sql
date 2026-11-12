@@ -1,6 +1,6 @@
 -- Structure du schéma : ADR 0003 (faits / projections) et ADR 0008 (multi-tenant).
 begin;
-select plan(28);
+select plan(30);
 
 -- Faits
 select has_table('public', 'organizations', 'organisations');
@@ -29,6 +29,8 @@ select has_view('public', 'edition_standings_view', 'vue du classement de soiré
 select has_view('public', 'edition_matches_view', 'vue des matchs d''une édition');
 select has_view('public', 'edition_participants_view', 'vue des participants d''un événement externe');
 select has_column('public', 'player_season_ratings', 'dominant_role', 'une note de saison porte le rôle dominant');
+select has_column('public', 'player_season_ratings', 'breakdown', 'une note de saison porte son explication');
+select has_column('public', 'player_profile_view', 'breakdown', 'le profil donne l''explication de la note');
 
 -- Un seul niveau de période, la saison (ADR 0014) : plus rien ne parle de split.
 select hasnt_table('public', 'splits', 'plus de table des splits');

@@ -131,7 +131,12 @@ export async function recomputeProjections(
     await insert(
       tx,
       table,
-      projections[table].map((row) => ({ organization_id: organizationId, ...row })),
+      projections[table].map((row) => ({
+        organization_id: organizationId,
+        ...row,
+        // L'explication de note se range en JSON.
+        ...('breakdown' in row && { breakdown: tx.json(row.breakdown as never) }),
+      })),
     );
   }
 }
