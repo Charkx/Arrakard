@@ -29,7 +29,7 @@ describe('explainRating', () => {
     expect(breakdown.steps).toBeNull();
   });
 
-  it('redonne la note et les sous-notes du moteur (exemple A de la spec)', () => {
+  it('donne la note et les sous-notes de l’exemple A de la spec', () => {
     const breakdown = explainRating(exampleA);
 
     expect(breakdown.result).toEqual({
@@ -45,7 +45,7 @@ describe('explainRating', () => {
   it('dit le rôle dominant et la médiane de rôle qui sert de référence', () => {
     const breakdown = explainRating(exampleA);
 
-    expect(breakdown.steps?.role).toBe('JGL');
+    expect(breakdown.steps?.dominantRole).toBe('JGL');
     expect(breakdown.steps?.roleBaseline).toEqual({ kda: 3, winrate: 0.5 });
   });
 
@@ -137,7 +137,7 @@ describe('explainRating', () => {
   });
 
   describe('bornes', () => {
-    it('garde les scores d’avant les bornes : un impact de 99 peut cacher un score de 104 (exemple B)', () => {
+    it('garde les scores d’avant les bornes, comme le score de 104 derrière un impact de 99 (exemple B)', () => {
       const exampleB = performancesFrom({
         role: 'JGL',
         games: 24,
@@ -152,6 +152,7 @@ describe('explainRating', () => {
       expect(breakdown.result.impact).toBe(99);
       expect(breakdown.steps?.scores.kda).toBeCloseTo(103.78, 2);
       expect(breakdown.steps?.scores.winrate).toBeCloseTo(82.75, 2);
+      expect(breakdown.steps?.scores.clutch).toBeCloseTo(93.27, 2);
     });
 
     it('donne la note d’avant le plancher : 56 remontée à 60 (joueur F de la spec)', () => {
@@ -220,7 +221,7 @@ describe('explainRating', () => {
 
       const breakdown = explainRating(mostlySupport);
 
-      expect(breakdown.steps?.role).toBe('SUP');
+      expect(breakdown.steps?.dominantRole).toBe('SUP');
       expect(breakdown.steps?.roleBaseline).toEqual({ kda: 4, winrate: 0.5 });
     });
 

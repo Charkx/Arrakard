@@ -1,11 +1,12 @@
 // Point d'entrée public du domaine. Chaque module exporte ici son API.
 export { ROLES } from './performance.ts';
 export type { MatchResult, Performance, Role } from './performance.ts';
-export { computeRating, tierOf } from './rating/rating.ts';
+export { computeRating } from './rating/rating.ts';
+export { tierOf } from './rating/tier.ts';
 export { explainRating } from './rating/breakdown.ts';
 export type { RatingBreakdown, RatingSteps, RoleBaseline, StatSteps } from './rating/breakdown.ts';
-export type { NextTier } from './rating/tier.ts';
-export type { RatedPerformance, RatingResult, Tier } from './rating/rating.ts';
+export type { NextTier, Tier } from './rating/tier.ts';
+export type { RatedPerformance, RatingResult } from './rating/rating.ts';
 export { computePlayerStats } from './stats/stats.ts';
 export type { PlayerStats, RecentForm, StatPerformance } from './stats/stats.ts';
 export { LEADERBOARD_MIN_GAMES, rankLeaderboard } from './leaderboard/leaderboard.ts';

@@ -14,8 +14,8 @@ export interface RatingBreakdown {
 
 /** Les étapes du calcul d'une note, dans l'ordre de la spécification. */
 export interface RatingSteps {
-  /** Rôle dominant : le plus joué. */
-  readonly role: Role;
+  /** Rôle dominant (glossaire) : le plus joué. */
+  readonly dominantRole: Role;
   /** Médiane de rôle (glossaire) : le KDA et le winrate de référence de ce rôle. */
   readonly roleBaseline: RoleBaseline;
   /** Fiabilité (glossaire) : de 0 à 1, atteint 1 à 15 parties. */
@@ -28,7 +28,12 @@ export interface RatingSteps {
   };
   readonly winrate: StatSteps;
   /** Scores non arrondis et non bornés, dont sortent les sous-notes (bornées de 0 à 99). */
-  readonly scores: { readonly kda: number; readonly winrate: number };
+  readonly scores: {
+    readonly kda: number;
+    readonly winrate: number;
+    /** La moyenne des deux : le score dont sort le clutch. */
+    readonly clutch: number;
+  };
   /** Les points que chaque sous-note apporte à la note (35 %, 35 % et 30 %). */
   readonly contributions: {
     readonly impact: number;
@@ -43,7 +48,10 @@ export interface RatingSteps {
 export interface StatSteps {
   /** Sur les totaux bruts : chaque partie compte autant. */
   readonly unweighted: number;
-  /** Pondérée par le prestige des éditions. */
+  /**
+   * Pondérée par le prestige des éditions. Si tous les poids valent 0, c'est
+   * la valeur brute qui est reprise.
+   */
   readonly weighted: number;
   /** Après la fiabilité : tirée vers la médiane du rôle sous 15 parties. C'est elle qui est notée. */
   readonly reliable: number;
@@ -101,7 +109,8 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
 
   const impact = clamp(Math.round(kdaScore), 0, 99);
   const consistency = clamp(Math.round(winrateScore), 0, 99);
-  const clutch = clamp(Math.round(kdaScore * 0.5 + winrateScore * 0.5), 0, 99);
+  const clutchScore = kdaScore * 0.5 + winrateScore * 0.5;
+  const clutch = clamp(Math.round(clutchScore), 0, 99);
   const contributions = {
     impact: impact * 0.35,
     consistency: consistency * 0.35,
@@ -116,7 +125,7 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
     result: { rating, impact, consistency, clutch, tier: tierOf(rating) },
     games,
     steps: {
-      role,
+      dominantRole: role,
       roleBaseline: baseline,
       reliability,
       kda: {
@@ -127,7 +136,7 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
         reliable: reliableKda,
       },
       winrate: { unweighted: unweightedWinrate, weighted: winrate, reliable: reliableWinrate },
-      scores: { kda: kdaScore, winrate: winrateScore },
+      scores: { kda: kdaScore, winrate: winrateScore, clutch: clutchScore },
       contributions,
       ratingBeforeFloor,
     },
