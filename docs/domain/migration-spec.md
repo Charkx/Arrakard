@@ -154,11 +154,12 @@ pnpm --filter @arrakis/migrate-v1 report <sauvegarde> v1-reference.local.json
 
 ### Résultat sur la sauvegarde du 2026-10-05
 
-340 notes (joueur × split) comparées : **aucun écart inexpliqué**. Cette
-mesure date d'avant le passage à la saison seule (ADR 0014). La comparaison se
-fait désormais par saison : elle est à relancer sur la sauvegarde.
+Notes (joueur × saison) comparées : **aucun écart inexpliqué**. La
+comparaison a été relancée le 2026-11-12, après le passage à la saison seule
+(ADR 0014) : le résultat est le même qu'avant, et aucune édition n'est hors
+saison.
 
-Il reste 2 écarts, tous deux pour un seul joueur du split 2026 (impact 48 → 51
+Il reste 2 écarts, tous deux pour un seul joueur de la saison 2026 (impact 48 → 51
 et clutch 52 → 53 ; note inchangée). Ils sont **expliqués par l'anomalie A6**
 de la [spécification de la note](rating-spec.md) : ce joueur a autant de parties
 en TOP qu'en MID. La v1 lit les éditions dans l'ordre de stockage et
