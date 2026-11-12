@@ -52,3 +52,36 @@ describe('lire le classement dans la base locale', () => {
     });
   });
 });
+
+describe('lire le profil d’un joueur dans la base locale', () => {
+  it('donne sa note de saison, la même que le classement, et ses trois champions', async () => {
+    const source = supabaseSource();
+    const { entries } = await source.loadLeaderboard();
+    const lanterne = entries.find((e) => e.nickname === 'Lanterne');
+
+    const page = await source.loadPlayer(lanterne?.playerId ?? '');
+
+    expect(page?.profile.season).toMatchObject({
+      rating: lanterne?.rating,
+      tier: lanterne?.tier,
+      games: lanterne?.games,
+    });
+    expect(page?.profile.season?.topChampions).toHaveLength(3);
+  });
+
+  it('donne tous ses matchs, toutes saisons comprises', async () => {
+    const lanterneId = rows.players.find((p) => p.nickname === 'Lanterne')?.id ?? '';
+    const played = rows.performances.filter((p) => p.player_id === lanterneId);
+
+    const page = await supabaseSource().loadPlayer(lanterneId);
+
+    expect(page?.matches).toHaveLength(played.length);
+  });
+
+  it('ne trouve aucun joueur derrière un identifiant inconnu', async () => {
+    const source = supabaseSource();
+
+    expect(await source.loadPlayer('00000000-0000-4000-8000-000000000000')).toBeNull();
+    expect(await source.loadPlayer('pas-un-identifiant')).toBeNull();
+  });
+});

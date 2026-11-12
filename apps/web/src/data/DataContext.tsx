@@ -25,27 +25,34 @@ export type Loaded<T> =
   | { readonly status: 'ready'; readonly data: T };
 
 /**
- * Charge une donnée une fois, et dit où en est le chargement. `load` doit être
+ * Charge une donnée, et dit où en est le chargement. Elle se recharge quand
+ * `key` change (l'identifiant d'un joueur, par exemple). `load` doit être
  * déclarée hors du composant, pour ne pas relancer le chargement à chaque affichage.
  */
-export function useLoaded<T>(load: (source: DataSource) => Promise<T>): Loaded<T> {
+export function useLoaded<T, K>(
+  load: (source: DataSource, key: K) => Promise<T>,
+  key: K,
+): Loaded<T> {
   const source = useDataSource();
-  const [state, setState] = useState<Loaded<T>>({ status: 'loading' });
+  // Le résultat garde la clé qu'il concerne : pour une autre clé, c'est « en cours ».
+  const [result, setResult] = useState<{ readonly key: K; readonly loaded: Loaded<T> } | null>(
+    null,
+  );
 
   useEffect(() => {
     let current = true;
-    load(source).then(
+    load(source, key).then(
       (data) => {
-        if (current) setState({ status: 'ready', data });
+        if (current) setResult({ key, loaded: { status: 'ready', data } });
       },
       () => {
-        if (current) setState({ status: 'error' });
+        if (current) setResult({ key, loaded: { status: 'error' } });
       },
     );
     return () => {
       current = false;
     };
-  }, [source, load]);
+  }, [source, load, key]);
 
-  return state;
+  return result !== null && Object.is(result.key, key) ? result.loaded : { status: 'loading' };
 }
