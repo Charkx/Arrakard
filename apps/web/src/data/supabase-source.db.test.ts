@@ -70,12 +70,35 @@ describe('lire le profil d’un joueur dans la base locale', () => {
 
     const page = asPage(await source.loadPlayer(lanterne?.playerId ?? ''));
 
+    // Les trois champions les plus joués de la saison, comptés dans la sauvegarde.
+    const seasonMatches = new Set(
+      rows.matches
+        .filter(
+          (m) => rows.editions.find((e) => e.id === m.edition_id)?.season_id === activeSeason?.id,
+        )
+        .map((m) => m.id),
+    );
+    const counts = new Map<string, number>();
+    for (const p of rows.performances) {
+      if (p.player_id === lanterne?.playerId && seasonMatches.has(p.match_id)) {
+        counts.set(p.champion, (counts.get(p.champion) ?? 0) + 1);
+      }
+    }
+    const topThree = [...counts]
+      .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
+      .slice(0, 3)
+      .map(([name]) => name);
+    expect(page.profile.teamTag).toBe(lanterne?.teamTag);
     expect(page.profile.season).toMatchObject({
+      role: lanterne?.role,
       rating: lanterne?.rating,
+      impact: lanterne?.impact,
+      consistency: lanterne?.consistency,
+      clutch: lanterne?.clutch,
       tier: lanterne?.tier,
       games: lanterne?.games,
+      topChampions: topThree,
     });
-    expect(page.profile.season?.topChampions).toHaveLength(3);
   });
 
   it('donne tous ses matchs, toutes saisons comprises', async () => {
