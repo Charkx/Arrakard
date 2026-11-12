@@ -13,7 +13,9 @@ export interface Discrepancy {
 }
 
 /** Les lignes v2 vues comme faits du domaine, pour `project()`. */
-export function toFacts(rows: V2Rows): Facts {
+export function toFacts(
+  rows: Pick<V2Rows, 'seasons' | 'editions' | 'matches' | 'performances' | 'players'>,
+): Facts {
   return {
     seasons: rows.seasons.map((s) => ({ id: s.id })),
     editions: rows.editions.map((e) => ({
