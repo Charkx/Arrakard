@@ -1,7 +1,7 @@
 -- Droits d'accès : lecture publique, aucune écriture directe (ADR 0005),
 -- adhésions par organisation (ADR 0008), inscriptions en libre-service.
 begin;
-select plan(29);
+select plan(34);
 
 -- ── Données ──────────────────────────────────────────────────────────────────
 -- La base peut déjà contenir une organisation chargée : les tests créent les
@@ -177,6 +177,14 @@ select results_eq(
   $$ select nickname from edition_participants_view where edition_id = '20000000-0000-0000-0000-000000000003' $$,
   $$ values ('Zed') $$,
   'un visiteur lit les participants d''un événement externe'
+);
+select throws_ok($$ update edition_page_view set name = 'Pirate' $$, '55000', null, 'la vue de l''en-tête d''une édition ne s''écrit pas');
+select throws_ok($$ update edition_standings_view set points = 99 $$, '55000', null, 'la vue du classement de soirée ne s''écrit pas');
+select throws_ok($$ update edition_matches_view set kills = 99 $$, '55000', null, 'la vue des matchs ne s''écrit pas');
+select throws_ok($$ update edition_participants_view set nickname = 'Pirate' $$, '55000', null, 'la vue des participants ne s''écrit pas');
+select is(
+  (select count(*)::int from edition_page_view where organization_id = '00000000-0000-0000-0000-00000000000b'), 0,
+  'les éditions d''Arrakis n''apparaissent pas dans l''autre structure'
 );
 
 -- ── Admin d'Arrakis ──────────────────────────────────────────────────────────

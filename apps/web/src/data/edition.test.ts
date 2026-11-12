@@ -50,6 +50,16 @@ describe('toMatches', () => {
     ]);
   });
 
+  it('laisse vide le côté d’une ligne de rôle où personne n’a été saisi', () => {
+    const rows = [aRow({ line: 0, side: 'A', role: 'TOP', nickname: 'Lanterne' })];
+
+    const [match] = toMatches(rows);
+
+    expect(match?.lines.map((l) => [l.role, l.a?.nickname, l.b])).toEqual([
+      ['TOP', 'Lanterne', null],
+    ]);
+  });
+
   it('range les matchs par numéro', () => {
     const rows = [
       aRow({ matchId: 'm3', matchNumber: 3 }),

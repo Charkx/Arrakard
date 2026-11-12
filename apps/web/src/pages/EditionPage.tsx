@@ -1,5 +1,6 @@
+import type { EditionType } from '@arrakis/domain';
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { championIconUrl } from '../data/champions.ts';
 import { useLoaded } from '../data/DataContext.tsx';
 import {
@@ -16,8 +17,9 @@ import { useI18n } from '../i18n/i18n.tsx';
 const loadEdition = (source: DataSource, editionId: string): Promise<EditionPageData | null> =>
   source.loadEdition(editionId);
 
-const isLeague = (type: string) => type === 'league_div1' || type === 'league_div2';
-const isExternal = (type: string) => type === 'external_event' || type === 'external_lan';
+const isLeague = (type: EditionType) => type === 'league_div1' || type === 'league_div2';
+/** Un événement externe n'a pas de match enregistré, seulement des participants (glossaire). */
+const isExternal = (type: EditionType) => type === 'external_event' || type === 'external_lan';
 
 /** La page d'une édition (cas d'usage V4), au design de la v1. Adresse de la v1 : /event/:id. */
 export function EditionPage() {
@@ -45,7 +47,7 @@ export function EditionPage() {
         <h1 className="page-title">{t('edition.notFound')}</h1>
         <p>{t('edition.notFound.message')}</p>
         <Link to="/leaderboard" className="navbar-link">
-          {t('profile.back')}
+          {t('edition.toLeaderboard')}
         </Link>
       </div>
     );
@@ -55,6 +57,7 @@ export function EditionPage() {
 
 function Edition({ data }: { readonly data: EditionPageData }) {
   const { t, language } = useI18n();
+  const navigate = useNavigate();
   const { edition, standings, matches, participants } = data;
   const date = new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-GB', {
     day: 'numeric',
@@ -65,6 +68,17 @@ function Edition({ data }: { readonly data: EditionPageData }) {
 
   return (
     <div className="lb-page">
+      <div className="pp-topbar">
+        <button
+          type="button"
+          className="btn-back"
+          onClick={() => {
+            void navigate(-1);
+          }}
+        >
+          {t('edition.back')}
+        </button>
+      </div>
       <header className="ev-hero card">
         <div className="ev-hero-glow" aria-hidden="true" />
         <div className="ev-hero-content">
@@ -72,14 +86,14 @@ function Edition({ data }: { readonly data: EditionPageData }) {
             <span className="ev-hero-eyebrow-dash" />
             {t(`edition.type.${edition.type}`)}
             {edition.seasonName && (
-              <span className="ev-hero-eyebrow-split">· {edition.seasonName}</span>
+              <span className="ev-hero-eyebrow-season">· {edition.seasonName}</span>
             )}
           </div>
           <h1 className="ev-title">{edition.name}</h1>
           <div className="ev-hero-badges">
             <span className="ev-hero-dates">{date}</span>
             {edition.location && (
-              <span className="ev-badge ev-badge-split">{edition.location}</span>
+              <span className="ev-badge ev-badge-place">{edition.location}</span>
             )}
           </div>
           {edition.eventMvp && (
@@ -101,15 +115,19 @@ function Edition({ data }: { readonly data: EditionPageData }) {
 
       {isExternal(edition.type) ? (
         <Section title={t('edition.participants')}>
-          <ul className="filter-group" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {participants.map((p) => (
-              <li key={p.playerId}>
-                <Link className="filter-btn" to={`/player/${p.playerId}`}>
-                  {p.nickname}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {participants.length === 0 ? (
+            <p className="empty-state">{t('edition.noParticipant')}</p>
+          ) : (
+            <ul className="filter-group ev-participants">
+              {participants.map((p) => (
+                <li key={p.playerId}>
+                  <Link className="filter-btn" to={`/player/${p.playerId}`}>
+                    {p.nickname}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </Section>
       ) : (
         <Section title={t('edition.matches')}>

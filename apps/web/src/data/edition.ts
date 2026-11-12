@@ -97,7 +97,9 @@ export function toMatches(rows: readonly MatchPlayerRow[]): EditionMatch[] {
           const pair = byLine.get(line) ?? [];
           const a = pair.find((p) => p.side === 'A') ?? null;
           const b = pair.find((p) => p.side === 'B') ?? null;
-          return { role: (a ?? b ?? first).role, a: a && player(a), b: b && player(b) };
+          // Une ligne de rôle a au moins un joueur : celui qui donne son rôle.
+          const [someone = first] = pair;
+          return { role: someone.role, a: a && player(a), b: b && player(b) };
         });
       return {
         matchId: first.matchId,

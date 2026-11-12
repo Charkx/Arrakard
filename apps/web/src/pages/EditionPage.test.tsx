@@ -153,7 +153,16 @@ describe('la page d’une édition', () => {
 
     const rows = document.querySelectorAll('.ev-match-row');
     expect([...rows].map((r) => r.querySelector('.ev-role-pill')?.textContent)).toEqual([...ROLES]);
-    expect(rows[0]?.textContent).toBe('Phare TOP3/1/7TOPMarée TOP3/1/7');
+    const [a, b] = [...(rows[0]?.querySelectorAll('.ev-perf') ?? [])];
+    expect([
+      a?.querySelector('.ev-perf-name')?.textContent,
+      a?.querySelector('.ev-perf-kda')?.textContent,
+    ]).toEqual(['Phare TOP', '3/1/7']);
+    expect([
+      b?.querySelector('.ev-perf-name')?.textContent,
+      b?.querySelector('.ev-perf-kda')?.textContent,
+    ]).toEqual(['Marée TOP', '3/1/7']);
+    expect(a?.classList.contains('win')).toBe(true);
     expect(screen.getAllByRole('img', { name: 'Ornn' })).toHaveLength(5);
   });
 
