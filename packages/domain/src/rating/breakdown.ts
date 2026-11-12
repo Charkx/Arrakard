@@ -16,6 +16,18 @@ export interface RatingSteps {
   readonly role: Role;
   /** Médiane de rôle (glossaire) : le KDA et le winrate de référence de ce rôle. */
   readonly roleBaseline: RoleBaseline;
+  /** Fiabilité (glossaire) : de 0 à 1, atteint 1 à 15 parties. */
+  readonly reliability: number;
+  readonly kda: StatSteps;
+  readonly winrate: StatSteps;
+}
+
+/** Une statistique à chaque étape du calcul. */
+export interface StatSteps {
+  /** Pondérée par le prestige des éditions. */
+  readonly weighted: number;
+  /** Après la fiabilité : tirée vers la médiane du rôle sous 15 parties. C'est elle qui est notée. */
+  readonly reliable: number;
 }
 
 export interface RoleBaseline {
@@ -70,7 +82,13 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
   return {
     result: { rating, impact, consistency, clutch, tier: tierOf(rating) },
     games,
-    steps: { role, roleBaseline: baseline },
+    steps: {
+      role,
+      roleBaseline: baseline,
+      reliability,
+      kda: { weighted: kda, reliable: reliableKda },
+      winrate: { weighted: winrate, reliable: reliableWinrate },
+    },
   };
 }
 

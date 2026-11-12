@@ -48,4 +48,23 @@ describe('explainRating', () => {
     expect(breakdown.steps?.role).toBe('JGL');
     expect(breakdown.steps?.roleBaseline).toEqual({ kda: 3, winrate: 0.5 });
   });
+
+  describe('fiabilité', () => {
+    it('à 15 parties, elle vaut 1 : les statistiques ne sont pas tirées vers la médiane', () => {
+      const fifteenGames = performancesFrom({
+        role: 'MID',
+        games: 15,
+        wins: 12,
+        kills: 30,
+        deaths: 10,
+        assists: 30,
+      });
+
+      const breakdown = explainRating(fifteenGames);
+
+      expect(breakdown.steps?.reliability).toBe(1);
+      expect(breakdown.steps?.kda).toMatchObject({ weighted: 6, reliable: 6 });
+      expect(breakdown.steps?.winrate).toMatchObject({ weighted: 0.8, reliable: 0.8 });
+    });
+  });
 });
