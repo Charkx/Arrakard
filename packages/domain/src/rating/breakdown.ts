@@ -7,7 +7,20 @@ export interface RatingBreakdown {
   readonly result: RatingResult;
   readonly games: number;
   /** Les étapes du calcul ; `null` pour un joueur sans partie, qui n'en a aucune. */
-  readonly steps: null;
+  readonly steps: RatingSteps | null;
+}
+
+/** Les étapes du calcul d'une note, dans l'ordre de la spécification. */
+export interface RatingSteps {
+  /** Rôle dominant : le plus joué. */
+  readonly role: Role;
+  /** Médiane de rôle (glossaire) : le KDA et le winrate de référence de ce rôle. */
+  readonly roleBaseline: RoleBaseline;
+}
+
+export interface RoleBaseline {
+  readonly kda: number;
+  readonly winrate: number;
 }
 
 /**
@@ -57,7 +70,7 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
   return {
     result: { rating, impact, consistency, clutch, tier: tierOf(rating) },
     games,
-    steps: null,
+    steps: { role, roleBaseline: baseline },
   };
 }
 
@@ -65,7 +78,7 @@ const FULL_RELIABILITY_GAMES = 15;
 /** Au-delà, le KDA n'apporte plus rien aux sous-notes (2 parties à 31 ne font pas un Élite). */
 const KDA_CAP = 8;
 
-const ROLE_BASELINES: Record<Role, { kda: number; winrate: number }> = {
+const ROLE_BASELINES: Record<Role, RoleBaseline> = {
   TOP: { kda: 2.5, winrate: 0.5 },
   JGL: { kda: 3.0, winrate: 0.5 },
   MID: { kda: 3.0, winrate: 0.5 },

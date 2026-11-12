@@ -41,4 +41,11 @@ describe('explainRating', () => {
     });
     expect(breakdown.games).toBe(5);
   });
+
+  it('dit le rôle dominant et la médiane de rôle qui sert de référence', () => {
+    const breakdown = explainRating(exampleA);
+
+    expect(breakdown.steps?.role).toBe('JGL');
+    expect(breakdown.steps?.roleBaseline).toEqual({ kda: 3, winrate: 0.5 });
+  });
 });
