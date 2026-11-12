@@ -1,6 +1,6 @@
 import type { Role } from '../performance.ts';
 import type { RatedPerformance, RatingResult } from './rating.ts';
-import { tierOf, type Tier } from './tier.ts';
+import { nextTierOf, tierOf, type NextTier } from './tier.ts';
 
 /** Explication de note (glossaire) : la note, et le détail du calcul qui y mène. */
 export interface RatingBreakdown {
@@ -10,11 +10,6 @@ export interface RatingBreakdown {
   readonly steps: RatingSteps | null;
   /** Le palier au-dessus et les points qui manquent pour l'atteindre ; `null` pour un joueur Élite. */
   readonly nextTier: NextTier | null;
-}
-
-export interface NextTier {
-  readonly tier: Tier;
-  readonly pointsMissing: number;
 }
 
 /** Les étapes du calcul d'une note, dans l'ordre de la spécification. */
@@ -123,9 +118,6 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
   };
 }
 
-/** Notes à partir desquelles on change de palier, dans l'ordre croissant. */
-const TIER_THRESHOLDS = [70, 80, 90] as const;
-
 const FULL_RELIABILITY_GAMES = 15;
 /** Au-delà, le KDA n'apporte plus rien aux sous-notes (2 parties à 31 ne font pas un Élite). */
 const KDA_CAP = 8;
@@ -152,12 +144,6 @@ function dominantRole(performances: readonly RatedPerformance[]): Role | undefin
     }
   }
   return best;
-}
-
-function nextTierOf(rating: number): NextTier | null {
-  const threshold = TIER_THRESHOLDS.find((t) => t > rating);
-  if (threshold === undefined) return null;
-  return { tier: tierOf(threshold), pointsMissing: threshold - rating };
 }
 
 function sum<T>(items: readonly T[], value: (item: T) => number): number {

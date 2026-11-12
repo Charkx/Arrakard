@@ -2,6 +2,9 @@
 export { ROLES } from './performance.ts';
 export type { MatchResult, Performance, Role } from './performance.ts';
 export { computeRating, tierOf } from './rating/rating.ts';
+export { explainRating } from './rating/breakdown.ts';
+export type { RatingBreakdown, RatingSteps, RoleBaseline, StatSteps } from './rating/breakdown.ts';
+export type { NextTier } from './rating/tier.ts';
 export type { RatedPerformance, RatingResult, Tier } from './rating/rating.ts';
 export { computePlayerStats } from './stats/stats.ts';
 export type { PlayerStats, RecentForm, StatPerformance } from './stats/stats.ts';
