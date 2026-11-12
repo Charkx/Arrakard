@@ -232,4 +232,20 @@ describe('explainRating', () => {
       expect(breakdown.steps?.kda).toMatchObject({ weighted: 8, capped: false });
     });
   });
+
+  describe('plafond et fiabilité cumulés', () => {
+    it('sépare ce que fait le plafond de ce que fait la fiabilité', () => {
+      const threeBigGames = [
+        aPerformance({ role: 'MID', kills: 30, deaths: 1 }),
+        ...performances(2, { role: 'MID' }),
+      ];
+
+      const breakdown = explainRating(threeBigGames);
+
+      // KDA 30 → plafonné à 8 → 3 parties sur 15 : 8 × 0,2 + 3 × 0,8 = 4.
+      expect(breakdown.steps?.kda.weighted).toBe(30);
+      expect(breakdown.steps?.kda.afterCap).toBe(8);
+      expect(breakdown.steps?.kda.reliable).toBeCloseTo(4);
+    });
+  });
 });

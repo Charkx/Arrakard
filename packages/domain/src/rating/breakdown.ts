@@ -23,6 +23,8 @@ export interface RatingSteps {
   readonly kda: StatSteps & {
     /** Vrai si le KDA pondéré dépassait 8 : il est alors ramené à 8 avant la fiabilité. */
     readonly capped: boolean;
+    /** Le KDA pondéré une fois plafonné : c'est de lui que part la fiabilité. */
+    readonly afterCap: number;
   };
   readonly winrate: StatSteps;
   /** Scores non arrondis et non bornés, dont sortent les sous-notes (bornées de 0 à 99). */
@@ -108,6 +110,7 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
         unweighted: unweightedKda,
         weighted: weightedKda,
         capped: weightedKda > KDA_CAP,
+        afterCap: kda,
         reliable: reliableKda,
       },
       winrate: { unweighted: unweightedWinrate, weighted: winrate, reliable: reliableWinrate },
