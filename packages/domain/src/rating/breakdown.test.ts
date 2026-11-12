@@ -170,4 +170,27 @@ describe('explainRating', () => {
       expect(breakdown.result.rating).toBe(60);
     });
   });
+
+  describe('palier suivant', () => {
+    it('donne l’écart au palier suivant : une note de 78 est à 2 points de l’Or (joueur D de la spec)', () => {
+      const playerD = performancesFrom({
+        role: 'SUP',
+        games: 20,
+        wins: 11,
+        kills: 29,
+        deaths: 54,
+        assists: 305,
+      });
+
+      const breakdown = explainRating(playerD);
+
+      expect(breakdown.nextTier).toEqual({ tier: 'gold', pointsMissing: 2 });
+    });
+
+    it('un joueur sans partie est à 10 points de l’Argent', () => {
+      const breakdown = explainRating([]);
+
+      expect(breakdown.nextTier).toEqual({ tier: 'silver', pointsMissing: 10 });
+    });
+  });
 });

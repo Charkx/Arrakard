@@ -1,6 +1,6 @@
 import type { Role } from '../performance.ts';
 import type { RatedPerformance, RatingResult } from './rating.ts';
-import { tierOf } from './tier.ts';
+import { tierOf, type Tier } from './tier.ts';
 
 /** Explication de note (glossaire) : la note, et le détail du calcul qui y mène. */
 export interface RatingBreakdown {
@@ -8,6 +8,13 @@ export interface RatingBreakdown {
   readonly games: number;
   /** Les étapes du calcul ; `null` pour un joueur sans partie, qui n'en a aucune. */
   readonly steps: RatingSteps | null;
+  /** Le palier au-dessus et les points qui manquent pour l'atteindre. */
+  readonly nextTier: NextTier;
+}
+
+export interface NextTier {
+  readonly tier: Tier;
+  readonly pointsMissing: number;
 }
 
 /** Les étapes du calcul d'une note, dans l'ordre de la spécification. */
@@ -57,6 +64,7 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
       result: { rating, impact: 60, consistency: 60, clutch: 60, tier: tierOf(rating) },
       games,
       steps: null,
+      nextTier: nextTierOf(rating),
     };
   }
 
@@ -111,6 +119,7 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
       scores: { kda: kdaScore, winrate: winrateScore },
       ratingBeforeFloor,
     },
+    nextTier: nextTierOf(rating),
   };
 }
 
@@ -140,6 +149,11 @@ function dominantRole(performances: readonly RatedPerformance[]): Role | undefin
     }
   }
   return best;
+}
+
+function nextTierOf(rating: number): NextTier {
+  const threshold = rating < 70 ? 70 : 80;
+  return { tier: tierOf(threshold), pointsMissing: threshold - rating };
 }
 
 function sum<T>(items: readonly T[], value: (item: T) => number): number {
