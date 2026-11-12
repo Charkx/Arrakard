@@ -276,6 +276,7 @@ erDiagram
   player_season_ratings {
     uuid season_id PK,FK
     uuid player_id PK,FK
+    text dominant_role
     int rating
     int impact
     int consistency
@@ -296,3 +297,13 @@ erDiagram
     int points
   }
 ```
+
+### Vues de lecture
+
+Une vue par besoin de page ([vue d'architecture](overview.md#chemin-de-lecture)).
+Chaque vue lit avec les droits de celui qui l'interroge (`security_invoker`) :
+elle ne montre rien de plus que les tables qu'elle rassemble, et ne s'écrit pas.
+
+| Vue                | Page       | Ce qu'elle rassemble                                                                                                   |
+| ------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `leaderboard_view` | Classement | Une ligne par joueur et par saison : sa note de saison, son rôle dominant, son équipe actuelle et ses éditions jouées. |

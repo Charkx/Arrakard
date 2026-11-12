@@ -72,10 +72,15 @@ Pendant le TDD : `pnpm --filter @arrakis/domain test:watch`.
 La base locale (Docker doit tourner) :
 
 ```bash
-supabase db start                                    # démarre la base et applique les migrations
-pnpm test:db                                         # droits d'accès (pgTAP) et tests d'écriture
+pnpm db:start                                                  # démarre la base et son API, applique les migrations
+pnpm test:db                                                   # droits d'accès (pgTAP), écriture, lecture par le site
 pnpm --filter @arrakis/migrate-v1 load demo-backup --replace   # la remplit avec une communauté inventée
+pnpm dev                                                       # le site, sur http://localhost:5173, lit cette base
 ```
+
+Le site lit la base locale par défaut. Pour une autre base, il prend les
+variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` (voir
+`apps/web/env.example`).
 
 Le site (`apps/web`) :
 
