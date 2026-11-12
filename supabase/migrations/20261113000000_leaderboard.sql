@@ -43,7 +43,11 @@ select
   r.winrate,
   r.kda,
   r.recent_form,
-  r.previous_rating
+  r.previous_rating,
+  -- Le nombre d'éditions de la saison où il a joué (affiché sur la carte).
+  (select count(*)::int
+   from player_edition_history h join editions e on e.id = h.edition_id
+   where h.player_id = r.player_id and e.season_id = r.season_id) as editions_played
 from player_season_ratings r
 join seasons s on s.id = r.season_id
 join players p on p.id = r.player_id
