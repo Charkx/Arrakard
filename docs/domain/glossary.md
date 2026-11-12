@@ -78,24 +78,25 @@ Voir l'[ADR 0012](../adr/0012-publier-les-resultats.md).
 
 ## Notation
 
-| Terme                    | Code                              | Définition                                                                                                                  |
-| ------------------------ | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **Note**                 | `rating`                          | Note de carte, entre 60 et 99, calculée sur la saison active. Voir la [spécification](rating-spec.md).                      |
-| **Historique de note**   | `editionHistory`                  | La note d'un joueur après chaque édition qu'il a jouée. _Projection._ Passera au grain de la publication (ADR 0012).        |
-| **Explication de note**  | `RatingBreakdown`                 | Le détail du calcul d'une note : ce que chaque sous-note et chaque règle y apporte. _Projection._                           |
-| **Sous-notes**           | `impact`, `consistency`, `clutch` | Les trois composantes de la note (0 à 99). _« Consistance » en v1 ; le code v2 dit `consistency`._                          |
-| **Palier**               | `Tier`                            | Bronze (< 70), Argent (70–79), Or (80–89), Élite (≥ 90). Débloque des options de personnalisation.                          |
-| **Fiabilité**            | `reliability`                     | Coefficient de 0 à 1 qui atteint 1 à 15 parties. En dessous, les stats d'un joueur sont tirées vers la médiane de son rôle. |
-| **Médiane de rôle**      | `roleBaseline`                    | KDA et winrate de référence d'un rôle, servant d'ancre au calcul.                                                           |
-| **Forme récente**        | `recentForm`                      | `up`, `stable`, `down`, d'après les 3 dernières performances.                                                               |
-| **Classement**           | `Leaderboard`                     | Liste des joueurs triée par note, avec départage déterministe.                                                              |
-| **Classement de soirée** | `EventStandings`                  | Classement **en points** d'une édition, selon son barème. _Système distinct de la note._                                    |
-| **Barème**               | `ScoringRules`                    | Points attribués par victoire, défaite, kill, assist, mort et MVP pour le classement de soirée. Propre à chaque édition.    |
-| **MVP de soirée**        | `eventMvp`                        | Joueur désigné meilleur de l'édition. Donne un bonus au classement de soirée.                                               |
-| **MVP de match**         | `matchMvp`                        | Joueur désigné meilleur d'un match. Enregistré, sans effet au barème officiel actuel.                                       |
-| **Badge**                | `Badge`                           | Distinction déduite des faits (« Bourreau ×3 », « Champion »). _Projection._                                                |
-| **Carte**                | `Card`                            | Représentation visuelle d'un joueur : note, sous-notes, palier, personnalisation.                                           |
-| **Personnalisation**     | `CardCustomization`               | Choix du joueur sur sa carte : titre, badges affichés, fond, comptes Riot. _Seule donnée qu'un joueur peut écrire._         |
+| Terme                    | Code                              | Définition                                                                                                                     |
+| ------------------------ | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Note**                 | `rating`                          | Note de carte, entre 60 et 99, calculée sur la saison active. Voir la [spécification](rating-spec.md).                         |
+| **Historique de note**   | `editionHistory`                  | La note d'un joueur après chaque édition qu'il a jouée. _Projection._ Passera au grain de la publication (ADR 0012).           |
+| **Explication de note**  | `RatingBreakdown`                 | Le détail du calcul d'une note : ce que chaque sous-note et chaque règle y apporte. _Projection._                              |
+| **Sous-notes**           | `impact`, `consistency`, `clutch` | Les trois composantes de la note (0 à 99). _« Consistance » en v1 ; le code v2 dit `consistency`._                             |
+| **Palier**               | `Tier`                            | Bronze (< 70), Argent (70–79), Or (80–89), Élite (≥ 90). Débloque des options de personnalisation.                             |
+| **Palier suivant**       | `NextTier`                        | Le palier juste au-dessus de la note d'un joueur, et les points qui lui manquent pour l'atteindre. Aucun pour un joueur Élite. |
+| **Fiabilité**            | `reliability`                     | Coefficient de 0 à 1 qui atteint 1 à 15 parties. En dessous, les stats d'un joueur sont tirées vers la médiane de son rôle.    |
+| **Médiane de rôle**      | `roleBaseline`                    | KDA et winrate de référence d'un rôle, servant d'ancre au calcul.                                                              |
+| **Forme récente**        | `recentForm`                      | `up`, `stable`, `down`, d'après les 3 dernières performances.                                                                  |
+| **Classement**           | `Leaderboard`                     | Liste des joueurs triée par note, avec départage déterministe.                                                                 |
+| **Classement de soirée** | `EventStandings`                  | Classement **en points** d'une édition, selon son barème. _Système distinct de la note._                                       |
+| **Barème**               | `ScoringRules`                    | Points attribués par victoire, défaite, kill, assist, mort et MVP pour le classement de soirée. Propre à chaque édition.       |
+| **MVP de soirée**        | `eventMvp`                        | Joueur désigné meilleur de l'édition. Donne un bonus au classement de soirée.                                                  |
+| **MVP de match**         | `matchMvp`                        | Joueur désigné meilleur d'un match. Enregistré, sans effet au barème officiel actuel.                                          |
+| **Badge**                | `Badge`                           | Distinction déduite des faits (« Bourreau ×3 », « Champion »). _Projection._                                                   |
+| **Carte**                | `Card`                            | Représentation visuelle d'un joueur : note, sous-notes, palier, personnalisation.                                              |
+| **Personnalisation**     | `CardCustomization`               | Choix du joueur sur sa carte : titre, badges affichés, fond, comptes Riot. _Seule donnée qu'un joueur peut écrire._            |
 
 ## Prévu en tranche 3
 
