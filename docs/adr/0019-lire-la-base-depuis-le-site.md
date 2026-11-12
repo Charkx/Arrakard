@@ -18,8 +18,10 @@ qui changent après chaque publication, quelques fois par semaine.
   (`/leaderboard`, `/player/:id`), pour que les liens partagés restent valides.
   Les filtres d'une page vivent dans son adresse.
 - **Accès à la base** : `@supabase/supabase-js`, qui lit une **vue SQL par
-  page** (`leaderboard_view`), avec les droits d'un visiteur. Le site ne lit
-  jamais une table directement.
+  besoin de page** (`leaderboard_view` pour le classement ; le profil en lit
+  deux, le joueur et ses matchs), avec les droits d'un visiteur, limitée à
+  l'organisation du site. Le site ne lit une table directement que pour une
+  question simple (l'organisation, la saison en cours).
 - **Pas de cache** : chaque page charge ses données à l'ouverture, par un
   petit crochet maison (`useLoaded`). Les pages sont derrière une source de
   données (`DataSource`) : les tests les nourrissent en mémoire.
@@ -40,7 +42,7 @@ soit le même partout.
 
 ## Conséquences
 
-- Une page de plus, c'est une vue SQL de plus, avec ses tests d'accès.
+- Une page de plus, c'est une ou deux vues SQL de plus, avec leurs tests d'accès.
 - En local, le site lit la base de `pnpm db:start` sans configuration. En
   ligne, il lui faut l'adresse et la clé publique du projet (`env.example`).
 - Le JavaScript du site passe de 69 à 143 kB compressés, surtout à cause de

@@ -70,7 +70,6 @@ const fr = {
   'profile.m.winLoss': '{w} V · {l} D',
   'profile.m.kda': 'KDA',
   'profile.m.editions': 'Éditions',
-  'profile.m.season': '{season}',
   'profile.attr.impact': 'Impact',
   'profile.attr.consistency': 'Consistance',
   'profile.attr.clutch': 'Clutch',
@@ -81,6 +80,8 @@ const fr = {
   'profile.matchday': 'J{n}',
   'match.win': 'Victoire',
   'match.loss': 'Défaite',
+  'match.win.short': 'V',
+  'match.loss.short': 'D',
 } as const;
 
 /** Une clé de texte. Une clé inconnue ne compile pas. */
@@ -154,7 +155,6 @@ const en: Record<TextKey, string> = {
   'profile.m.winLoss': '{w} W · {l} L',
   'profile.m.kda': 'KDA',
   'profile.m.editions': 'Editions',
-  'profile.m.season': '{season}',
   'profile.attr.impact': 'Impact',
   'profile.attr.consistency': 'Consistency',
   'profile.attr.clutch': 'Clutch',
@@ -165,6 +165,8 @@ const en: Record<TextKey, string> = {
   'profile.matchday': 'Day {n}',
   'match.win': 'Win',
   'match.loss': 'Loss',
+  'match.win.short': 'W',
+  'match.loss.short': 'L',
 };
 
 export const DICTIONARY: Record<Language, Record<TextKey, string>> = { fr, en };

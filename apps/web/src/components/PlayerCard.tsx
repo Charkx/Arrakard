@@ -1,5 +1,6 @@
 import type { Role, Tier } from '@arrakis/domain';
 import { useEffect, useRef, useState } from 'react';
+import { championIconUrl } from '../data/champions.ts';
 import { useI18n } from '../i18n/i18n.tsx';
 
 /**
@@ -45,6 +46,28 @@ const ROLE_ICON: Record<Role, string> = {
 
 const CARD_WIDTH = 320;
 const CARD_HEIGHT = 532;
+
+/** Icône du champion, avec ses trois premières lettres si l'image ne charge pas (comme en v1). */
+function ChampionIcon({ name }: { readonly name: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="pch-champ" title={name}>
+      {failed ? (
+        <span className="pch-champ-fb">{name.slice(0, 3).toUpperCase()}</span>
+      ) : (
+        <img
+          className="pch-champ-img"
+          src={championIconUrl(name)}
+          alt={name}
+          loading="lazy"
+          onError={() => {
+            setFailed(true);
+          }}
+        />
+      )}
+    </div>
+  );
+}
 
 function RoleIcon({ role }: { readonly role: Role }) {
   const [failed, setFailed] = useState(false);
@@ -192,9 +215,7 @@ export function PlayerCard(props: PlayerCardProps) {
                     </div>
                     <div className="pch-rail">
                       {champions.slice(0, 3).map((name) => (
-                        <div key={name} className="pch-champ">
-                          <span className="pch-champ-fb">{name.slice(0, 3).toUpperCase()}</span>
-                        </div>
+                        <ChampionIcon key={name} name={name} />
                       ))}
                       {Array.from({ length: 3 - Math.min(champions.length, 3) }, (_, i) => (
                         <div key={`empty-${String(i)}`} className="pch-champ pch-champ-empty" />

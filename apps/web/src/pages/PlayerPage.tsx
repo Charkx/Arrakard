@@ -1,9 +1,10 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { PlayerCard } from '../components/PlayerCard.tsx';
 import { useLoaded } from '../data/DataContext.tsx';
 import { initialsOf, type DataSource } from '../data/leaderboard.ts';
 import {
   byEdition,
+  type MergedPlayer,
   mostRecentFirst,
   type PlayedMatch,
   type PlayerPageData,
@@ -12,8 +13,10 @@ import {
 } from '../data/player.ts';
 import { useI18n } from '../i18n/i18n.tsx';
 
-const loadPlayer = (source: DataSource, playerId: string): Promise<PlayerPageData | null> =>
-  source.loadPlayer(playerId);
+const loadPlayer = (
+  source: DataSource,
+  playerId: string,
+): Promise<PlayerPageData | MergedPlayer | null> => source.loadPlayer(playerId);
 
 /** Le profil d'un joueur (cas d'usage V2), au design de la v1. Adresse de la v1 : /player/:id. */
 export function PlayerPage() {
@@ -45,6 +48,9 @@ export function PlayerPage() {
         </Link>
       </div>
     );
+  }
+  if ('mergedInto' in loaded.data) {
+    return <Navigate to={`/player/${loaded.data.mergedInto}`} replace />;
   }
   return <Profile profile={loaded.data.profile} matches={mostRecentFirst(loaded.data.matches)} />;
 }
@@ -271,7 +277,7 @@ function History({ matches }: { readonly matches: readonly PlayedMatch[] }) {
                       key={m.matchId}
                       className={`gpill gpill-${m.result === 'win' ? 'w' : 'l'}`}
                     >
-                      {m.result === 'win' ? 'V' : 'D'}
+                      {t(m.result === 'win' ? 'match.win.short' : 'match.loss.short')}
                     </span>
                   ))}
                 </span>

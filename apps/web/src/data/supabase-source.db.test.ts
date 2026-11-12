@@ -3,7 +3,16 @@ import { planMigration } from '@arrakis/migrate-v1/src/plan.ts';
 import { demoBackup } from '@arrakis/migrate-v1/src/testing/demo-backup.ts';
 import { toFacts } from '@arrakis/migrate-v1/src/verify.ts';
 import { describe, expect, it } from 'vitest';
+import type { PlayerPageData } from './player.ts';
 import { supabaseSource } from './supabase-source.ts';
+
+/** Le profil chargé, ou une erreur claire s'il manque. */
+function asPage(loaded: unknown): PlayerPageData {
+  if (loaded === null || typeof loaded !== 'object' || !('profile' in loaded)) {
+    throw new Error('Profil introuvable dans la base locale.');
+  }
+  return loaded as PlayerPageData;
+}
 
 /**
  * Test sur l'API locale (`pnpm db:start`), après le chargement de la
@@ -59,23 +68,32 @@ describe('lire le profil d’un joueur dans la base locale', () => {
     const { entries } = await source.loadLeaderboard();
     const lanterne = entries.find((e) => e.nickname === 'Lanterne');
 
-    const page = await source.loadPlayer(lanterne?.playerId ?? '');
+    const page = asPage(await source.loadPlayer(lanterne?.playerId ?? ''));
 
-    expect(page?.profile.season).toMatchObject({
+    expect(page.profile.season).toMatchObject({
       rating: lanterne?.rating,
       tier: lanterne?.tier,
       games: lanterne?.games,
     });
-    expect(page?.profile.season?.topChampions).toHaveLength(3);
+    expect(page.profile.season?.topChampions).toHaveLength(3);
   });
 
   it('donne tous ses matchs, toutes saisons comprises', async () => {
     const lanterneId = rows.players.find((p) => p.nickname === 'Lanterne')?.id ?? '';
     const played = rows.performances.filter((p) => p.player_id === lanterneId);
 
-    const page = await supabaseSource().loadPlayer(lanterneId);
+    const page = asPage(await supabaseSource().loadPlayer(lanterneId));
 
-    expect(page?.matches).toHaveLength(played.length);
+    const seasonsPlayed = new Set(
+      played.map(
+        (p) =>
+          rows.editions.find(
+            (e) => e.id === rows.matches.find((m) => m.id === p.match_id)?.edition_id,
+          )?.season_id,
+      ),
+    );
+    expect(seasonsPlayed.size).toBeGreaterThan(1);
+    expect(page.matches).toHaveLength(played.length);
   });
 
   it('ne trouve aucun joueur derrière un identifiant inconnu', async () => {

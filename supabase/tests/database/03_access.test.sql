@@ -37,6 +37,23 @@ from players p
 cross join (values (1, 'Ahri', 'win'), (2, 'Ahri', 'loss'), (3, 'Vi', 'win'), (4, 'Ornn', 'win')) as g (n, champion, result)
 where p.nickname = 'Meta' and p.organization_id = '00000000-0000-0000-0000-00000000000a';
 
+-- Un quatrième champion, joué une fois : à égalité, l'ordre alphabétique l'écarte des trois premiers.
+-- Trois Annie dans une saison clôturée : elles ne comptent pas pour la saison en cours.
+insert into seasons (id, organization_id, name, year, status) values
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000a', 'Saison 2', 2025, 'closed');
+insert into editions (id, organization_id, name, type, date, season_id) values
+  ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000a', 'IH #1', 'inhouse', '2025-06-01', '10000000-0000-0000-0000-000000000002');
+insert into matches (id, organization_id, edition_id, match_number, winner_team, duration_seconds)
+select ('41000000-0000-0000-0000-00000000000' || n)::uuid, '00000000-0000-0000-0000-00000000000a',
+       case when n = 5 then '20000000-0000-0000-0000-000000000001'::uuid else '20000000-0000-0000-0000-000000000002'::uuid end,
+       n, 'ARK', 1800
+from generate_series(1, 5) as n;
+insert into performances (organization_id, match_id, line, side, player_id, team, role, champion, result, kills, deaths, assists, gold)
+select '00000000-0000-0000-0000-00000000000a', ('41000000-0000-0000-0000-00000000000' || g.n)::uuid, 2, 'A', p.id, 'ARK', 'MID', g.champion, 'win', 1, 1, 1, 9000
+from players p
+cross join (values (1, 'Annie'), (2, 'Annie'), (3, 'Annie'), (5, 'Zyra')) as g (n, champion)
+where p.nickname = 'Meta' and p.organization_id = '00000000-0000-0000-0000-00000000000a';
+
 -- L'autre structure a sa saison, un joueur et sa note, sans équipe.
 insert into players (organization_id, nickname) values ('00000000-0000-0000-0000-00000000000b', 'Ailleurs');
 insert into seasons (id, organization_id, name, year, status) values
@@ -79,7 +96,7 @@ select throws_ok(
   $$ select discord_user_id from registrations $$,
   '42501', null, 'l''identifiant Discord des inscrits n''est pas public'
 );
-select is((select count(*)::int from seasons where organization_id = '00000000-0000-0000-0000-00000000000a'), 1, 'un visiteur lit les saisons');
+select is((select count(*)::int from seasons where organization_id = '00000000-0000-0000-0000-00000000000a'), 2, 'un visiteur lit les saisons');
 select is((select count(*)::int from player_season_ratings where organization_id = '00000000-0000-0000-0000-00000000000a'), 1, 'un visiteur lit les notes par saison');
 select throws_ok(
   $$ insert into seasons (organization_id, name, year, status)
@@ -115,8 +132,9 @@ select results_eq(
 -- L'historique : chaque match du joueur, avec son édition.
 select results_eq(
   $$ select edition_name, match_number, champion, result from player_matches_view
-     where organization_id = '00000000-0000-0000-0000-00000000000a' and nickname = 'Meta' order by match_number $$,
-  $$ values ('IH #2', 1, 'Ahri', 'win'), ('IH #2', 2, 'Ahri', 'loss'), ('IH #2', 3, 'Vi', 'win'), ('IH #2', 4, 'Ornn', 'win') $$,
+     where organization_id = '00000000-0000-0000-0000-00000000000a' and nickname = 'Meta' and edition_name = 'IH #2'
+     order by match_number $$,
+  $$ values ('IH #2', 1, 'Ahri', 'win'), ('IH #2', 2, 'Ahri', 'loss'), ('IH #2', 3, 'Vi', 'win'), ('IH #2', 4, 'Ornn', 'win'), ('IH #2', 5, 'Zyra', 'win') $$,
   'un visiteur lit l''historique des matchs d''un joueur'
 );
 select throws_ok(

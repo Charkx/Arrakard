@@ -30,7 +30,7 @@ describe('le profil d’un joueur', () => {
   it('montre sur la carte la note, les sous-notes, le palier, le rôle, l’équipe et les champions', async () => {
     openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
 
-    const card = (await screen.findByText('ORN')).closest('.pch-frame');
+    const card = (await screen.findByRole('img', { name: 'Ornn' })).closest('.pch-frame');
     expect(card?.getAttribute('data-rank')).toBe('or');
     expect(card?.querySelector('.pch-ovr')?.textContent).toBe('86');
     expect([...(card?.querySelectorAll('.pch-stat .v') ?? [])].map((v) => v.textContent)).toEqual([
@@ -40,11 +40,9 @@ describe('le profil d’un joueur', () => {
     ]);
     expect(card?.querySelector('.pch-team')?.textContent).toBe('PHA');
     expect(card?.querySelector('.pch-role')?.textContent).toContain('TOP');
-    expect([...(card?.querySelectorAll('.pch-champ-fb') ?? [])].map((c) => c.textContent)).toEqual([
-      'ORN',
-      'GNA',
-      'GAR',
-    ]);
+    expect(
+      [...(card?.querySelectorAll('.pch-champ-img') ?? [])].map((c) => c.getAttribute('alt')),
+    ).toEqual(['Ornn', 'Gnar', 'Garen']);
   });
 
   it('montre les statistiques de la saison et l’évolution de la note', async () => {
@@ -116,6 +114,24 @@ describe('le profil d’un joueur', () => {
     expect(await screen.findByText(/Pas encore de partie cette saison/)).toBeDefined();
     expect(screen.getByText('Aucun match enregistré pour ce joueur.')).toBeDefined();
     expect(document.querySelector('.pch-frame')).toBeNull();
+  });
+
+  it('montre les trois premières lettres d’un champion dont l’image ne charge pas', async () => {
+    openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
+
+    fireEvent.error(await screen.findByRole('img', { name: 'Gnar' }));
+
+    expect(screen.getByText('GNA')).toBeDefined();
+  });
+
+  it('mène l’ancien lien d’un joueur fusionné vers le joueur qui le remplace', async () => {
+    openSite('/player/p-ancien', {
+      players: { 'p-lanterne': lanterne },
+      merged: { 'p-ancien': 'p-lanterne' },
+    });
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Lanterne' })).toBeDefined();
+    expect(screen.getByTestId('address').textContent).toBe('/player/p-lanterne');
   });
 
   it('dit qu’un lien ne mène à aucun joueur', async () => {

@@ -81,17 +81,24 @@ export interface SiteData {
   readonly leaderboard?: LeaderboardData | 'fails';
   /** Les joueurs, par identifiant. Un identifiant absent mène à « joueur introuvable ». */
   readonly players?: Readonly<Record<string, PlayerPageData>> | 'fails';
+  /** Les joueurs fusionnés : ancien identifiant → joueur conservé. */
+  readonly merged?: Readonly<Record<string, string>>;
 }
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */
 export function inMemorySource({
   leaderboard = { seasonName: 'Saison 3', entries: [] },
   players = {},
+  merged = {},
 }: SiteData): DataSource {
   const fails = () => Promise.reject(new Error('Base injoignable'));
   return {
     loadLeaderboard: () => (leaderboard === 'fails' ? fails() : Promise.resolve(leaderboard)),
-    loadPlayer: (id) => (players === 'fails' ? fails() : Promise.resolve(players[id] ?? null)),
+    loadPlayer: (id) => {
+      if (players === 'fails') return fails();
+      const into = merged[id];
+      return Promise.resolve(into === undefined ? (players[id] ?? null) : { mergedInto: into });
+    },
   };
 }
 

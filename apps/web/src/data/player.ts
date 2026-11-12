@@ -47,6 +47,11 @@ export interface PlayedMatch {
   readonly assists: number;
 }
 
+/** Un joueur fusionné dans un autre : son ancien lien mène au joueur conservé. */
+export interface MergedPlayer {
+  readonly mergedInto: string;
+}
+
 export interface PlayerPageData {
   readonly profile: PlayerProfile;
   readonly matches: readonly PlayedMatch[];

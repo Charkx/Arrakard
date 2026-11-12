@@ -1,7 +1,7 @@
 import type { Division, RecentForm, Role, Tier } from '@arrakis/domain';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { DataSource, LeaderboardData, LeaderboardEntry } from './leaderboard.ts';
-import type { PlayedMatch, PlayerPageData } from './player.ts';
+import type { MergedPlayer, PlayedMatch, PlayerPageData } from './player.ts';
 
 /** Une ligne de la vue `leaderboard_view` (migration 20261113000000_leaderboard.sql). */
 interface LeaderboardViewRow {
@@ -41,11 +41,12 @@ export function supabaseSource(
   const client = createClient(url, key, { auth: { persistSession: false } });
   return {
     loadLeaderboard: () => loadLeaderboard(client, organizationSlug),
-    loadPlayer: (playerId) => loadPlayer(client, playerId),
+    loadPlayer: (playerId) => loadPlayer(client, organizationSlug, playerId),
   };
 }
 
-async function loadLeaderboard(client: SupabaseClient, slug: string): Promise<LeaderboardData> {
+/** L'organisation que le site affiche (ADR 0008). Toute lecture se limite à elle. */
+async function organizationId(client: SupabaseClient, slug: string): Promise<string> {
   const organization = await client
     .from('organizations')
     .select('id')
@@ -53,6 +54,11 @@ async function loadLeaderboard(client: SupabaseClient, slug: string): Promise<Le
     .maybeSingle<{ id: string }>();
   if (organization.error) throw organization.error;
   if (!organization.data) throw new Error(`Organisation « ${slug} » introuvable.`);
+  return organization.data.id;
+}
+
+async function loadLeaderboard(client: SupabaseClient, slug: string): Promise<LeaderboardData> {
+  const organization = { data: { id: await organizationId(client, slug) } };
 
   const season = await client
     .from('seasons')
@@ -141,22 +147,28 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function loadPlayer(
   client: SupabaseClient,
+  slug: string,
   playerId: string,
-): Promise<PlayerPageData | null> {
+): Promise<PlayerPageData | MergedPlayer | null> {
   if (!UUID.test(playerId)) return null;
+  const organization = await organizationId(client, slug);
   const profile = await client
     .from('player_profile_view')
     .select('*')
+    .eq('organization_id', organization)
     .eq('player_id', playerId)
+    // Un joueur archivé est masqué des pages publiques (glossaire).
+    .eq('archived', false)
     .maybeSingle<PlayerProfileViewRow>();
   if (profile.error) throw profile.error;
-  if (!profile.data) return null;
+  if (!profile.data) return mergedInto(client, organization, playerId);
 
   const matches = await client
     .from('player_matches_view')
     .select(
       'match_id, edition_id, edition_name, edition_date, match_number, matchday, role, champion, result, kills, deaths, assists',
     )
+    .eq('organization_id', organization)
     .eq('player_id', playerId)
     .overrideTypes<PlayerMatchViewRow[], { merge: false }>();
   if (matches.error) throw matches.error;
@@ -205,4 +217,20 @@ async function loadPlayer(
       assists: m.assists,
     })),
   };
+}
+
+/** Le profil n'existe plus si le joueur a été fusionné : on cherche le joueur conservé. */
+async function mergedInto(
+  client: SupabaseClient,
+  organization: string,
+  playerId: string,
+): Promise<MergedPlayer | null> {
+  const player = await client
+    .from('players')
+    .select('merged_into')
+    .eq('organization_id', organization)
+    .eq('id', playerId)
+    .maybeSingle<{ merged_into: string | null }>();
+  if (player.error) throw player.error;
+  return player.data?.merged_into ? { mergedInto: player.data.merged_into } : null;
 }
