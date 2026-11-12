@@ -8,8 +8,8 @@ export interface RatingBreakdown {
   readonly games: number;
   /** Les étapes du calcul ; `null` pour un joueur sans partie, qui n'en a aucune. */
   readonly steps: RatingSteps | null;
-  /** Le palier au-dessus et les points qui manquent pour l'atteindre. */
-  readonly nextTier: NextTier;
+  /** Le palier au-dessus et les points qui manquent pour l'atteindre ; `null` pour un joueur Élite. */
+  readonly nextTier: NextTier | null;
 }
 
 export interface NextTier {
@@ -123,6 +123,9 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
   };
 }
 
+/** Notes à partir desquelles on change de palier, dans l'ordre croissant. */
+const TIER_THRESHOLDS = [70, 80, 90] as const;
+
 const FULL_RELIABILITY_GAMES = 15;
 /** Au-delà, le KDA n'apporte plus rien aux sous-notes (2 parties à 31 ne font pas un Élite). */
 const KDA_CAP = 8;
@@ -151,8 +154,9 @@ function dominantRole(performances: readonly RatedPerformance[]): Role | undefin
   return best;
 }
 
-function nextTierOf(rating: number): NextTier {
-  const threshold = rating < 70 ? 70 : 80;
+function nextTierOf(rating: number): NextTier | null {
+  const threshold = TIER_THRESHOLDS.find((t) => t > rating);
+  if (threshold === undefined) return null;
   return { tier: tierOf(threshold), pointsMissing: threshold - rating };
 }
 

@@ -193,4 +193,21 @@ describe('explainRating', () => {
       expect(breakdown.nextTier).toEqual({ tier: 'silver', pointsMissing: 10 });
     });
   });
+
+  describe('palier suivant, en haut de l’échelle', () => {
+    it('une note de 80 vise l’Élite, à 10 points', () => {
+      const breakdown = explainRating(exampleA);
+
+      expect(breakdown.nextTier).toEqual({ tier: 'elite', pointsMissing: 10 });
+    });
+
+    it('un joueur Élite n’a aucun palier suivant', () => {
+      const elite = performances(15, { role: 'MID', result: 'win', kills: 8, deaths: 1 });
+
+      const breakdown = explainRating(elite);
+
+      expect(breakdown.result.tier).toBe('elite');
+      expect(breakdown.nextTier).toBeNull();
+    });
+  });
 });
