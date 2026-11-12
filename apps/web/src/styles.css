@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+/*
+ * Couleurs et typographie reprises de la v1 (son fichier index.css).
+ * Chaque variable devient une classe : --color-violet donne bg-violet,
+ * text-violet, border-violet ; --font-display donne font-display.
+ */
+@theme {
+  /* Fonds, du plus profond au plus proche. */
+  --color-base: #060310;
+  --color-surface: #0f0d1f;
+  --color-raised: #16132c;
+  --color-overlay: #1c1836;
+
+  /* Accents. */
+  --color-violet: #7f77dd;
+  --color-violet-2: #b0aaff;
+  --color-gold: #ef9f27;
+  --color-gold-2: #f5c842;
+  --color-teal: #5dcaa5;
+  --color-teal-2: #9fe1cb;
+  --color-coral: #d85a30;
+  --color-coral-2: #f0997b;
+
+  /* Paliers des cartes. */
+  --color-tier-elite: #7f77dd;
+  --color-tier-gold: #ef9f27;
+  --color-tier-silver: #9aa0aa;
+  --color-tier-bronze: #d85a30;
+
+  /* Textes. */
+  --color-primary: #ffffff;
+  --color-secondary: #a09cc0;
+  --color-tertiary: #5a5680;
+
+  /* Bordures. */
+  --color-subtle: rgb(255 255 255 / 0.05);
+  --color-soft: rgb(255 255 255 / 0.08);
+  --color-accent: rgb(127 119 221 / 0.25);
+
+  /*
+   * Polices : les familles de la v1, avec leurs polices de secours. Les
+   * fichiers de police ne sont pas encore chargés (voir l'ADR 0017).
+   */
+  --font-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
+  --font-body: 'Barlow', Arial, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
