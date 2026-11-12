@@ -30,7 +30,7 @@ listé dans le [README](README.md#documentation).
 
 ```bash
 pnpm check                              # lint, format, types, tests et couverture (= CI)
-supabase db start && pnpm test:db       # droits d'accès (pgTAP) puis tests d'écriture (= CI)
+pnpm db:start && pnpm test:db          # base et API locales : droits, écriture, lecture (= CI)
 pnpm --filter @arrakis/domain test:watch
 ```
 

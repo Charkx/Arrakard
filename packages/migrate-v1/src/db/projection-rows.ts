@@ -16,6 +16,7 @@ export function toProjectionRows(projections: Projections): ProjectionRows {
     player_season_ratings: projections.seasonRatings.map((r) => ({
       season_id: r.seasonId,
       player_id: r.playerId,
+      dominant_role: r.dominantRole,
       rating: r.rating.rating,
       impact: r.rating.impact,
       consistency: r.rating.consistency,

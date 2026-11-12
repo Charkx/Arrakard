@@ -39,8 +39,9 @@ français est la langue de référence.
 
 - Aucune dépendance, et moins de 100 lignes à comprendre.
 - Un texte ne peut pas manquer dans une langue.
-- Les textes avec une variable ou un pluriel (« 3 inscrits ») ne sont pas
-  encore gérés : ils s'ajouteront avec la première page qui en a besoin.
+- Un texte peut contenir une valeur : `{n} parties`. Les valeurs ne sont pas
+  typées : une valeur oubliée laisse `{n}` à l'écran.
+- Le pluriel n'est pas encore géré : « place(s) » en tient lieu.
 - Un lien partagé ne porte pas la langue : chacun le voit dans la sienne.
 - Les données saisies par les admins (noms d'édition, descriptions) ne sont
   pas traduites.
