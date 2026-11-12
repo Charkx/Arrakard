@@ -98,6 +98,23 @@ describe('project', () => {
       expect(ratingOf('meta', 's2', projections)).toMatchObject({ rating: s2 });
     });
 
+    it('la note de saison porte le rôle dominant du joueur sur cette saison', () => {
+      const projections = project(
+        facts(
+          anEdition({ seasonId: 's1' }, [
+            [{ playerId: 'meta', role: 'MID' }],
+            [{ playerId: 'meta', role: 'SUP' }],
+            [{ playerId: 'meta', role: 'SUP' }],
+          ]),
+          anEdition({ seasonId: 's2' }, [[{ playerId: 'meta', role: 'TOP' }]]),
+        ),
+        V1_RATING_RULES,
+      );
+
+      expect(ratingOf('meta', 's1', projections)?.dominantRole).toBe('SUP');
+      expect(ratingOf('meta', 's2', projections)?.dominantRole).toBe('TOP');
+    });
+
     it('les statistiques affichées incluent le GPM, déduit de l’or et de la durée', () => {
       const projections = project(
         facts(anEdition({}, [[{ playerId: 'meta', gold: 12_000 }]], { durationSeconds: 1500 })),

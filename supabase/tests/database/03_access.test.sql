@@ -1,7 +1,7 @@
 -- Droits d'accès : lecture publique, aucune écriture directe (ADR 0005),
 -- adhésions par organisation (ADR 0008), inscriptions en libre-service.
 begin;
-select plan(18);
+select plan(21);
 
 -- ── Données ──────────────────────────────────────────────────────────────────
 -- La base peut déjà contenir une organisation chargée : les tests créent les
@@ -16,11 +16,21 @@ insert into editions (id, organization_id, name, type, date, prestige) values
   ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'IH #2', 'inhouse', '2026-11-01', 'normal');
 insert into seasons (id, organization_id, name, year, status) values
   ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'Saison 3', 2026, 'open');
+-- Meta joue chez ARK aujourd'hui, après un passage chez OLD.
+insert into teams (id, organization_id, tag, name) values
+  ('60000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'ARK', 'Arrakis'),
+  ('60000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000a', 'OLD', 'Ancienne équipe');
+insert into team_memberships (organization_id, player_id, team_id, status, joined_on, left_on)
+select p.organization_id, p.id, t.id, 'starter', m.joined_on, m.left_on
+from players p
+join (values ('ARK', date '2026-01-10', null::date), ('OLD', date '2025-01-10', date '2026-01-09')) as m (tag, joined_on, left_on) on true
+join teams t on t.tag = m.tag and t.organization_id = p.organization_id
+where p.nickname = 'Meta' and p.organization_id = '00000000-0000-0000-0000-00000000000a';
 insert into player_season_ratings (
-  organization_id, season_id, player_id, rating, impact, consistency, clutch, tier,
+  organization_id, season_id, player_id, dominant_role, rating, impact, consistency, clutch, tier,
   games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form
 )
-select organization_id, '10000000-0000-0000-0000-000000000001', id, 78, 80, 75, 70, 'gold',
+select organization_id, '10000000-0000-0000-0000-000000000001', id, 'MID', 78, 80, 75, 70, 'gold',
        10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up'
 from players where nickname = 'Meta';
 
@@ -57,6 +67,20 @@ select throws_ok(
 select throws_ok(
   $$ update player_season_ratings set rating = 99 $$,
   '42501', 'permission denied for table player_season_ratings', 'un visiteur ne modifie pas une note'
+);
+select results_eq(
+  $$ select nickname, dominant_role, rating, team_tag, season_status
+     from leaderboard_view where organization_id = '00000000-0000-0000-0000-00000000000a' $$,
+  $$ values ('Meta', 'MID', 78, 'ARK', 'open') $$,
+  'un visiteur lit le classement : la note, le joueur, son rôle et son équipe actuelle'
+);
+select is(
+  (select count(*)::int from leaderboard_view where organization_id = '00000000-0000-0000-0000-00000000000b'), 0,
+  'le classement d''une organisation ne montre pas les joueurs d''une autre'
+);
+select throws_ok(
+  $$ update leaderboard_view set rating = 99 $$,
+  '55000', null, 'personne n''écrit à travers la vue : elle ne sert qu''à lire'
 );
 
 -- ── Admin d'Arrakis ──────────────────────────────────────────────────────────
