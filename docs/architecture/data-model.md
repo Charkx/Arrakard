@@ -304,6 +304,8 @@ Une vue par besoin de page ([vue d'architecture](overview.md#chemin-de-lecture))
 Chaque vue lit avec les droits de celui qui l'interroge (`security_invoker`) :
 elle ne montre rien de plus que les tables qu'elle rassemble, et ne s'écrit pas.
 
-| Vue                | Page       | Ce qu'elle rassemble                                                                                                   |
-| ------------------ | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `leaderboard_view` | Classement | Une ligne par joueur et par saison : sa note de saison, son rôle dominant, son équipe actuelle et ses éditions jouées. |
+| Vue                   | Page       | Ce qu'elle rassemble                                                                                                                                         |
+| --------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `leaderboard_view`    | Classement | Une ligne par joueur et par saison : sa note de saison, son rôle dominant, son équipe actuelle et ses éditions jouées.                                       |
+| `player_profile_view` | Profil     | Une ligne par joueur non fusionné : son équipe actuelle et, s'il a joué la saison en cours, sa note, ses statistiques et ses trois champions les plus joués. |
+| `player_matches_view` | Profil     | Une ligne par match joué : l'édition, le champion, le rôle, le K/D/A et le résultat.                                                                         |

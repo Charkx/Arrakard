@@ -53,7 +53,7 @@ function useLeaderboardOptions() {
 /** Classement de la saison en cours (cas d'usage V1), au design de la v1. */
 export function LeaderboardPage() {
   const { t } = useI18n();
-  const loaded = useLoaded(loadLeaderboard);
+  const loaded = useLoaded(loadLeaderboard, null);
 
   return (
     <div className="lb-page">

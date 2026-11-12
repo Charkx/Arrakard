@@ -1,4 +1,5 @@
 import type { LeaderboardPlayer, RecentForm, Tier } from '@arrakis/domain';
+import type { MergedPlayer, PlayerPageData } from './player.ts';
 
 /**
  * Un joueur du classement, tel que la base le donne (vue `leaderboard_view`).
@@ -23,6 +24,8 @@ export interface LeaderboardData {
 /** Ce que les pages lisent. Le site lit la base ; les tests, des données en mémoire. */
 export interface DataSource {
   loadLeaderboard(): Promise<LeaderboardData>;
+  /** Le profil et les matchs d'un joueur, le joueur qui l'a absorbé, ou null s'il n'existe pas. */
+  loadPlayer(playerId: string): Promise<PlayerPageData | MergedPlayer | null>;
 }
 
 /** Ce que la note a gagné (ou perdu) à la dernière édition ; 0 si le joueur la découvrait. */

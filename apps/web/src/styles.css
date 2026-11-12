@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import './styles/player-card.css';
 @import './styles/leaderboard.css';
+@import './styles/profile.css';
 
 /*
  * Design de la v1, repris tel quel (index.css et design-system.css de la v1) :
@@ -36,6 +37,7 @@
   --bg-overlay: var(--bg-hover);
   --bg1: var(--bg-base);
   --bg2: var(--bg-inset);
+  --depth-1: var(--bg-base);
   --depth-2: var(--bg-base);
   --depth-3: var(--bg-hover);
 
@@ -345,4 +347,27 @@ button {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* Titre de panneau (design-system.css de la v1) */
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 400;
+}
+.panel-title::before {
+  content: '';
+  width: 10px;
+  height: 1px;
+  background: var(--violet);
+  flex-shrink: 0;
 }
