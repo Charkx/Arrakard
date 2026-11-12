@@ -1,5 +1,5 @@
 import type { MatchResult, Performance, Role } from '../performance.ts';
-import { explainRating } from '../rating/breakdown.ts';
+import { explainRating, type RatingBreakdown } from '../rating/breakdown.ts';
 import { computeRating, type RatingResult } from '../rating/rating.ts';
 import type { RatingRules } from '../rating/rules.ts';
 import {
@@ -17,6 +17,8 @@ export interface SeasonRating {
   /** Rôle le plus joué sur la saison : celui auquel la note le compare. */
   readonly dominantRole: Role;
   readonly rating: RatingResult;
+  /** Explication de note (glossaire) : le détail du calcul de `rating`. */
+  readonly breakdown: RatingBreakdown;
   readonly stats: PlayerStats;
   /** Note avant la dernière édition de la saison ; null si le joueur la découvrait. */
   readonly previousRating: number | null;
@@ -136,7 +138,8 @@ function projectSeasonRatings(played: readonly Played[]): SeasonRating[] {
           const before = own
             .filter((p) => p.edition.id !== lastEditionId)
             .map((p) => p.performance);
-          const { result, steps } = explainRating(performances);
+          const breakdown = explainRating(performances);
+          const { result, steps } = breakdown;
           // Sans étape de calcul, le joueur n'a aucune performance : il n'a pas de note de saison.
           if (!steps) return [];
           return {
@@ -144,6 +147,7 @@ function projectSeasonRatings(played: readonly Played[]): SeasonRating[] {
             seasonId,
             dominantRole: steps.dominantRole,
             rating: result,
+            breakdown,
             stats: computePlayerStats(performances),
             previousRating: before.length > 0 ? computeRating(before).rating : null,
           };
