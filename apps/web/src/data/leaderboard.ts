@@ -1,4 +1,5 @@
 import type { LeaderboardPlayer, RecentForm, Tier } from '@arrakis/domain';
+import type { EditionPageData } from './edition.ts';
 import type { MergedPlayer, PlayerPageData } from './player.ts';
 
 /**
@@ -26,6 +27,8 @@ export interface DataSource {
   loadLeaderboard(): Promise<LeaderboardData>;
   /** Le profil et les matchs d'un joueur, le joueur qui l'a absorbé, ou null s'il n'existe pas. */
   loadPlayer(playerId: string): Promise<PlayerPageData | MergedPlayer | null>;
+  /** Une édition : son en-tête, son classement de soirée, ses matchs ; null si elle n'existe pas. */
+  loadEdition(editionId: string): Promise<EditionPageData | null>;
 }
 
 /** Ce que la note a gagné (ou perdu) à la dernière édition ; 0 si le joueur la découvrait. */

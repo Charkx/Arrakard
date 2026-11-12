@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Navbar } from './components/Navbar.tsx';
+import { EditionPage } from './pages/EditionPage.tsx';
 import { LeaderboardPage } from './pages/LeaderboardPage.tsx';
 import { PlayerPage } from './pages/PlayerPage.tsx';
 
@@ -14,6 +15,7 @@ export function App() {
           <Route path="/" element={<Navigate to="/leaderboard" replace />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/player/:id" element={<PlayerPage />} />
+          <Route path="/event/:id" element={<EditionPage />} />
           <Route path="*" element={<Navigate to="/leaderboard" replace />} />
         </Routes>
       </main>

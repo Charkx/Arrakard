@@ -1,7 +1,7 @@
 -- Droits d'accès : lecture publique, aucune écriture directe (ADR 0005),
 -- adhésions par organisation (ADR 0008), inscriptions en libre-service.
 begin;
-select plan(25);
+select plan(34);
 
 -- ── Données ──────────────────────────────────────────────────────────────────
 -- La base peut déjà contenir une organisation chargée : les tests créent les
@@ -53,6 +53,16 @@ select '00000000-0000-0000-0000-00000000000a', ('41000000-0000-0000-0000-0000000
 from players p
 cross join (values (1, 'Annie'), (2, 'Annie'), (3, 'Annie'), (5, 'Zyra')) as g (n, champion)
 where p.nickname = 'Meta' and p.organization_id = '00000000-0000-0000-0000-00000000000a';
+
+-- Le classement de soirée de l'IH #2, et un événement externe avec un participant.
+insert into edition_standings (organization_id, edition_id, player_id, rank, team, role, champion, games, wins, losses,
+  kills, deaths, assists, is_event_mvp, match_mvp_count, result_points, stat_points, mvp_points, points)
+select '00000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-000000000001', id, 1, 'ARK', 'MID', 'Ahri', 5, 4, 1, 13, 5, 17, true, 2, 20, 12, 10, 42
+from players where nickname = 'Meta' and organization_id = '00000000-0000-0000-0000-00000000000a';
+insert into editions (id, organization_id, name, type, date) values
+  ('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-00000000000a', 'LAN de printemps', 'external_event', '2026-04-12');
+insert into edition_participants (organization_id, edition_id, player_id)
+select '00000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-000000000003', id from players where nickname = 'Zed' and organization_id = '00000000-0000-0000-0000-00000000000a';
 
 -- L'autre structure a sa saison, un joueur et sa note, sans équipe.
 insert into players (organization_id, nickname) values ('00000000-0000-0000-0000-00000000000b', 'Ailleurs');
@@ -144,6 +154,37 @@ select throws_ok(
 select throws_ok(
   $$ update player_matches_view set kills = 99 $$,
   '55000', null, 'la vue de l''historique ne s''écrit pas'
+);
+
+-- La page d'une édition : son en-tête, son classement de soirée, ses matchs.
+select results_eq(
+  $$ select name, type, season_name, match_count from edition_page_view where edition_id = '20000000-0000-0000-0000-000000000001' $$,
+  $$ values ('IH #2', 'inhouse', 'Saison 3', 5) $$,
+  'un visiteur lit l''en-tête d''une édition, avec sa saison et son nombre de matchs'
+);
+select results_eq(
+  $$ select rank, nickname, points from edition_standings_view where edition_id = '20000000-0000-0000-0000-000000000001' $$,
+  $$ values (1, 'Meta', 42) $$,
+  'un visiteur lit le classement de soirée, avec le pseudo de chaque joueur'
+);
+select results_eq(
+  $$ select match_number, nickname, champion, winner_team from edition_matches_view
+     where edition_id = '20000000-0000-0000-0000-000000000001' order by match_number limit 2 $$,
+  $$ values (1, 'Meta', 'Ahri', 'ARK'), (2, 'Meta', 'Ahri', 'ARK') $$,
+  'un visiteur lit les matchs d''une édition, une ligne par joueur'
+);
+select results_eq(
+  $$ select nickname from edition_participants_view where edition_id = '20000000-0000-0000-0000-000000000003' $$,
+  $$ values ('Zed') $$,
+  'un visiteur lit les participants d''un événement externe'
+);
+select throws_ok($$ update edition_page_view set name = 'Pirate' $$, '55000', null, 'la vue de l''en-tête d''une édition ne s''écrit pas');
+select throws_ok($$ update edition_standings_view set points = 99 $$, '55000', null, 'la vue du classement de soirée ne s''écrit pas');
+select throws_ok($$ update edition_matches_view set kills = 99 $$, '55000', null, 'la vue des matchs ne s''écrit pas');
+select throws_ok($$ update edition_participants_view set nickname = 'Pirate' $$, '55000', null, 'la vue des participants ne s''écrit pas');
+select is(
+  (select count(*)::int from edition_page_view where organization_id = '00000000-0000-0000-0000-00000000000b'), 0,
+  'les éditions d''Arrakis n''apparaissent pas dans l''autre structure'
 );
 
 -- ── Admin d'Arrakis ──────────────────────────────────────────────────────────
