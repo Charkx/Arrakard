@@ -24,6 +24,8 @@ export interface RatingSteps {
 
 /** Une statistique à chaque étape du calcul. */
 export interface StatSteps {
+  /** Sur les totaux bruts : chaque partie compte autant. */
+  readonly unweighted: number;
   /** Pondérée par le prestige des éditions. */
   readonly weighted: number;
   /** Après la fiabilité : tirée vers la médiane du rôle sous 15 parties. C'est elle qui est notée. */
@@ -61,10 +63,14 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
   const weightedAssists = sum(performances, (p) => p.assists * p.weight);
 
   const kda = Math.min((weightedKills + weightedAssists) / Math.max(weightedDeaths, 1), KDA_CAP);
-  const winrate =
-    weightedGames > 0
-      ? weightedWins / weightedGames
-      : performances.filter((p) => p.result === 'win').length / games;
+  const unweightedKda =
+    sum(performances, (p) => p.kills + p.assists) /
+    Math.max(
+      sum(performances, (p) => p.deaths),
+      1,
+    );
+  const unweightedWinrate = performances.filter((p) => p.result === 'win').length / games;
+  const winrate = weightedGames > 0 ? weightedWins / weightedGames : unweightedWinrate;
 
   // Fiabilité : en dessous de 15 parties, on tire vers la médiane du rôle.
   const reliability = Math.min(games / FULL_RELIABILITY_GAMES, 1);
@@ -86,8 +92,8 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
       role,
       roleBaseline: baseline,
       reliability,
-      kda: { weighted: kda, reliable: reliableKda },
-      winrate: { weighted: winrate, reliable: reliableWinrate },
+      kda: { unweighted: unweightedKda, weighted: kda, reliable: reliableKda },
+      winrate: { unweighted: unweightedWinrate, weighted: winrate, reliable: reliableWinrate },
     },
   };
 }

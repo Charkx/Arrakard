@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { performancesFrom } from '../testing/builders.ts';
+import { aPerformance, performances, performancesFrom } from '../testing/builders.ts';
 import { explainRating } from './breakdown.ts';
 
 /** Exemple A de la spec : 5 parties en JGL, 4 victoires, 19 / 8 / 44. */
@@ -87,6 +87,33 @@ describe('explainRating', () => {
 
       expect(breakdown.steps?.winrate.weighted).toBeCloseTo(0.8);
       expect(breakdown.steps?.winrate.reliable).toBeCloseTo(0.6);
+    });
+  });
+
+  describe('prestige', () => {
+    it('donne le KDA avant et après la pondération par le prestige', () => {
+      const deathsInBigEvent = [
+        aPerformance({ role: 'MID', deaths: 10, weight: 1.6 }),
+        ...performances(14, { role: 'MID', assists: 3, weight: 1 }),
+      ];
+
+      const breakdown = explainRating(deathsInBigEvent);
+
+      // 42 assists pour 10 morts ; les 10 morts pèsent 16 une fois pondérées.
+      expect(breakdown.steps?.kda.unweighted).toBeCloseTo(4.2);
+      expect(breakdown.steps?.kda.weighted).toBeCloseTo(2.625);
+    });
+
+    it('donne le winrate avant et après la pondération par le prestige', () => {
+      const lossesInBigEvents = [
+        ...performances(10, { role: 'MID', result: 'win', weight: 1 }),
+        ...performances(5, { role: 'MID', result: 'loss', weight: 1.6 }),
+      ];
+
+      const breakdown = explainRating(lossesInBigEvents);
+
+      expect(breakdown.steps?.winrate.unweighted).toBeCloseTo(10 / 15);
+      expect(breakdown.steps?.winrate.weighted).toBeCloseTo(10 / 18);
     });
   });
 });
