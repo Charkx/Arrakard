@@ -9,8 +9,10 @@ par le paquet
 1. **Planification** (`planMigration`, fonction pure) : lit la sauvegarde v1
    (un objet JSON par table), produit les lignes v2 et un **rapport
    d'anomalies**. Rien n'est écrit.
-2. **Écriture** : insère les lignes dans une base v2 vide, en une
-   transaction, puis lance le recalcul des projections.
+2. **Écriture** (`loadPlan`) : insère les lignes dans l'organisation, puis
+   recalcule les projections à partir des faits relus dans la base. Le tout en
+   une seule transaction : si une étape échoue, la base reste dans l'état
+   d'avant.
 
 Chiffres de la sauvegarde du 2026-10-05 : 3 saisons, 3 splits, 11 éditions,
 417 matchs, 2 085 lignes de match (4 170 performances), 301 joueurs,
@@ -150,6 +152,26 @@ V1_REPO=../arrakis-cards V1_BACKUP=<sauvegarde> \
 
 # 2. Plan, anomalies et écarts (rien n'est écrit)
 pnpm --filter @arrakis/migrate-v1 report <sauvegarde> v1-reference.local.json
+
+# 3. Chargement dans la base locale (supabase db start), rejouable à volonté
+pnpm --filter @arrakis/migrate-v1 load <sauvegarde>
+```
+
+Le chargement affiche d'abord le rapport, puis écrit. Deux garde-fous :
+
+- il vise la base locale, ou celle de la variable `DATABASE_URL` ; une base
+  hébergée exige `--confirm-hosted` ;
+- il refuse une organisation qui contient déjà des données. Pour rejouer la
+  migration, il faut `--replace` : l'organisation est alors vidée puis
+  remplie. **Tout ce qui y a été saisi depuis le chargement précédent est
+  perdu**, inscriptions et personnalisations de carte comprises. Après la
+  bascule, on ne rejoue donc plus la migration sur la base en service.
+
+Pour développer sans donnée réelle, le dépôt contient une **sauvegarde de
+démonstration** entièrement inventée (`packages/migrate-v1/demo-backup`) :
+
+```sh
+pnpm --filter @arrakis/migrate-v1 load demo-backup --replace
 ```
 
 ### Résultat sur la sauvegarde du 2026-10-05

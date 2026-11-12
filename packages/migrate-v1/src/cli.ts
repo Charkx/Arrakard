@@ -10,23 +10,10 @@
  * cite des pseudos réels : il s'affiche, il ne se commite pas.
  */
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readDump } from './dump.ts';
 import { planMigration } from './plan.ts';
-import type { V1Dump } from './v1.ts';
+import { formatReport } from './report.ts';
 import { verifyRatings, type V1Reference } from './verify.ts';
-
-const TABLES = [
-  'seasons',
-  'splits',
-  'teams',
-  'players',
-  'editions',
-  'matches',
-  'match_rows',
-  'edition_participants',
-  'registrations',
-  'player_event_entries',
-] as const satisfies readonly (keyof V1Dump)[];
 
 const [dir, referencePath] = process.argv.slice(2);
 if (!dir) {
@@ -34,24 +21,10 @@ if (!dir) {
   process.exit(1);
 }
 
-const dump = Object.fromEntries(
-  TABLES.map((table) => [table, JSON.parse(readFileSync(join(dir, `${table}.json`), 'utf8'))]),
-) as unknown as V1Dump;
+const plan = planMigration(readDump(dir));
+const { rows } = plan;
 
-const plan = planMigration(dump);
-const { rows, report } = plan;
-
-console.log('## Lignes v2\n');
-for (const [table, list] of Object.entries(rows)) {
-  console.log(`${table.padEnd(22)} ${String((list as readonly unknown[]).length).padStart(5)}`);
-}
-
-console.log(`\n## Anomalies (${report.length})\n`);
-for (const [code, list] of Map.groupBy(report, (a) => a.code)) {
-  console.log(`### ${code} (${list.length})`);
-  for (const a of list) console.log(`- ${a.message}`);
-  console.log();
-}
+console.log(formatReport(plan));
 
 if (!referencePath) {
   console.log('## Écarts de notes : non vérifiés (référence v1 non fournie)');

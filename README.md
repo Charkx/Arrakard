@@ -69,6 +69,14 @@ pnpm check             # lint + format + types + tests avec couverture (= la CI)
 
 Pendant le TDD : `pnpm --filter @arrakis/domain test:watch`.
 
+La base locale (Docker doit tourner) :
+
+```bash
+supabase db start                                    # démarre la base et applique les migrations
+pnpm test:db                                         # droits d'accès (pgTAP) et tests d'écriture
+pnpm --filter @arrakis/migrate-v1 load demo-backup --replace   # la remplit avec une communauté inventée
+```
+
 Le site (`apps/web`) :
 
 ```bash

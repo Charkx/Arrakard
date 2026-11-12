@@ -45,3 +45,15 @@ jobs:
       - run: supabase db start
 
       - run: supabase test db
+
+      # Tests d'écriture : ils chargent une sauvegarde inventée dans cette base.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @arrakis/migrate-v1 test:db

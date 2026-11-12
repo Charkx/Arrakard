@@ -30,11 +30,11 @@ listé dans le [README](README.md#documentation).
 
 ```bash
 pnpm check                              # lint, format, types, tests et couverture (= CI)
-supabase db start && supabase test db   # schéma et droits d'accès en pgTAP (= CI)
+supabase db start && pnpm test:db       # droits d'accès (pgTAP) puis tests d'écriture (= CI)
 pnpm --filter @arrakis/domain test:watch
 ```
 
-**Lancer `pnpm check` et `supabase test db` avant de dire que c'est fini**, et
+**Lancer `pnpm check` et `pnpm test:db` avant de dire que c'est fini**, et
 montrer leur résultat. Si l'une des deux ne peut pas tourner, le dire au lieu de
 conclure.
 

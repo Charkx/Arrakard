@@ -18,7 +18,7 @@
     "build": "pnpm --filter @arrakis/web build",
     "size": "pnpm --filter @arrakis/web size",
     "golden-master:extract": "tsx tools/golden-master/extract-v1.ts",
-    "test:db": "supabase test db"
+    "test:db": "supabase test db && pnpm --filter @arrakis/migrate-v1 test:db"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
