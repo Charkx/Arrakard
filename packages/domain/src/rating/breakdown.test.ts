@@ -116,4 +116,23 @@ describe('explainRating', () => {
       expect(breakdown.steps?.winrate.weighted).toBeCloseTo(10 / 18);
     });
   });
+
+  describe('plafond du KDA', () => {
+    it('signale un KDA plafonné à 8, et garde sa valeur d’avant le plafond', () => {
+      const stomp = [
+        aPerformance({ role: 'MID', result: 'win', kills: 150, deaths: 0 }),
+        ...performances(14, { role: 'MID', result: 'loss' }),
+      ];
+
+      const breakdown = explainRating(stomp);
+
+      expect(breakdown.steps?.kda).toMatchObject({ weighted: 150, capped: true, reliable: 8 });
+    });
+
+    it('ne signale rien sous le plafond', () => {
+      const breakdown = explainRating(exampleA);
+
+      expect(breakdown.steps?.kda.capped).toBe(false);
+    });
+  });
 });

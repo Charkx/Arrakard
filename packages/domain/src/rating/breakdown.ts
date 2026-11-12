@@ -18,7 +18,10 @@ export interface RatingSteps {
   readonly roleBaseline: RoleBaseline;
   /** Fiabilité (glossaire) : de 0 à 1, atteint 1 à 15 parties. */
   readonly reliability: number;
-  readonly kda: StatSteps;
+  readonly kda: StatSteps & {
+    /** Vrai si le KDA pondéré dépassait 8 : il est alors ramené à 8 avant la fiabilité. */
+    readonly capped: boolean;
+  };
   readonly winrate: StatSteps;
 }
 
@@ -62,7 +65,8 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
   const weightedDeaths = sum(performances, (p) => p.deaths * p.weight);
   const weightedAssists = sum(performances, (p) => p.assists * p.weight);
 
-  const kda = Math.min((weightedKills + weightedAssists) / Math.max(weightedDeaths, 1), KDA_CAP);
+  const weightedKda = (weightedKills + weightedAssists) / Math.max(weightedDeaths, 1);
+  const kda = Math.min(weightedKda, KDA_CAP);
   const unweightedKda =
     sum(performances, (p) => p.kills + p.assists) /
     Math.max(
@@ -92,7 +96,12 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
       role,
       roleBaseline: baseline,
       reliability,
-      kda: { unweighted: unweightedKda, weighted: kda, reliable: reliableKda },
+      kda: {
+        unweighted: unweightedKda,
+        weighted: weightedKda,
+        capped: weightedKda > KDA_CAP,
+        reliable: reliableKda,
+      },
       winrate: { unweighted: unweightedWinrate, weighted: winrate, reliable: reliableWinrate },
     },
   };
