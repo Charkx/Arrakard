@@ -8,8 +8,8 @@ interface I18n {
   /** L'autre langue : celle que propose le bouton. */
   readonly otherLanguage: Language;
   readonly setLanguage: (language: Language) => void;
-  /** Le texte d'une clé, dans la langue affichée. */
-  readonly t: (key: TextKey) => string;
+  /** Le texte d'une clé, dans la langue affichée ; `{nom}` est remplacé par sa valeur. */
+  readonly t: (key: TextKey, values?: Readonly<Record<string, string | number>>) => string;
 }
 
 const I18nContext = createContext<I18n | null>(null);
@@ -58,7 +58,10 @@ export function I18nProvider({ children }: { readonly children: ReactNode }) {
       saveLanguage(next);
       setLanguage(next);
     },
-    t: (key) => DICTIONARY[language][key],
+    t: (key, values = {}) =>
+      DICTIONARY[language][key].replace(/\{(\w+)\}/g, (match, name: string) =>
+        name in values ? String(values[name]) : match,
+      ),
   };
 
   return <I18nContext value={i18n}>{children}</I18nContext>;
