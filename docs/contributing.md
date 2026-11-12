@@ -127,7 +127,8 @@ sans risque, l'agent livre :
 - une PR petite : un ticket, une branche ;
 - une description en mots simples : ce que ça fait, le « Done when » coché avec
   sa preuve, où regarder en priorité, ce qui n'a pas pu être vérifié ;
-- `pnpm check` et `supabase test db` verts en local, et la CI verte ;
+- `pnpm check` et `pnpm test:db` (droits d'accès en pgTAP, puis tests
+  d'écriture) verts en local, et la CI verte ;
 - les deux rapports de `revue`, corrections faites ;
 - l'explication de n'importe quelle ligne, sur demande.
 
