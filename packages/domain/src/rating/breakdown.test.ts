@@ -67,4 +67,26 @@ describe('explainRating', () => {
       expect(breakdown.steps?.winrate).toMatchObject({ weighted: 0.8, reliable: 0.8 });
     });
   });
+
+  describe('fiabilité sous 15 parties (exemple A de la spec)', () => {
+    it('vaut le nombre de parties divisé par 15', () => {
+      const breakdown = explainRating(exampleA);
+
+      expect(breakdown.steps?.reliability).toBeCloseTo(5 / 15);
+    });
+
+    it('tire le KDA vers la médiane du rôle : 7,875 devient 4,625', () => {
+      const breakdown = explainRating(exampleA);
+
+      expect(breakdown.steps?.kda.weighted).toBeCloseTo(7.875);
+      expect(breakdown.steps?.kda.reliable).toBeCloseTo(4.625);
+    });
+
+    it('tire le winrate vers la médiane du rôle : 80 % devient 60 %', () => {
+      const breakdown = explainRating(exampleA);
+
+      expect(breakdown.steps?.winrate.weighted).toBeCloseTo(0.8);
+      expect(breakdown.steps?.winrate.reliable).toBeCloseTo(0.6);
+    });
+  });
 });
