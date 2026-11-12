@@ -1,4 +1,4 @@
-import type { Division, RecentForm, Role, Tier } from '@arrakis/domain';
+import type { Division, RatingBreakdown, RecentForm, Role, Tier } from '@arrakis/domain';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import {
   toMatches,
@@ -132,6 +132,7 @@ interface PlayerProfileViewRow {
   readonly previous_rating: number | null;
   readonly editions_played: number;
   readonly top_champions: readonly string[];
+  readonly breakdown: RatingBreakdown | null;
 }
 
 /** Une ligne de la vue `player_matches_view`. */
@@ -190,7 +191,7 @@ async function loadPlayer(
       teamName: row.team_name,
       seasonName: row.season_name,
       season:
-        row.rating === null || row.dominant_role === null
+        row.rating === null || row.dominant_role === null || row.breakdown === null
           ? null
           : {
               role: row.dominant_role,
@@ -208,6 +209,7 @@ async function loadPlayer(
               previousRating: row.previous_rating,
               editionsPlayed: row.editions_played,
               topChampions: row.top_champions,
+              breakdown: row.breakdown,
             },
     },
     matches: matches.data.map((m) => ({

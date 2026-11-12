@@ -574,3 +574,102 @@
   flex-direction: column;
   gap: 12px;
 }
+
+/* ── Pourquoi cette note ── panneaux et barres de la v1, une ligne par règle. */
+.why-body {
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.why-intro {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+  max-width: 70ch;
+}
+.why-contribution {
+  flex-wrap: wrap;
+}
+.why-contribution .attr-label-cell {
+  width: 190px;
+}
+.why-source {
+  font-weight: 500;
+  color: var(--text-3);
+}
+.why-points {
+  font-size: 11px;
+  color: var(--text-3);
+  width: 72px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.why-total {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.why-rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.why-rule {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 16px;
+  align-items: baseline;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-inset);
+  box-shadow: var(--shadow-inset);
+  border: 1px solid var(--border-subtle);
+}
+.why-rule.off {
+  opacity: 0.55;
+}
+.why-rule-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: var(--text-1);
+}
+.why-rule-effect {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: var(--gold-lt);
+  white-space: nowrap;
+}
+.why-rule.off .why-rule-effect {
+  color: var(--text-3);
+}
+.why-rule-text {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-2);
+  max-width: 75ch;
+}
+.why-next {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-accent);
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 1px;
+  color: var(--violet-lt);
+}
+@media (max-width: 480px) {
+  .why-contribution .attr-label-cell {
+    width: 100%;
+  }
+  .why-points {
+    width: auto;
+  }
+}

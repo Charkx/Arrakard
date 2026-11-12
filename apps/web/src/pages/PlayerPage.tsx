@@ -1,5 +1,6 @@
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { PlayerCard } from '../components/PlayerCard.tsx';
+import { WhyThisRating } from '../components/WhyThisRating.tsx';
 import { useLoaded } from '../data/DataContext.tsx';
 import { initialsOf, type DataSource } from '../data/leaderboard.ts';
 import {
@@ -120,6 +121,8 @@ function Profile({
           </div>
         </div>
       </div>
+
+      {season && <WhyThisRating breakdown={season.breakdown} role={season.role} />}
 
       <section className="neo-panel match-section">
         <h2 className="panel-title">{t('profile.history')}</h2>

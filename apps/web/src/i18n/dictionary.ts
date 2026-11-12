@@ -117,6 +117,37 @@ const fr = {
   'edition.col.mvpPoints': 'Pts MVP',
   'edition.col.points': 'Total',
   'edition.showMatch': 'Voir le détail du match {n}',
+  'why.title': 'Pourquoi cette note',
+  'why.intro':
+    'La note mélange trois sous-notes. Voici ce que chacune apporte, et ce que chaque règle a changé.',
+  'why.points': '{points} points',
+  'why.total': 'Ensemble : {sum}, arrondi à {rating}.',
+  'why.impact.source': 'vient du KDA',
+  'why.consistency.source': 'vient des victoires',
+  'why.clutch.source': 'mélange les deux',
+  'why.rule.baseline': 'Comparé aux autres {role}',
+  'why.rule.baseline.text':
+    'Chaque rôle a sa référence. Un {role} moyen a un KDA de {kda} et gagne une partie sur deux : c’est le point de départ, à 60.',
+  'why.rule.reliability': 'Peu de parties : prudence',
+  'why.rule.reliability.text':
+    'Avec {games} parties sur les 15 qu’il faut pour être jugé pleinement, ses statistiques comptent pour {share} %. Le reste est celui d’un {role} moyen : son KDA passe de {kdaFrom} à {kdaTo}, ses victoires de {wrFrom} % à {wrTo} %.',
+  'why.rule.reliability.full': 'Assez de parties',
+  'why.rule.reliability.full.text':
+    'Avec {games} parties, ses statistiques comptent pleinement : rien n’est tiré vers la moyenne.',
+  'why.rule.prestige': 'Prestige des éditions',
+  'why.rule.prestige.text':
+    'Les grandes éditions pèsent plus lourd. Une fois pesées, son KDA passe de {kdaFrom} à {kdaTo} et ses victoires de {wrFrom} % à {wrTo} %.',
+  'why.rule.prestige.none':
+    'Toutes ses parties ont le même poids : le prestige ne change rien ici.',
+  'why.rule.cap': 'Plafond du KDA',
+  'why.rule.cap.text': 'Son KDA de {kda} dépasse 8 : au-delà, le surplus ne compte plus.',
+  'why.rule.cap.none': 'Son KDA est sous 8 : le plafond ne retire rien.',
+  'why.rule.floor': 'Plancher à 60',
+  'why.rule.floor.text': 'Le calcul donnait {raw}. Aucune carte ne descend sous 60.',
+  'why.rule.floor.none': 'Aucune carte ne descend sous 60. La sienne est au-dessus.',
+  'why.effect.none': 'aucun effet',
+  'why.next': '{points} points avant le palier {tier}',
+  'why.next.top': 'Palier le plus haut atteint',
 } as const;
 
 /** Une clé de texte. Une clé inconnue ne compile pas. */
@@ -236,6 +267,36 @@ const en: Record<TextKey, string> = {
   'edition.col.mvpPoints': 'MVP pts',
   'edition.col.points': 'Total',
   'edition.showMatch': 'Show the details of match {n}',
+  'why.title': 'Why this rating',
+  'why.intro':
+    'The rating blends three sub-ratings. Here is what each one brings, and what each rule changed.',
+  'why.points': '{points} points',
+  'why.total': 'Together: {sum}, rounded to {rating}.',
+  'why.impact.source': 'from KDA',
+  'why.consistency.source': 'from wins',
+  'why.clutch.source': 'blends both',
+  'why.rule.baseline': 'Compared with other {role} players',
+  'why.rule.baseline.text':
+    'Each role has its own reference. An average {role} has a KDA of {kda} and wins one game in two: that is the starting point, at 60.',
+  'why.rule.reliability': 'Few games: caution',
+  'why.rule.reliability.text':
+    'With {games} of the 15 games needed to be fully judged, their stats count for {share}%. The rest is an average {role}’s: their KDA goes from {kdaFrom} to {kdaTo}, their wins from {wrFrom}% to {wrTo}%.',
+  'why.rule.reliability.full': 'Enough games',
+  'why.rule.reliability.full.text':
+    'With {games} games, their stats count in full: nothing is pulled towards the average.',
+  'why.rule.prestige': 'Edition prestige',
+  'why.rule.prestige.text':
+    'Big editions weigh more. Once weighted, their KDA goes from {kdaFrom} to {kdaTo} and their wins from {wrFrom}% to {wrTo}%.',
+  'why.rule.prestige.none': 'All their games weigh the same: prestige changes nothing here.',
+  'why.rule.cap': 'KDA cap',
+  'why.rule.cap.text': 'Their KDA of {kda} is above 8: anything beyond no longer counts.',
+  'why.rule.cap.none': 'Their KDA is below 8: the cap takes nothing away.',
+  'why.rule.floor': 'Floor at 60',
+  'why.rule.floor.text': 'The formula gave {raw}. No card goes below 60.',
+  'why.rule.floor.none': 'No card goes below 60. Theirs is above.',
+  'why.effect.none': 'no effect',
+  'why.next': '{points} points to reach {tier}',
+  'why.next.top': 'Highest tier reached',
 };
 
 export const DICTIONARY: Record<Language, Record<TextKey, string>> = { fr, en };

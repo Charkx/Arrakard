@@ -32,14 +32,14 @@ describe('le profil d’un joueur', () => {
 
     const card = (await screen.findByRole('img', { name: 'Ornn' })).closest('.pch-frame');
     expect(card?.getAttribute('data-rank')).toBe('or');
-    expect(card?.querySelector('.pch-ovr')?.textContent).toBe('86');
+    expect(card?.querySelector('.pch-ovr')?.textContent).toBe('80');
     expect([...(card?.querySelectorAll('.pch-stat .v') ?? [])].map((v) => v.textContent)).toEqual([
-      '91',
-      '79',
-      '85',
+      '93',
+      '68',
+      '80',
     ]);
     expect(card?.querySelector('.pch-team')?.textContent).toBe('PHA');
-    expect(card?.querySelector('.pch-role')?.textContent).toContain('TOP');
+    expect(card?.querySelector('.pch-role')?.textContent).toContain('JGL');
     expect(
       [...(card?.querySelectorAll('.pch-champ-img') ?? [])].map((c) => c.getAttribute('alt')),
     ).toEqual(['Ornn', 'Gnar', 'Garen']);
@@ -48,8 +48,8 @@ describe('le profil d’un joueur', () => {
   it('montre les statistiques de la saison et l’évolution de la note', async () => {
     openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
 
-    expect(await screen.findByText('15 V · 7 D')).toBeDefined();
-    expect(screen.getByText('4.55')).toBeDefined();
+    expect(await screen.findByText('4 V · 1 D')).toBeDefined();
+    expect(screen.getByText('7.88')).toBeDefined();
     expect(screen.getByText(/\+3 depuis la dernière édition/)).toBeDefined();
   });
 
@@ -151,6 +151,62 @@ describe('le profil d’un joueur', () => {
     openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
 
     expect(await screen.findByText('Match history')).toBeDefined();
-    expect(screen.getByText('15 W · 7 L')).toBeDefined();
+    expect(screen.getByText('4 W · 1 L')).toBeDefined();
+  });
+});
+
+describe('pourquoi cette note', () => {
+  it('dit ce que chaque sous-note apporte, et retrouve la note', async () => {
+    openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
+
+    const section = await screen.findByRole('region', { name: 'Pourquoi cette note' });
+    expect(section.textContent).toContain('32,6 points');
+    expect(section.textContent).toContain('23,8 points');
+    expect(section.textContent).toContain('24,0 points');
+    expect(section.textContent).toContain('Ensemble : 80,35, arrondi à 80.');
+  });
+
+  it('dit de combien la fiabilité a tiré les statistiques d’un joueur qui a peu de parties', async () => {
+    openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
+
+    const section = await screen.findByRole('region', { name: 'Pourquoi cette note' });
+    expect(section.textContent).toContain('KDA 7,9 → 4,6');
+    expect(section.textContent).toContain('ses statistiques comptent pour 33 %');
+    expect(section.textContent).toContain('ses victoires de 80 % à 60 %');
+  });
+
+  it('montre en retrait les règles qui n’ont rien changé', async () => {
+    openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
+
+    await screen.findByRole('region', { name: 'Pourquoi cette note' });
+    const off = [...document.querySelectorAll('.why-rule.off .why-rule-title')].map(
+      (r) => r.textContent,
+    );
+    expect(off).toEqual(['Prestige des éditions', 'Plafond du KDA', 'Plancher à 60']);
+  });
+
+  it('donne l’écart au palier suivant', async () => {
+    openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
+
+    expect(await screen.findByText('10 points avant le palier Élite')).toBeDefined();
+  });
+
+  it('existe aussi en anglais', async () => {
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-GB');
+    openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
+
+    const section = await screen.findByRole('region', { name: 'Why this rating' });
+    expect(section.textContent).toContain('10 points to reach Elite');
+  });
+
+  it('n’apparaît pas pour un joueur sans partie dans la saison', async () => {
+    openSite('/player/p-vigie', {
+      players: {
+        'p-vigie': { profile: aProfile({ nickname: 'Vigie', season: null }), matches: [] },
+      },
+    });
+
+    await screen.findByText(/Pas encore de partie cette saison/);
+    expect(screen.queryByRole('region', { name: 'Pourquoi cette note' })).toBeNull();
   });
 });

@@ -172,6 +172,9 @@ résultat : il n'existe qu'un seul calcul.
 | Une note remontée au plancher de 60      | 7     | `steps.ratingBeforeFloor`                                                                            |
 | Ce qui manque pour le palier suivant     | 8     | `nextTier` (`null` pour un joueur Élite)                                                             |
 
+L'explication de la note de saison est écrite dans la base avec la note
+(`player_season_ratings.breakdown`) ; le profil la met en phrases.
+
 Un joueur sans partie n'a aucune étape (`steps` vaut `null`) : sa note est 60
 par convention, et son palier suivant est l'Argent, à 10 points.
 

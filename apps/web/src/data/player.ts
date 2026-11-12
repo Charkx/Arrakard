@@ -1,4 +1,4 @@
-import type { MatchResult, RecentForm, Role, Tier } from '@arrakis/domain';
+import type { MatchResult, RatingBreakdown, RecentForm, Role, Tier } from '@arrakis/domain';
 
 /** Ce que le profil sait d'un joueur (vue `player_profile_view`). */
 export interface PlayerProfile {
@@ -28,6 +28,8 @@ export interface SeasonRatingView {
   readonly editionsPlayed: number;
   /** Les champions les plus joués de la saison, trois au plus. */
   readonly topChampions: readonly string[];
+  /** L'explication de la note, calculée par le domaine et écrite dans la base. */
+  readonly breakdown: RatingBreakdown;
 }
 
 /** Un match du joueur (vue `player_matches_view`). */

@@ -99,6 +99,11 @@ describe('lire le profil d’un joueur dans la base locale', () => {
       games: lanterne?.games,
       topChampions: topThree,
     });
+    // L'explication lue est celle que calcule le domaine pour ce joueur.
+    const expected = project(toFacts(rows), V1_RATING_RULES).seasonRatings.find(
+      (r) => r.playerId === lanterne?.playerId && r.seasonId === activeSeason?.id,
+    );
+    expect(page.profile.season?.breakdown).toEqual(expected?.breakdown);
   });
 
   it('donne tous ses matchs, toutes saisons comprises', async () => {

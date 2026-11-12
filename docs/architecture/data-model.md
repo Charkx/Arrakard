@@ -278,6 +278,7 @@ erDiagram
     uuid player_id PK,FK
     text dominant_role
     int rating
+    jsonb breakdown
     int impact
     int consistency
     int clutch
@@ -304,12 +305,12 @@ Une vue par besoin de page ([vue d'architecture](overview.md#chemin-de-lecture))
 Chaque vue lit avec les droits de celui qui l'interroge (`security_invoker`) :
 elle ne montre rien de plus que les tables qu'elle rassemble, et ne s'écrit pas.
 
-| Vue                         | Page       | Ce qu'elle rassemble                                                                                                                                         |
-| --------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `leaderboard_view`          | Classement | Une ligne par joueur et par saison : sa note de saison, son rôle dominant, son équipe actuelle et ses éditions jouées.                                       |
-| `player_profile_view`       | Profil     | Une ligne par joueur non fusionné : son équipe actuelle et, s'il a joué la saison en cours, sa note, ses statistiques et ses trois champions les plus joués. |
-| `player_matches_view`       | Profil     | Une ligne par match joué : l'édition, le champion, le rôle, le K/D/A et le résultat.                                                                         |
-| `edition_page_view`         | Édition    | L'en-tête d'une édition : son nom, son type, sa date, sa saison, son lieu, son MVP de soirée et son nombre de matchs.                                        |
-| `edition_standings_view`    | Édition    | Le classement de soirée, avec le pseudo de chaque joueur.                                                                                                    |
-| `edition_matches_view`      | Édition    | Une ligne par joueur et par match : l'équipe gagnante, la ligne de rôle, le côté, le champion, le K/D/A.                                                     |
-| `edition_participants_view` | Édition    | Les participants d'un événement externe, qui n'a pas de match.                                                                                               |
+| Vue                         | Page       | Ce qu'elle rassemble                                                                                                                                                          |
+| --------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `leaderboard_view`          | Classement | Une ligne par joueur et par saison : sa note de saison, son rôle dominant, son équipe actuelle et ses éditions jouées.                                                        |
+| `player_profile_view`       | Profil     | Une ligne par joueur non fusionné : son équipe actuelle et, s'il a joué la saison en cours, sa note, son explication, ses statistiques et ses trois champions les plus joués. |
+| `player_matches_view`       | Profil     | Une ligne par match joué : l'édition, le champion, le rôle, le K/D/A et le résultat.                                                                                          |
+| `edition_page_view`         | Édition    | L'en-tête d'une édition : son nom, son type, sa date, sa saison, son lieu, son MVP de soirée et son nombre de matchs.                                                         |
+| `edition_standings_view`    | Édition    | Le classement de soirée, avec le pseudo de chaque joueur.                                                                                                                     |
+| `edition_matches_view`      | Édition    | Une ligne par joueur et par match : l'équipe gagnante, la ligne de rôle, le côté, le champion, le K/D/A.                                                                      |
+| `edition_participants_view` | Édition    | Les participants d'un événement externe, qui n'a pas de match.                                                                                                                |

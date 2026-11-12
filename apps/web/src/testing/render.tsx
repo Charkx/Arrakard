@@ -1,3 +1,4 @@
+import { explainRating } from '@arrakis/domain';
 import { render } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { App } from '../App.tsx';
@@ -38,22 +39,34 @@ export function aProfile(overrides: Partial<PlayerProfile> = {}): PlayerProfile 
     teamTag: 'PHA',
     teamName: 'Les Phares',
     seasonName: 'Saison 3',
+    // L'exemple A de la spécification de la note : 5 parties, 4 victoires, 19 / 8 / 44.
     season: {
-      role: 'TOP',
-      rating: 86,
-      impact: 91,
-      consistency: 79,
-      clutch: 85,
+      role: 'JGL',
+      rating: 80,
+      impact: 93,
+      consistency: 68,
+      clutch: 80,
       tier: 'gold',
-      games: 22,
-      wins: 15,
-      losses: 7,
-      winrate: 68,
-      kda: 4.55,
+      games: 5,
+      wins: 4,
+      losses: 1,
+      winrate: 80,
+      kda: 7.88,
       recentForm: 'up',
-      previousRating: 83,
-      editionsPlayed: 4,
+      previousRating: 77,
+      editionsPlayed: 2,
       topChampions: ['Ornn', 'Gnar', 'Garen'],
+      breakdown: explainRating([
+        ...Array.from({ length: 4 }, (_, i) => ({
+          role: 'JGL' as const,
+          result: 'win' as const,
+          kills: i === 0 ? 19 : 0,
+          deaths: i === 0 ? 8 : 0,
+          assists: i === 0 ? 44 : 0,
+          weight: 1,
+        })),
+        { role: 'JGL', result: 'loss', kills: 0, deaths: 0, assists: 0, weight: 1 },
+      ]),
     },
     ...overrides,
   };
