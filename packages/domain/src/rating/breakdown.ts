@@ -23,6 +23,10 @@ export interface RatingSteps {
     readonly capped: boolean;
   };
   readonly winrate: StatSteps;
+  /** Scores non arrondis et non bornés, dont sortent les sous-notes (bornées de 0 à 99). */
+  readonly scores: { readonly kda: number; readonly winrate: number };
+  /** La note avant son plancher de 60. */
+  readonly ratingBeforeFloor: number;
 }
 
 /** Une statistique à chaque étape du calcul. */
@@ -87,7 +91,8 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
   const impact = clamp(Math.round(kdaScore), 0, 99);
   const consistency = clamp(Math.round(winrateScore), 0, 99);
   const clutch = clamp(Math.round(kdaScore * 0.5 + winrateScore * 0.5), 0, 99);
-  const rating = clamp(Math.round(impact * 0.35 + consistency * 0.35 + clutch * 0.3), 60, 99);
+  const ratingBeforeFloor = Math.round(impact * 0.35 + consistency * 0.35 + clutch * 0.3);
+  const rating = clamp(ratingBeforeFloor, 60, 99);
 
   return {
     result: { rating, impact, consistency, clutch, tier: tierOf(rating) },
@@ -103,6 +108,8 @@ export function explainRating(performances: readonly RatedPerformance[]): Rating
         reliable: reliableKda,
       },
       winrate: { unweighted: unweightedWinrate, weighted: winrate, reliable: reliableWinrate },
+      scores: { kda: kdaScore, winrate: winrateScore },
+      ratingBeforeFloor,
     },
   };
 }

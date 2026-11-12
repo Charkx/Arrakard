@@ -135,4 +135,39 @@ describe('explainRating', () => {
       expect(breakdown.steps?.kda.capped).toBe(false);
     });
   });
+
+  describe('bornes', () => {
+    it('garde les scores d’avant les bornes : un impact de 99 peut cacher un score de 104 (exemple B)', () => {
+      const exampleB = performancesFrom({
+        role: 'JGL',
+        games: 24,
+        wins: 19,
+        kills: 165,
+        deaths: 74,
+        assists: 219,
+      });
+
+      const breakdown = explainRating(exampleB);
+
+      expect(breakdown.result.impact).toBe(99);
+      expect(breakdown.steps?.scores.kda).toBeCloseTo(103.78, 2);
+      expect(breakdown.steps?.scores.winrate).toBeCloseTo(82.75, 2);
+    });
+
+    it('donne la note d’avant le plancher : 56 remontée à 60 (joueur F de la spec)', () => {
+      const playerF = performancesFrom({
+        role: 'JGL',
+        games: 3,
+        wins: 1,
+        kills: 17,
+        deaths: 29,
+        assists: 24,
+      });
+
+      const breakdown = explainRating(playerF);
+
+      expect(breakdown.steps?.ratingBeforeFloor).toBe(56);
+      expect(breakdown.result.rating).toBe(60);
+    });
+  });
 });
