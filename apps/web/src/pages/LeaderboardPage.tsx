@@ -1,17 +1,23 @@
 import { rankLeaderboard, type Division, type LeaderboardSort, type Role } from '@arrakis/domain';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { DeltaBadge } from '../components/DeltaBadge.tsx';
 import { PlayerCard } from '../components/PlayerCard.tsx';
 import { TierPill } from '../components/TierPill.tsx';
 import { useLoaded } from '../data/DataContext.tsx';
-import { initialsOf, type LeaderboardData, type LeaderboardEntry } from '../data/leaderboard.ts';
+import {
+  initialsOf,
+  ratingDelta,
+  type DataSource,
+  type LeaderboardData,
+  type LeaderboardEntry,
+} from '../data/leaderboard.ts';
 import type { TextKey } from '../i18n/dictionary.ts';
 import { useI18n } from '../i18n/i18n.tsx';
 
 const ROLES: readonly Role[] = ['TOP', 'JGL', 'MID', 'ADC', 'SUP'];
-const DIVISIONS: readonly { readonly value: Division; readonly label: string }[] = [
-  { value: 'div1', label: 'Div 1' },
-  { value: 'div2', label: 'Div 2' },
+const DIVISIONS: readonly { readonly value: Division; readonly label: TextKey }[] = [
+  { value: 'div1', label: 'lb.division.div1' },
+  { value: 'div2', label: 'lb.division.div2' },
 ];
 const SORTABLE: readonly { readonly sort: LeaderboardSort; readonly label: TextKey }[] = [
   { sort: 'rating', label: 'lb.col.rating' },
@@ -20,8 +26,7 @@ const SORTABLE: readonly { readonly sort: LeaderboardSort; readonly label: TextK
   { sort: 'games', label: 'lb.col.games' },
 ];
 
-const loadLeaderboard = (source: { loadLeaderboard(): Promise<LeaderboardData> }) =>
-  source.loadLeaderboard();
+const loadLeaderboard = (source: DataSource): Promise<LeaderboardData> => source.loadLeaderboard();
 
 /** Les filtres et le tri, lus dans l'adresse de la page : un lien partagé garde la vue. */
 function useLeaderboardOptions() {
@@ -128,7 +133,7 @@ function Leaderboard({ entries }: { readonly entries: readonly LeaderboardEntry[
                     set('div', d.value);
                   }}
                 >
-                  {d.label}
+                  {t(d.label)}
                 </FilterButton>
               ))}
             </div>
@@ -245,7 +250,7 @@ function FilterButton({
 function Indicators({ ranked }: { readonly ranked: readonly LeaderboardEntry[] }) {
   const { t } = useI18n();
   const climber = [...ranked]
-    .map((e) => ({ e, gain: e.rating - (e.previousRating ?? e.rating) }))
+    .map((e) => ({ e, gain: ratingDelta(e) }))
     .sort((a, b) => b.gain - a.gain)[0];
   const averageGames =
     ranked.length === 0
@@ -320,7 +325,7 @@ function Podium({
                   editionsPlayed={entry.editionsPlayed}
                   scale={scale}
                 />
-                <DeltaBadge delta={entry.rating - (entry.previousRating ?? entry.rating)} />
+                <DeltaBadge delta={ratingDelta(entry)} />
               </button>
             ) : null,
           )}
@@ -342,19 +347,17 @@ function Row({
   readonly onOpen: (entry: LeaderboardEntry) => void;
 }) {
   const { t } = useI18n();
+  // Seuils de couleur du taux de victoires, repris de la v1.
   const level = entry.winrate >= 60 ? 'high' : entry.winrate <= 40 ? 'low' : '';
   const move = previousRank === null ? 0 : previousRank - rank;
 
   return (
+    // Toute la ligne s'ouvre à la souris, comme en v1 ; au clavier et pour un
+    // lecteur d'écran, c'est le nom du joueur qui est le lien.
     <tr
       className={`lb-row${rank <= 3 ? ` lb-row-${String(rank)}` : ''}`}
-      tabIndex={0}
-      aria-label={t('lb.openProfile', { name: entry.nickname })}
       onClick={() => {
         onOpen(entry);
-      }}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') onOpen(entry);
       }}
     >
       <td className="td-left">
@@ -366,7 +369,15 @@ function Row({
             {initialsOf(entry.nickname)}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div className="lb-name">{entry.nickname}</div>
+            <Link
+              className="lb-name"
+              to={`/player/${entry.playerId}`}
+              onClick={(event) => {
+                event.stopPropagation();
+              }}
+            >
+              {entry.nickname}
+            </Link>
             <div className="lb-sub">
               {entry.teamTag ? `${entry.teamTag} · ${entry.role}` : entry.role}
             </div>
@@ -376,7 +387,7 @@ function Row({
       <td>
         <span className="lb-rating">
           <span className={`lb-rating-value ${entry.tier}`}>{entry.rating}</span>
-          <DeltaBadge delta={entry.rating - (entry.previousRating ?? entry.rating)} />
+          <DeltaBadge delta={ratingDelta(entry)} />
         </span>
       </td>
       <td>

@@ -156,7 +156,7 @@ describe('les autres états de la page', () => {
   it('ouvre le profil d’un joueur, à l’adresse de la v1', async () => {
     openSite('/leaderboard', season([anEntry({ playerId: 'p-1', nickname: 'Amarre' })]));
 
-    fireEvent.click(await screen.findByRole('row', { name: 'Voir le profil de Amarre' }));
+    fireEvent.click(await screen.findByRole('link', { name: 'Amarre' }));
 
     expect(screen.getByTestId('address').textContent).toBe('/player/p-1');
   });

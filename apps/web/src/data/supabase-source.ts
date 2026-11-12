@@ -48,7 +48,7 @@ async function loadLeaderboard(client: SupabaseClient, slug: string): Promise<Le
     .eq('slug', slug)
     .maybeSingle<{ id: string }>();
   if (organization.error) throw organization.error;
-  if (!organization.data) return { seasonName: null, entries: [] };
+  if (!organization.data) throw new Error(`Organisation « ${slug} » introuvable.`);
 
   const season = await client
     .from('seasons')

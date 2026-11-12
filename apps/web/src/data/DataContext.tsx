@@ -24,7 +24,10 @@ export type Loaded<T> =
   | { readonly status: 'error' }
   | { readonly status: 'ready'; readonly data: T };
 
-/** Charge une donnée une fois, et dit où en est le chargement. */
+/**
+ * Charge une donnée une fois, et dit où en est le chargement. `load` doit être
+ * déclarée hors du composant, pour ne pas relancer le chargement à chaque affichage.
+ */
 export function useLoaded<T>(load: (source: DataSource) => Promise<T>): Loaded<T> {
   const source = useDataSource();
   const [state, setState] = useState<Loaded<T>>({ status: 'loading' });
@@ -42,9 +45,7 @@ export function useLoaded<T>(load: (source: DataSource) => Promise<T>): Loaded<T
     return () => {
       current = false;
     };
-    // `load` est une fonction déclarée hors du composant : elle ne change pas.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source]);
+  }, [source, load]);
 
   return state;
 }

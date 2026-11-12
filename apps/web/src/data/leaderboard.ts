@@ -25,6 +25,11 @@ export interface DataSource {
   loadLeaderboard(): Promise<LeaderboardData>;
 }
 
+/** Ce que la note a gagné (ou perdu) à la dernière édition ; 0 si le joueur la découvrait. */
+export function ratingDelta(entry: LeaderboardEntry): number {
+  return entry.previousRating === undefined ? 0 : entry.rating - entry.previousRating;
+}
+
 /** Deux lettres pour l'avatar : les initiales de deux mots, sinon les deux premières lettres. */
 export function initialsOf(nickname: string): string {
   const words = nickname.split(/[^\p{L}\p{N}]+/u).filter(Boolean);

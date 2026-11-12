@@ -388,6 +388,8 @@
   color: var(--coral-lt);
 }
 .lb-name {
+  display: block;
+  text-decoration: none;
   font-weight: 700;
   font-size: 13px;
   color: var(--text-primary);

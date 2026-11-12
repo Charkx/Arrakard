@@ -38,3 +38,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0016](0016-perimetre-repris-de-la-v1.md)               | Ne reprendre de la v1 que ce qui sert                | Accepté |
 | [0017](0017-outils-du-site.md)                          | Les outils du site : React, Vite et Tailwind         | Accepté |
 | [0018](0018-deux-langues-dictionnaire-maison.md)        | Deux langues, un dictionnaire maison                 | Accepté |
+| [0019](0019-lire-la-base-depuis-le-site.md)             | Lire la base depuis le site                          | Proposé |

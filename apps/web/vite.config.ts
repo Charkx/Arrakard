@@ -13,7 +13,6 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
-      // main.tsx ne fait que brancher l'application sur la page.
       // main.tsx branche le site sur la page ; supabase-source.ts parle à l'API,
       // et se vérifie sur la base locale (README).
       exclude: [

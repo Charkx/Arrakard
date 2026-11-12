@@ -26,6 +26,17 @@ from players p
 join (values ('ARK', date '2026-01-10', null::date), ('OLD', date '2025-01-10', date '2026-01-09')) as m (tag, joined_on, left_on) on true
 join teams t on t.tag = m.tag and t.organization_id = p.organization_id
 where p.nickname = 'Meta' and p.organization_id = '00000000-0000-0000-0000-00000000000a';
+-- L'autre structure a sa saison, un joueur et sa note, sans équipe.
+insert into players (organization_id, nickname) values ('00000000-0000-0000-0000-00000000000b', 'Ailleurs');
+insert into seasons (id, organization_id, name, year, status) values
+  ('10000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000b', 'Saison 1', 2026, 'open');
+insert into player_season_ratings (
+  organization_id, season_id, player_id, dominant_role, rating, impact, consistency, clutch, tier,
+  games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form
+)
+select organization_id, '10000000-0000-0000-0000-00000000000b', id, 'TOP', 65, 65, 65, 65, 'bronze',
+       5, 2, 3, 40, 2.0, 5, 5, 5, 9000, 300, 'stable'
+from players where nickname = 'Ailleurs';
 insert into player_season_ratings (
   organization_id, season_id, player_id, dominant_role, rating, impact, consistency, clutch, tier,
   games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form
@@ -75,12 +86,12 @@ select results_eq(
   'un visiteur lit le classement : la note, le joueur, son rôle et son équipe actuelle'
 );
 select is(
-  (select count(*)::int from leaderboard_view where organization_id = '00000000-0000-0000-0000-00000000000b'), 0,
-  'le classement d''une organisation ne montre pas les joueurs d''une autre'
+  (select count(*)::int from leaderboard_view where organization_id = '00000000-0000-0000-0000-00000000000b'), 1,
+  'chaque organisation a son classement : l''autre structure n''y voit que son propre joueur'
 );
 select throws_ok(
   $$ update leaderboard_view set rating = 99 $$,
-  '55000', null, 'personne n''écrit à travers la vue : elle ne sert qu''à lire'
+  '55000', null, 'la vue ne s''écrit pas : elle ne sert qu''à lire'
 );
 
 -- ── Admin d'Arrakis ──────────────────────────────────────────────────────────

@@ -81,8 +81,8 @@ En cas d'erreur à n'importe quelle étape : `ROLLBACK`, rien n'a changé.
 
 Une vue SQL par besoin de page (`leaderboard_view`, `player_profile_view`,
 `edition_page_view`…), exposée en lecture publique. La page ne télécharge
-que ce qu'elle affiche. Le cache côté navigateur reste à choisir, avec la première page
-([ADR 0017](../adr/0017-outils-du-site.md)).
+que ce qu'elle affiche. Pas de cache côté navigateur pour l'instant
+([ADR 0019](../adr/0019-lire-la-base-depuis-le-site.md)).
 
 ## Structure du dépôt (cible)
 
