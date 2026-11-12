@@ -1,6 +1,6 @@
 # 0019 — Lire la base depuis le site
 
-- **Statut** : Proposé
+- **Statut** : Accepté
 - **Date** : 2026-11-12
 
 ## Contexte
