@@ -9,10 +9,14 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "typecheck": "tsc -p tsconfig.json",
-    "report": "tsx src/cli.ts"
+    "report": "tsx src/cli.ts",
+    "demo:write": "tsx src/testing/write-demo-backup.ts",
+    "load": "tsx src/load-cli.ts",
+    "test:db": "vitest run --config vitest.db.config.ts"
   },
   "dependencies": {
-    "@arrakis/domain": "workspace:*"
+    "@arrakis/domain": "workspace:*",
+    "postgres": "^4.1.0"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^5.0.3",

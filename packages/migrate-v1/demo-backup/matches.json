@@ -1,0 +1,211 @@
+[
+  {
+    "id": "00000006-0000-4000-8000-000000000001",
+    "edition_id": "00000005-0000-4000-8000-000000000001",
+    "match_number": 1,
+    "team_a": "DNE",
+    "team_b": "NOX",
+    "winner": "NOX",
+    "duration_display": "29:44",
+    "journee": 1,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000002",
+    "edition_id": "00000005-0000-4000-8000-000000000001",
+    "match_number": 2,
+    "team_a": "DNE",
+    "team_b": "NOX",
+    "winner": "NOX",
+    "duration_display": "25:54",
+    "journee": 1,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000003",
+    "edition_id": "00000005-0000-4000-8000-000000000001",
+    "match_number": 3,
+    "team_a": "DNE",
+    "team_b": "NOX",
+    "winner": "NOX",
+    "duration_display": "27:52",
+    "journee": 2,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000004",
+    "edition_id": "00000005-0000-4000-8000-000000000001",
+    "match_number": 4,
+    "team_a": "DNE",
+    "team_b": "NOX",
+    "winner": "DNE",
+    "duration_display": "28:06",
+    "journee": 2,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000005",
+    "edition_id": "00000005-0000-4000-8000-000000000002",
+    "match_number": 1,
+    "team_a": "DNE",
+    "team_b": "NOX",
+    "winner": "NOX",
+    "duration_display": "38:14",
+    "journee": 1,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000006",
+    "edition_id": "00000005-0000-4000-8000-000000000002",
+    "match_number": 2,
+    "team_a": "DNE",
+    "team_b": "NOX",
+    "winner": "DNE",
+    "duration_display": "27:08",
+    "journee": 1,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000007",
+    "edition_id": "00000005-0000-4000-8000-000000000002",
+    "match_number": 3,
+    "team_a": "DNE",
+    "team_b": "NOX",
+    "winner": "DNE",
+    "duration_display": "36:18",
+    "journee": 2,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000008",
+    "edition_id": "00000005-0000-4000-8000-000000000002",
+    "match_number": 4,
+    "team_a": "DNE",
+    "team_b": "NOX",
+    "winner": "DNE",
+    "duration_display": "36:38",
+    "journee": 2,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000009",
+    "edition_id": "00000005-0000-4000-8000-000000000002",
+    "match_number": 5,
+    "team_a": "DNE",
+    "team_b": "NOX",
+    "winner": "DNE",
+    "duration_display": "30:21",
+    "journee": 3,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000010",
+    "edition_id": "00000005-0000-4000-8000-000000000002",
+    "match_number": 6,
+    "team_a": "NOX",
+    "team_b": "DNE",
+    "winner": "DNE",
+    "duration_display": "36:59",
+    "journee": 3,
+    "is_final": true
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000011",
+    "edition_id": "00000005-0000-4000-8000-000000000003",
+    "match_number": 1,
+    "team_a": "ORB",
+    "team_b": "SPC",
+    "winner": "SPC",
+    "duration_display": "32:34",
+    "journee": 1,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000012",
+    "edition_id": "00000005-0000-4000-8000-000000000003",
+    "match_number": 2,
+    "team_a": "ORB",
+    "team_b": "SPC",
+    "winner": "ORB",
+    "duration_display": "30:05",
+    "journee": 1,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000013",
+    "edition_id": "00000005-0000-4000-8000-000000000003",
+    "match_number": 3,
+    "team_a": "ORB",
+    "team_b": "SPC",
+    "winner": "ORB",
+    "duration_display": "24:49",
+    "journee": 2,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000014",
+    "edition_id": "00000005-0000-4000-8000-000000000003",
+    "match_number": 4,
+    "team_a": "ORB",
+    "team_b": "SPC",
+    "winner": "ORB",
+    "duration_display": "39:25",
+    "journee": 2,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000015",
+    "edition_id": "00000005-0000-4000-8000-000000000003",
+    "match_number": 5,
+    "team_a": "ORB",
+    "team_b": "SPC",
+    "winner": "ORB",
+    "duration_display": "26:50",
+    "journee": 3,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000016",
+    "edition_id": "00000005-0000-4000-8000-000000000003",
+    "match_number": 6,
+    "team_a": "ORB",
+    "team_b": "SPC",
+    "winner": "ORB",
+    "duration_display": "31:54",
+    "journee": 3,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000017",
+    "edition_id": "00000005-0000-4000-8000-000000000004",
+    "match_number": 1,
+    "team_a": "Sable",
+    "team_b": "Vent",
+    "winner": "Sable",
+    "duration_display": "35:21",
+    "journee": null,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000018",
+    "edition_id": "00000005-0000-4000-8000-000000000004",
+    "match_number": 2,
+    "team_a": "Sable",
+    "team_b": "Vent",
+    "winner": "Sable",
+    "duration_display": "30:41",
+    "journee": null,
+    "is_final": false
+  },
+  {
+    "id": "00000006-0000-4000-8000-000000000019",
+    "edition_id": "00000005-0000-4000-8000-000000000004",
+    "match_number": 3,
+    "team_a": "Sable",
+    "team_b": "Vent",
+    "winner": "Sable",
+    "duration_display": "39:22",
+    "journee": null,
+    "is_final": false
+  }
+]
