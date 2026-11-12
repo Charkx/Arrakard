@@ -1,48 +1,348 @@
 @import 'tailwindcss';
+@import './styles/player-card.css';
+@import './styles/leaderboard.css';
 
 /*
- * Couleurs et typographie reprises de la v1 (son fichier index.css).
- * Chaque variable devient une classe : --color-violet donne bg-violet,
- * text-violet, border-violet ; --font-display donne font-display.
+ * Design de la v1, repris tel quel (index.css et design-system.css de la v1) :
+ * les mêmes couleurs, ombres, rayons et polices. Seule différence, la police
+ * des titres : Bebas Neue remplace Kiona, dont la licence n'est pas vérifiée
+ * (public/fonts/LICENCES.md).
  */
-@theme {
-  /* Fonds, du plus profond au plus proche. */
-  --color-base: #060310;
-  --color-surface: #0f0d1f;
-  --color-raised: #16132c;
-  --color-overlay: #1c1836;
 
-  /* Accents. */
-  --color-violet: #7f77dd;
-  --color-violet-2: #b0aaff;
-  --color-gold: #ef9f27;
-  --color-gold-2: #f5c842;
-  --color-teal: #5dcaa5;
-  --color-teal-2: #9fe1cb;
-  --color-coral: #d85a30;
-  --color-coral-2: #f0997b;
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/dm-sans-latin.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
 
-  /* Paliers des cartes. */
-  --color-tier-elite: #7f77dd;
-  --color-tier-gold: #ef9f27;
-  --color-tier-silver: #9aa0aa;
-  --color-tier-bronze: #d85a30;
+@font-face {
+  font-family: 'Bebas Neue';
+  src: url('/fonts/bebas-neue-latin.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
-  /* Textes. */
-  --color-primary: #ffffff;
-  --color-secondary: #a09cc0;
-  --color-tertiary: #5a5680;
+:root {
+  /* Fonds */
+  --bg-base: #0d0b1e;
+  --bg-inset: #0a091a;
+  --bg-hover: rgba(127, 119, 221, 0.04);
+  --bg-page: #07050f;
+  --bg-surface: var(--bg-base);
+  --bg-raised: var(--bg-base);
+  --bg-overlay: var(--bg-hover);
+  --bg1: var(--bg-base);
+  --bg2: var(--bg-inset);
+  --depth-2: var(--bg-base);
+  --depth-3: var(--bg-hover);
 
-  /* Bordures. */
-  --color-subtle: rgb(255 255 255 / 0.05);
-  --color-soft: rgb(255 255 255 / 0.08);
-  --color-accent: rgb(127 119 221 / 0.25);
+  /* Ombres néomorphisme */
+  --shadow-raised: 4px 4px 10px rgba(0, 0, 0, 0.5), -2px -2px 6px rgba(127, 119, 221, 0.06);
+  --shadow-inset:
+    inset 2px 2px 5px rgba(0, 0, 0, 0.4), inset -1px -1px 3px rgba(127, 119, 221, 0.08);
+  --shadow-avatar:
+    3px 3px 8px rgba(0, 0, 0, 0.5), -2px -2px 5px rgba(127, 119, 221, 0.1),
+    inset 1px 1px 2px rgba(127, 119, 221, 0.06);
+  --shadow-card: 6px 6px 14px rgba(0, 0, 0, 0.6), -3px -3px 8px rgba(127, 119, 221, 0.05);
+  --shadow-sm: 2px 2px 6px rgba(0, 0, 0, 0.4), -1px -1px 4px rgba(127, 119, 221, 0.05);
 
-  /*
-   * Polices : les familles de la v1, avec leurs polices de secours. Les
-   * fichiers de police ne sont pas encore chargés (voir l'ADR 0017).
-   */
-  --font-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
-  --font-body: 'Barlow', Arial, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  /* Couleurs d'Arrakis */
+  --violet: #7f77dd;
+  --violet-lt: #a09aea;
+  --violet2: var(--violet-lt);
+  --gold: #ef9f27;
+  --gold-lt: #f7c46a;
+  --gold2: var(--gold-lt);
+  --teal: #5dcaa5;
+  --teal-lt: #9fe1cb;
+  --coral: #d85a30;
+  --coral-lt: #f0997b;
+  --silver2: #c0c8d0;
+
+  /* Textes */
+  --text-1: #ffffff;
+  --text-2: rgba(255, 255, 255, 0.65);
+  --text-3: rgba(255, 255, 255, 0.3);
+  --text-4: rgba(255, 255, 255, 0.15);
+  --text-primary: var(--text-1);
+  --text-secondary: var(--text-2);
+  --text-tertiary: var(--text-3);
+  --text-muted: var(--text-4);
+
+  /* Typographie */
+  --font-display: 'Bebas Neue', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+
+  /* Bordures */
+  --border-subtle: rgba(127, 119, 221, 0.06);
+  --border-soft: rgba(127, 119, 221, 0.08);
+  --border-med: rgba(127, 119, 221, 0.12);
+  --border-accent: rgba(127, 119, 221, 0.25);
+
+  /* Rayons */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* Rôles */
+  --role-top: #b87a3a;
+  --role-jgl: #5dcaa5;
+  --role-mid: #7f77dd;
+  --role-adc: #d85a30;
+  --role-sup: rgba(255, 255, 255, 0.3);
+
+  --z-nav: 100;
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  color-scheme: dark;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+
+body {
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: var(--font-body);
+  color-scheme: dark;
+}
+
+:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+/* ── Barre de navigation ──────────────────────────────────────────────────── */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 52px;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  background: var(--bg-base);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.navbar-brand {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--text-1);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.navbar-brand-a {
+  color: var(--violet-lt);
+}
+.navbar-brand-season {
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--text-3);
+  margin-left: 6px;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-link {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  color: var(--text-3);
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color 0.12s,
+    background 0.12s,
+    box-shadow 0.12s;
+}
+.navbar-link:hover {
+  color: var(--text-1);
+}
+.navbar-link.active {
+  color: var(--violet-lt);
+  background: var(--bg-inset);
+  box-shadow: var(--shadow-inset);
+}
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    background 0.12s,
+    border-color 0.12s;
+}
+.lang-toggle:hover {
+  color: var(--text-primary);
+  border-color: var(--border-accent);
+  background: rgba(127, 119, 221, 0.07);
+}
+
+/* ── Contenu sous la barre ────────────────────────────────────────────────── */
+
+.main-content {
+  min-height: calc(100vh - 52px);
+  padding: 32px 40px 80px;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 1023px) {
+  .main-content {
+    padding: 16px max(16px, env(safe-area-inset-right, 0px))
+      calc(32px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  .navbar {
+    padding: 0 16px;
+  }
+}
+@media (max-width: 480px) {
+  .navbar-brand-season {
+    display: none;
+  }
+}
+
+/* ── Primitives partagées ─────────────────────────────────────────────────── */
+
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(36px, 5vw, 48px);
+  letter-spacing: 1.5px;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.page-sub {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 6px 0 0;
+}
+
+.neo-panel {
+  background: var(--bg-base);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.neo-raised {
+  background: var(--bg-base);
+  box-shadow: var(--shadow-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.empty-state strong {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 1.5px;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+/* Pastille de palier (TierPill de la v1) */
+.tier-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 100px;
+  padding: 2px 8px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.tier-pill.elite {
+  background: rgba(127, 119, 221, 0.12);
+  color: var(--violet2);
+  border: 1px solid rgba(127, 119, 221, 0.35);
+}
+.tier-pill.gold {
+  background: rgba(239, 159, 39, 0.12);
+  color: var(--gold2);
+  border: 1px solid rgba(239, 159, 39, 0.35);
+}
+.tier-pill.silver {
+  background: rgba(154, 160, 170, 0.12);
+  color: var(--silver2);
+  border: 1px solid rgba(154, 160, 170, 0.3);
+}
+.tier-pill.bronze {
+  background: rgba(208, 90, 48, 0.12);
+  color: #e8a060;
+  border: 1px solid rgba(208, 90, 48, 0.35);
+}
+
+/* Écart de note (DeltaBadge de la v1) */
+.delta-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 10px;
+  padding: 2px 6px;
+  font-variant-numeric: tabular-nums;
+}
+.delta-badge.up {
+  background: rgba(93, 202, 165, 0.18);
+  color: var(--teal);
+}
+.delta-badge.down {
+  background: rgba(208, 90, 48, 0.18);
+  color: var(--coral);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
