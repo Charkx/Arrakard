@@ -3,6 +3,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom';
 import { App } from '../App.tsx';
 import { DataProvider } from '../data/DataContext.tsx';
 import type { DataSource, LeaderboardData, LeaderboardEntry } from '../data/leaderboard.ts';
+import type { EditionPageData } from '../data/edition.ts';
 import type { PlayedMatch, PlayerPageData, PlayerProfile } from '../data/player.ts';
 import { I18nProvider } from '../i18n/i18n.tsx';
 
@@ -83,6 +84,8 @@ export interface SiteData {
   readonly players?: Readonly<Record<string, PlayerPageData>> | 'fails';
   /** Les joueurs fusionnés : ancien identifiant → joueur conservé. */
   readonly merged?: Readonly<Record<string, string>>;
+  /** Les éditions, par identifiant. */
+  readonly editions?: Readonly<Record<string, EditionPageData>> | 'fails';
 }
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */
@@ -90,6 +93,7 @@ export function inMemorySource({
   leaderboard = { seasonName: 'Saison 3', entries: [] },
   players = {},
   merged = {},
+  editions = {},
 }: SiteData): DataSource {
   const fails = () => Promise.reject(new Error('Base injoignable'));
   return {
@@ -99,6 +103,7 @@ export function inMemorySource({
       const into = merged[id];
       return Promise.resolve(into === undefined ? (players[id] ?? null) : { mergedInto: into });
     },
+    loadEdition: (id) => (editions === 'fails' ? fails() : Promise.resolve(editions[id] ?? null)),
   };
 }
 

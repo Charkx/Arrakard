@@ -1,5 +1,12 @@
 import type { Division, RecentForm, Role, Tier } from '@arrakis/domain';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import {
+  toMatches,
+  type EditionHeader,
+  type EditionPageData,
+  type MatchPlayerRow,
+  type StandingRow,
+} from './edition.ts';
 import type { DataSource, LeaderboardData, LeaderboardEntry } from './leaderboard.ts';
 import type { MergedPlayer, PlayedMatch, PlayerPageData } from './player.ts';
 
@@ -42,6 +49,7 @@ export function supabaseSource(
   return {
     loadLeaderboard: () => loadLeaderboard(client, organizationSlug),
     loadPlayer: (playerId) => loadPlayer(client, organizationSlug, playerId),
+    loadEdition: (editionId) => loadEdition(client, organizationSlug, editionId),
   };
 }
 
@@ -233,4 +241,157 @@ async function mergedInto(
     .maybeSingle<{ merged_into: string | null }>();
   if (player.error) throw player.error;
   return player.data?.merged_into ? { mergedInto: player.data.merged_into } : null;
+}
+
+/**
+ * Lit une vue entière d'une édition, en remplaçant chaque ligne par sa forme
+ * dans le site. `toItem` porte le type de la ligne qu'il attend.
+ */
+async function rowsOf<T>(
+  client: SupabaseClient,
+  view: string,
+  organization: string,
+  editionId: string,
+  toItem: (row: never) => T,
+): Promise<T[]> {
+  const result = await client
+    .from(view)
+    .select('*')
+    .eq('organization_id', organization)
+    .eq('edition_id', editionId);
+  if (result.error) throw result.error;
+  return result.data.map((row) => toItem(row as never));
+}
+
+async function loadEdition(
+  client: SupabaseClient,
+  slug: string,
+  editionId: string,
+): Promise<EditionPageData | null> {
+  if (!UUID.test(editionId)) return null;
+  const organization = await organizationId(client, slug);
+  const [edition] = await rowsOf(client, 'edition_page_view', organization, editionId, toHeader);
+  if (!edition) return null;
+
+  const [standings, matchRows, participants] = await Promise.all([
+    rowsOf(client, 'edition_standings_view', organization, editionId, toStanding),
+    rowsOf(client, 'edition_matches_view', organization, editionId, toMatchPlayer),
+    rowsOf(client, 'edition_participants_view', organization, editionId, (r: ParticipantRow) => ({
+      playerId: r.player_id,
+      nickname: r.nickname,
+    })),
+  ]);
+  return {
+    edition,
+    standings: standings.sort((a, b) => a.rank - b.rank),
+    matches: toMatches(matchRows),
+    participants: participants.sort((a, b) => a.nickname.localeCompare(b.nickname)),
+  };
+}
+
+interface EditionPageRow {
+  readonly edition_id: string;
+  readonly name: string;
+  readonly type: EditionHeader['type'];
+  readonly date: string;
+  readonly season_name: string | null;
+  readonly location: string | null;
+  readonly description: string | null;
+  readonly event_mvp_nickname: string | null;
+}
+
+const toHeader = (r: EditionPageRow): EditionHeader => ({
+  editionId: r.edition_id,
+  name: r.name,
+  type: r.type,
+  date: r.date,
+  seasonName: r.season_name,
+  location: r.location,
+  description: r.description,
+  eventMvp: r.event_mvp_nickname,
+});
+
+interface StandingViewRow {
+  readonly player_id: string;
+  readonly nickname: string;
+  readonly rank: number;
+  readonly team: string;
+  readonly role: StandingRow['role'];
+  readonly champion: string;
+  readonly wins: number;
+  readonly losses: number;
+  readonly kills: number;
+  readonly deaths: number;
+  readonly assists: number;
+  readonly is_event_mvp: boolean;
+  readonly result_points: number;
+  readonly stat_points: number;
+  readonly mvp_points: number;
+  readonly points: number;
+}
+
+const toStanding = (r: StandingViewRow): StandingRow => ({
+  playerId: r.player_id,
+  nickname: r.nickname,
+  rank: r.rank,
+  team: r.team,
+  role: r.role,
+  champion: r.champion,
+  wins: r.wins,
+  losses: r.losses,
+  kills: r.kills,
+  deaths: r.deaths,
+  assists: r.assists,
+  isEventMvp: r.is_event_mvp,
+  resultPoints: r.result_points,
+  statPoints: r.stat_points,
+  mvpPoints: r.mvp_points,
+  points: r.points,
+});
+
+interface MatchViewRow {
+  readonly match_id: string;
+  readonly match_number: number;
+  readonly matchday: number | null;
+  readonly is_final: boolean;
+  readonly duration_seconds: number;
+  readonly winner_team: string;
+  readonly mvp_nickname: string | null;
+  readonly line: number;
+  readonly side: 'A' | 'B';
+  readonly player_id: string;
+  readonly nickname: string;
+  readonly team: string;
+  readonly role: MatchPlayerRow['role'];
+  readonly champion: string;
+  readonly result: MatchPlayerRow['result'];
+  readonly kills: number;
+  readonly deaths: number;
+  readonly assists: number;
+}
+
+const toMatchPlayer = (r: MatchViewRow): MatchPlayerRow => ({
+  matchId: r.match_id,
+  matchNumber: r.match_number,
+  matchday: r.matchday,
+  isFinal: r.is_final,
+  durationSeconds: r.duration_seconds,
+  winnerTeam: r.winner_team,
+  mvp: r.mvp_nickname,
+  line: r.line,
+  side: r.side,
+  playerId: r.player_id,
+  nickname: r.nickname,
+  team: r.team,
+  role: r.role,
+  champion: r.champion,
+  result: r.result,
+  kills: r.kills,
+  deaths: r.deaths,
+  assists: r.assists,
+});
+
+interface ParticipantRow {
+  readonly player_id: string;
+  readonly nickname: string;
 }

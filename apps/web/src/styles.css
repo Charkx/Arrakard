@@ -2,6 +2,7 @@
 @import './styles/player-card.css';
 @import './styles/leaderboard.css';
 @import './styles/profile.css';
+@import './styles/edition.css';
 
 /*
  * Design de la v1, repris tel quel (index.css et design-system.css de la v1) :
@@ -77,6 +78,7 @@
   /* Typographie */
   --font-display: 'Bebas Neue', 'Arial Narrow', system-ui, sans-serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
 
   /* Bordures */
   --border-subtle: rgba(127, 119, 221, 0.06);
@@ -370,4 +372,13 @@ button {
   height: 1px;
   background: var(--violet);
   flex-shrink: 0;
+}
+
+/* Carte de section (classe .card de design-system.css de la v1) */
+.card {
+  background: var(--bg-base);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
 }

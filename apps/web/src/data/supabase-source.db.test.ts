@@ -103,3 +103,35 @@ describe('lire le profil d’un joueur dans la base locale', () => {
     expect(await source.loadPlayer('pas-un-identifiant')).toBeNull();
   });
 });
+
+describe('lire une édition dans la base locale', () => {
+  it('donne ses matchs complets et le classement de soirée calculé par le domaine', async () => {
+    const league = rows.editions.find((e) => e.name === 'Ligue D1 #2');
+    const expected = project(toFacts(rows), V1_RATING_RULES).editionStandings.find(
+      (s) => s.editionId === league?.id,
+    );
+
+    const edition = await supabaseSource().loadEdition(league?.id ?? '');
+
+    expect(edition?.matches).toHaveLength(
+      rows.matches.filter((m) => m.edition_id === league?.id).length,
+    );
+    expect(edition?.matches.every((m) => m.lines.length === 5)).toBe(true);
+    expect(edition?.standings.map((s) => [s.playerId, s.points])).toEqual(
+      expected?.rows.map((r) => [r.playerId, r.points]),
+    );
+  });
+
+  it('donne les participants d’un événement externe', async () => {
+    const lan = rows.editions.find((e) => e.type === 'external_event');
+
+    const edition = await supabaseSource().loadEdition(lan?.id ?? '');
+
+    expect(edition?.participants.map((p) => p.nickname).sort()).toEqual(
+      rows.edition_participants
+        .filter((p) => p.edition_id === lan?.id)
+        .map((p) => rows.players.find((x) => x.id === p.player_id)?.nickname)
+        .sort(),
+    );
+  });
+});
