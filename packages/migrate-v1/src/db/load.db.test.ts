@@ -2,7 +2,7 @@ import { project, V1_RATING_RULES } from '@arrakis/domain';
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { planMigration, type MigrationPlan } from '../plan.ts';
-import { demoBackup } from '../testing/demo-backup.ts';
+import { demoBackupCopy } from '../testing/demo-backup.ts';
 import { toFacts } from '../verify.ts';
 import { loadPlan, removeOrganization } from './load.ts';
 import { toProjectionRows } from './projection-rows.ts';
@@ -17,7 +17,8 @@ import { LOCAL_DATABASE_URL } from './target.ts';
 const ORGANIZATION = { slug: 'essai-chargement', name: 'Essai de chargement' };
 
 const sql = postgres(LOCAL_DATABASE_URL, { onnotice: () => undefined });
-const plan = planMigration(demoBackup());
+// Une copie : la base locale peut déjà contenir la démonstration d'origine.
+const plan = planMigration(demoBackupCopy(1));
 
 /** Empreinte de tout ce que la base contient pour l'organisation de test. */
 async function fingerprint(): Promise<string> {

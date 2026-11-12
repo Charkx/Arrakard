@@ -247,6 +247,18 @@ export function demoBackup(): V1Dump {
   };
 }
 
+/**
+ * La même sauvegarde avec d'autres identifiants. Les identifiants sont uniques
+ * dans toute la base : il en faut de nouveaux pour charger la démonstration
+ * dans une seconde organisation, comme le font les tests d'écriture.
+ */
+export function demoBackupCopy(copy: number): V1Dump {
+  const original = JSON.stringify(demoBackup());
+  return JSON.parse(
+    original.replaceAll('-4000-8000-', `-4000-80${String(copy).padStart(2, '0')}-`),
+  ) as V1Dump;
+}
+
 interface Lineup {
   readonly tag: string;
   readonly strength: number;

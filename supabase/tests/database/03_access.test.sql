@@ -4,9 +4,11 @@ begin;
 select plan(18);
 
 -- ── Données ──────────────────────────────────────────────────────────────────
+-- La base peut déjà contenir une organisation chargée : les tests créent les
+-- leurs et ne comptent que leurs propres lignes.
 insert into organizations (id, slug, name) values
-  ('00000000-0000-0000-0000-00000000000a', 'arrakis', 'Arrakis'),
-  ('00000000-0000-0000-0000-00000000000b', 'autre', 'Autre structure');
+  ('00000000-0000-0000-0000-00000000000a', 'essai-arrakis', 'Arrakis'),
+  ('00000000-0000-0000-0000-00000000000b', 'essai-autre', 'Autre structure');
 insert into players (organization_id, nickname) values
   ('00000000-0000-0000-0000-00000000000a', 'Meta'),
   ('00000000-0000-0000-0000-00000000000a', 'Zed');
@@ -36,7 +38,7 @@ insert into organization_members (organization_id, user_id, role) values
 -- ── Visiteur anonyme ─────────────────────────────────────────────────────────
 set local role anon;
 
-select is((select count(*)::int from players), 2, 'un visiteur lit les joueurs');
+select is((select count(*)::int from players where organization_id = '00000000-0000-0000-0000-00000000000a'), 2, 'un visiteur lit les joueurs');
 select throws_ok(
   $$ insert into players (organization_id, nickname) values ('00000000-0000-0000-0000-00000000000a', 'Pirate') $$,
   '42501', null, 'un visiteur n''écrit pas'
@@ -45,8 +47,8 @@ select throws_ok(
   $$ select discord_user_id from registrations $$,
   '42501', null, 'l''identifiant Discord des inscrits n''est pas public'
 );
-select is((select count(*)::int from seasons), 1, 'un visiteur lit les saisons');
-select is((select count(*)::int from player_season_ratings), 1, 'un visiteur lit les notes par saison');
+select is((select count(*)::int from seasons where organization_id = '00000000-0000-0000-0000-00000000000a'), 1, 'un visiteur lit les saisons');
+select is((select count(*)::int from player_season_ratings where organization_id = '00000000-0000-0000-0000-00000000000a'), 1, 'un visiteur lit les notes par saison');
 select throws_ok(
   $$ insert into seasons (organization_id, name, year, status)
      values ('00000000-0000-0000-0000-00000000000a', 'Pirate', 2030, 'closed') $$,

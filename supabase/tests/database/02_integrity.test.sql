@@ -3,8 +3,8 @@ begin;
 select plan(13);
 
 insert into organizations (id, slug, name) values
-  ('00000000-0000-0000-0000-00000000000a', 'arrakis', 'Arrakis'),
-  ('00000000-0000-0000-0000-00000000000b', 'autre', 'Autre structure');
+  ('00000000-0000-0000-0000-00000000000a', 'essai-arrakis', 'Arrakis'),
+  ('00000000-0000-0000-0000-00000000000b', 'essai-autre', 'Autre structure');
 
 insert into seasons (id, organization_id, name, year, status) values
   ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'Saison 3', 2026, 'open');
