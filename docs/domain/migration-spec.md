@@ -9,7 +9,7 @@ par le paquet
 1. **Planification** (`planMigration`, fonction pure) : lit la sauvegarde v1
    (un objet JSON par table), produit les lignes v2 et un **rapport
    d'anomalies**. Rien n'est écrit.
-2. **Écriture** (`loadPlan`) : vide l'organisation, insère les lignes, puis
+2. **Écriture** (`loadPlan`) : insère les lignes dans l'organisation, puis
    recalcule les projections à partir des faits relus dans la base. Le tout en
    une seule transaction : si une étape échoue, la base reste dans l'état
    d'avant.
@@ -157,15 +157,21 @@ pnpm --filter @arrakis/migrate-v1 report <sauvegarde> v1-reference.local.json
 pnpm --filter @arrakis/migrate-v1 load <sauvegarde>
 ```
 
-Le chargement affiche d'abord le rapport, puis écrit. Il vise la base locale,
-ou celle de la variable `DATABASE_URL` ; une base hébergée exige
-`--confirm-hosted`.
+Le chargement affiche d'abord le rapport, puis écrit. Deux garde-fous :
+
+- il vise la base locale, ou celle de la variable `DATABASE_URL` ; une base
+  hébergée exige `--confirm-hosted` ;
+- il refuse une organisation qui contient déjà des données. Pour rejouer la
+  migration, il faut `--replace` : l'organisation est alors vidée puis
+  remplie. **Tout ce qui y a été saisi depuis le chargement précédent est
+  perdu**, inscriptions et personnalisations de carte comprises. Après la
+  bascule, on ne rejoue donc plus la migration sur la base en service.
 
 Pour développer sans donnée réelle, le dépôt contient une **sauvegarde de
 démonstration** entièrement inventée (`packages/migrate-v1/demo-backup`) :
 
 ```sh
-pnpm --filter @arrakis/migrate-v1 load demo-backup
+pnpm --filter @arrakis/migrate-v1 load demo-backup --replace
 ```
 
 ### Résultat sur la sauvegarde du 2026-10-05

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { project, V1_RATING_RULES } from '@arrakis/domain';
+import { E1_E2_RATING_RULES, project, V1_RATING_RULES, type RatingRules } from '@arrakis/domain';
 import type { Sql, TransactionSql } from 'postgres';
 import type { MigrationPlan } from '../plan.ts';
 import { toProjectionRows } from './projection-rows.ts';
@@ -9,51 +9,88 @@ export interface LoadedOrganization {
   readonly organizationId: string;
 }
 
+export interface LoadOptions {
+  /**
+   * Remplacer ce que l'organisation contient déjà. Sans cela, le chargement
+   * refuse une organisation qui a des données : rien ne s'écrase par accident.
+   */
+  readonly replace: boolean;
+}
+
 type Row = Record<string, unknown>;
 
-/** Tables d'une organisation, des plus dépendantes aux moins dépendantes : l'ordre de vidage. */
-const TABLES_TO_CLEAR = [
-  'edition_standings',
-  'player_edition_history',
-  'player_season_ratings',
-  'registrations',
-  'card_customizations',
-  'edition_participants',
-  'performances',
-  'matches',
-  'editions',
-  'team_memberships',
-  'player_aliases',
-  'players',
-  'teams',
+/** Les faits d'une organisation, des moins dépendants aux plus dépendants : l'ordre d'insertion. */
+export const FACT_TABLES = [
   'seasons',
+  'teams',
+  'players',
+  'player_aliases',
+  'team_memberships',
+  'editions',
+  'matches',
+  'performances',
+  'edition_participants',
+  'card_customizations',
+  'registrations',
 ] as const;
+
+/** Les projections : écrites uniquement par le recalcul (ADR 0003). */
+export const PROJECTION_TABLES = [
+  'player_season_ratings',
+  'player_edition_history',
+  'edition_standings',
+] as const;
+
+type Table = (typeof FACT_TABLES)[number] | (typeof PROJECTION_TABLES)[number];
+
+/** Règles de note de chaque organisation (`organizations.rating_rules`, ADR 0008). */
+const RATING_RULES: Record<string, RatingRules> = {
+  v1: V1_RATING_RULES,
+  e1_e2: E1_E2_RATING_RULES,
+};
 
 /**
  * Remplit une organisation avec les lignes d'un plan de migration, puis
  * recalcule ses projections. Tout se fait dans une seule transaction : si une
  * étape échoue, la base reste dans l'état d'avant.
  *
- * Le chargement est rejouable : l'organisation est vidée puis remplie, donc
- * le même plan donne toujours la même base.
+ * Avec `replace`, le chargement est rejouable : l'organisation est vidée puis
+ * remplie, donc le même plan donne toujours la même base. Tout ce qui y a été
+ * saisi depuis (inscriptions, personnalisations) est alors perdu.
  */
 export async function loadPlan(
   sql: Sql,
   plan: MigrationPlan,
   organization: { readonly slug: string; readonly name: string },
+  { replace }: LoadOptions,
 ): Promise<LoadedOrganization> {
   return sql.begin(async (tx) => {
-    const organizationId = await upsertOrganization(tx, organization);
-    await clearOrganization(tx, organizationId);
+    const { id: organizationId, ratingRules } = await upsertOrganization(tx, organization);
+    if (await hasData(tx, organizationId)) {
+      if (!replace) {
+        throw new Error(
+          `L’organisation « ${organization.slug} » contient déjà des données. Pour les remplacer, relancer avec --replace.`,
+        );
+      }
+      await clearOrganization(tx, organizationId);
+    }
 
-    // Les faits, des moins dépendants aux plus dépendants.
     const { rows } = plan;
     const withOrganization = (list: readonly object[]): Row[] =>
       list.map((row) => ({ organization_id: organizationId, ...row }));
 
     await insert(tx, 'seasons', withOrganization(rows.seasons));
     await insert(tx, 'teams', withOrganization(rows.teams));
-    await insert(tx, 'players', withOrganization(rows.players));
+    // Un joueur fusionné cite un autre joueur : on insère tout le monde, puis on relie.
+    await insert(
+      tx,
+      'players',
+      withOrganization(rows.players.map((p) => ({ ...p, merged_into: null }))),
+    );
+    for (const player of rows.players) {
+      if (player.merged_into === null) continue;
+      await tx`update players set merged_into = ${player.merged_into} where id = ${player.id}`;
+    }
     await insert(tx, 'player_aliases', withOrganization(rows.player_aliases));
     await insert(
       tx,
@@ -73,53 +110,65 @@ export async function loadPlan(
     );
     await insert(tx, 'registrations', withOrganization(rows.registrations));
 
-    // Les projections, recalculées à partir des faits tels que la base les rend (ADR 0003).
-    const projections = toProjectionRows(
-      project(await readFacts(tx, organizationId), V1_RATING_RULES),
-    );
-    await insert(tx, 'player_season_ratings', withOrganization(projections.player_season_ratings));
-    await insert(
-      tx,
-      'player_edition_history',
-      withOrganization(projections.player_edition_history),
-    );
-    await insert(tx, 'edition_standings', withOrganization(projections.edition_standings));
+    await recomputeProjections(tx, organizationId, ratingRules);
 
     return { organizationId };
   });
 }
 
-/** Supprime une organisation et tout ce qu'elle contient. Sans effet si elle n'existe pas. */
-export async function removeOrganization(sql: Sql, slug: string): Promise<void> {
-  await sql.begin(async (tx) => {
-    const [organization] = await tx<{ id: string }[]>`
-      select id from organizations where slug = ${slug}`;
-    if (!organization) return;
-    await clearOrganization(tx, organization.id);
-    await tx`delete from organizations where id = ${organization.id}`;
-  });
+/**
+ * Recalcule toutes les projections d'une organisation à partir de ses faits,
+ * tels que la base les rend, et les remplace (ADR 0003).
+ */
+export async function recomputeProjections(
+  tx: TransactionSql,
+  organizationId: string,
+  rules: RatingRules,
+): Promise<void> {
+  const projections = toProjectionRows(project(await readFacts(tx, organizationId), rules));
+  for (const table of PROJECTION_TABLES) {
+    await tx`delete from ${tx(table)} where organization_id = ${organizationId}`;
+    await insert(
+      tx,
+      table,
+      projections[table].map((row) => ({ organization_id: organizationId, ...row })),
+    );
+  }
+}
+
+/** Vide une organisation : ses projections, puis ses faits, des plus dépendants aux moins dépendants. */
+export async function clearOrganization(tx: TransactionSql, organizationId: string): Promise<void> {
+  for (const table of [...PROJECTION_TABLES, ...FACT_TABLES.toReversed()]) {
+    await tx`delete from ${tx(table)} where organization_id = ${organizationId}`;
+  }
 }
 
 async function upsertOrganization(
   tx: TransactionSql,
   { slug, name }: { readonly slug: string; readonly name: string },
-): Promise<string> {
-  const [organization] = await tx<{ id: string }[]>`
+): Promise<{ id: string; ratingRules: RatingRules }> {
+  const [organization] = await tx<{ id: string; rating_rules: string }[]>`
     insert into organizations (slug, name) values (${slug}, ${name})
     on conflict (slug) do update set name = excluded.name
-    returning id`;
-  if (!organization) throw new Error(`Organisation ${slug} : création impossible.`);
-  return organization.id;
+    returning id, rating_rules`;
+  const ratingRules = organization && RATING_RULES[organization.rating_rules];
+  if (!organization || !ratingRules) {
+    throw new Error(`Organisation ${slug} : création impossible, ou règles de note inconnues.`);
+  }
+  return { id: organization.id, ratingRules };
 }
 
-async function clearOrganization(tx: TransactionSql, organizationId: string): Promise<void> {
-  for (const table of TABLES_TO_CLEAR) {
-    await tx`delete from ${tx(table)} where organization_id = ${organizationId}`;
+async function hasData(tx: TransactionSql, organizationId: string): Promise<boolean> {
+  for (const table of FACT_TABLES) {
+    const [found] = await tx`
+      select 1 from ${tx(table)} where organization_id = ${organizationId} limit 1`;
+    if (found) return true;
   }
+  return false;
 }
 
 /** Insère des lignes par paquets : Postgres limite le nombre de valeurs par requête. */
-async function insert(tx: TransactionSql, table: string, rows: readonly Row[]): Promise<void> {
+async function insert(tx: TransactionSql, table: Table, rows: readonly Row[]): Promise<void> {
   const BATCH = 500;
   for (let start = 0; start < rows.length; start += BATCH) {
     const batch = rows.slice(start, start + BATCH);

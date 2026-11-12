@@ -21,6 +21,8 @@ describe('la sauvegarde de démonstration', () => {
     expect(rows.players.some((p) => p.archived)).toBe(true);
     expect(rows.edition_participants.length).toBeGreaterThan(0);
     expect(rows.matches.some((m) => m.is_final)).toBe(true);
+    expect(rows.card_customizations).toHaveLength(2);
+    expect(rows.registrations).toHaveLength(2);
   });
 
   it('est la même à chaque appel', () => {

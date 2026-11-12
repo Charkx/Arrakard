@@ -8,19 +8,22 @@ type Db = Sql | TransactionSql;
 
 /** Les faits d'une organisation, tels que la base les rend, pour `project()`. */
 export async function readFacts(db: Db, organizationId: string): Promise<Facts> {
-  const seasons = await db<V2Season[]>`
-    select id, name, year, start_date::text, end_date::text, status
-    from seasons where organization_id = ${organizationId}`;
-  const editions = await db<V2Edition[]>`
-    select id, name, type, date::text, season_id, prestige, event_mvp_player_id
+  const seasons = await db<Pick<V2Season, 'id'>[]>`
+    select id from seasons where organization_id = ${organizationId}`;
+  const editions = await db<
+    Pick<V2Edition, 'id' | 'type' | 'date' | 'season_id' | 'prestige' | 'event_mvp_player_id'>[]
+  >`
+    select id, type, date::text, season_id, prestige, event_mvp_player_id
     from editions where organization_id = ${organizationId}`;
-  const matches = await db<V2Match[]>`
-    select id, edition_id, match_number, winner_team, duration_seconds, matchday, is_final
+  const matches = await db<
+    Pick<V2Match, 'id' | 'edition_id' | 'match_number' | 'winner_team' | 'duration_seconds'>[]
+  >`
+    select id, edition_id, match_number, winner_team, duration_seconds
     from matches where organization_id = ${organizationId}`;
   const performances = await db<V2Performance[]>`
     select match_id, line, side, player_id, team, role, champion, result, kills, deaths, assists, gold
     from performances where organization_id = ${organizationId}`;
-  const players = await db<V2Player[]>`
+  const players = await db<Pick<V2Player, 'id' | 'nickname'>[]>`
     select id, nickname from players where organization_id = ${organizationId}`;
 
   return toFacts({ seasons, editions, matches, performances, players });

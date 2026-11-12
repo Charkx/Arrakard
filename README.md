@@ -74,7 +74,7 @@ La base locale (Docker doit tourner) :
 ```bash
 supabase db start                                    # démarre la base et applique les migrations
 pnpm test:db                                         # droits d'accès (pgTAP) et tests d'écriture
-pnpm --filter @arrakis/migrate-v1 load demo-backup   # la remplit avec une communauté inventée
+pnpm --filter @arrakis/migrate-v1 load demo-backup --replace   # la remplit avec une communauté inventée
 ```
 
 Le site (`apps/web`) :

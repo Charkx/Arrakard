@@ -1,6 +1,6 @@
 import { project, V1_RATING_RULES, type Facts, type SeasonRating } from '@arrakis/domain';
 import type { MigrationPlan } from './plan.ts';
-import type { V2Rows } from './v2.ts';
+import type { V2Edition, V2Match, V2Performance, V2Player, V2Season } from './v2.ts';
 
 /** Une différence entre la note v1 affichée et la note recalculée en v2. */
 export interface Discrepancy {
@@ -13,9 +13,22 @@ export interface Discrepancy {
 }
 
 /** Les lignes v2 vues comme faits du domaine, pour `project()`. */
-export function toFacts(
-  rows: Pick<V2Rows, 'seasons' | 'editions' | 'matches' | 'performances' | 'players'>,
-): Facts {
+/** Ce que `project()` lit d'une ligne v2 : les colonnes qui portent un fait de jeu. */
+export interface FactRows {
+  readonly seasons: readonly Pick<V2Season, 'id'>[];
+  readonly editions: readonly Pick<
+    V2Edition,
+    'id' | 'type' | 'date' | 'season_id' | 'prestige' | 'event_mvp_player_id'
+  >[];
+  readonly matches: readonly Pick<
+    V2Match,
+    'id' | 'edition_id' | 'match_number' | 'winner_team' | 'duration_seconds'
+  >[];
+  readonly performances: readonly V2Performance[];
+  readonly players: readonly Pick<V2Player, 'id' | 'nickname'>[];
+}
+
+export function toFacts(rows: FactRows): Facts {
   return {
     seasons: rows.seasons.map((s) => ({ id: s.id })),
     editions: rows.editions.map((e) => ({

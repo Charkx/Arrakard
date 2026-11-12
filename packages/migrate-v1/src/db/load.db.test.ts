@@ -1,10 +1,10 @@
-import { project, V1_RATING_RULES } from '@arrakis/domain';
+import { project, rankLeaderboard, V1_RATING_RULES } from '@arrakis/domain';
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { planMigration, type MigrationPlan } from '../plan.ts';
+import { fingerprint, removeOrganization } from '../testing/db.ts';
 import { demoBackupCopy } from '../testing/demo-backup.ts';
-import { toFacts } from '../verify.ts';
-import { loadPlan, removeOrganization } from './load.ts';
+import { loadPlan } from './load.ts';
 import { toProjectionRows } from './projection-rows.ts';
 import { readFacts, readProjectionRows } from './read.ts';
 import { LOCAL_DATABASE_URL } from './target.ts';
@@ -20,25 +20,9 @@ const sql = postgres(LOCAL_DATABASE_URL, { onnotice: () => undefined });
 // Une copie : la base locale peut déjà contenir la démonstration d'origine.
 const plan = planMigration(demoBackupCopy(1));
 
-/** Empreinte de tout ce que la base contient pour l'organisation de test. */
-async function fingerprint(): Promise<string> {
-  const [row] = await sql<{ print: string }[]>`
-    select md5(string_agg(line, '|' order by line)) as print from (
-      select 'seasons' || s::text as line from seasons s join organizations o on o.id = s.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'teams' || t::text from teams t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'players' || t::text from players t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'aliases' || t::text from player_aliases t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'memberships' || t::text from team_memberships t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'editions' || t::text from editions t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'matches' || t::text from matches t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'performances' || t::text from performances t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'participants' || t::text from edition_participants t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'ratings' || t::text from player_season_ratings t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'history' || t::text from player_edition_history t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-      union all select 'standings' || t::text from edition_standings t join organizations o on o.id = t.organization_id where o.slug = ${ORGANIZATION.slug}
-    ) lines`;
-  return row?.print ?? '';
-}
+const load = (toLoad: MigrationPlan = plan) =>
+  loadPlan(sql, toLoad, ORGANIZATION, { replace: true });
+const contentOfBase = () => fingerprint(sql, ORGANIZATION.slug);
 
 beforeAll(async () => {
   await removeOrganization(sql, ORGANIZATION.slug);
@@ -50,40 +34,63 @@ afterAll(async () => {
 });
 
 describe('charger une sauvegarde dans la base locale', () => {
-  it('un visiteur retrouve les notes de la saison active calculées par le domaine', async () => {
-    const { organizationId } = await loadPlan(sql, plan, ORGANIZATION);
+  it('un visiteur lit le classement de la saison active, dans l’ordre attendu', async () => {
+    const { organizationId } = await load();
 
-    const publicRatings = await sql.begin(async (tx) => {
+    // Ce que le site lira : notes et joueurs, avec les seuls droits d'un visiteur.
+    const read = await sql.begin(async (tx) => {
       await tx`set local role anon`;
-      return tx<{ player_id: string; rating: number }[]>`
-        select r.player_id, r.rating
+      return tx<
+        {
+          player_id: string;
+          nickname: string;
+          archived: boolean;
+          rating: number;
+          winrate: number;
+          kda: number;
+          games: number;
+        }[]
+      >`
+        select r.player_id, p.nickname, p.archived, r.rating, r.winrate, r.kda::float8 as kda, r.games
         from player_season_ratings r
         join seasons s on s.id = r.season_id
-        where r.organization_id = ${organizationId} and s.status = 'open'
-        order by r.player_id`;
+        join players p on p.id = r.player_id
+        where r.organization_id = ${organizationId} and s.status = 'open'`;
     });
+    const nicknames = new Map(read.map((r) => [r.player_id, r.nickname]));
+    const podium = rankLeaderboard(
+      read.map((r) => ({ ...r, playerId: r.player_id, role: 'MID' as const, divisions: [] })),
+    )
+      .slice(0, 3)
+      .map((row) => `${nicknames.get(row.playerId) ?? '?'} ${row.rank}`);
 
-    const activeSeason = plan.rows.seasons.find((s) => s.status === 'open');
-    const expected = project(toFacts(plan.rows), V1_RATING_RULES)
-      .seasonRatings.filter((r) => r.seasonId === activeSeason?.id)
-      .map((r) => ({ player_id: r.playerId, rating: r.rating.rating }))
-      .sort((a, b) => a.player_id.localeCompare(b.player_id));
-    expect(expected.length).toBeGreaterThan(0);
-    expect([...publicRatings]).toEqual(expected);
+    // Valeurs fixes : la sauvegarde de démonstration est déterministe.
+    expect(podium).toEqual(PODIUM);
+  });
+
+  it('refuse d’écraser une organisation qui contient déjà des données, sauf demande explicite', async () => {
+    await load();
+    const before = await contentOfBase();
+
+    await expect(loadPlan(sql, plan, ORGANIZATION, { replace: false })).rejects.toThrow(
+      '--replace',
+    );
+
+    expect(await contentOfBase()).toBe(before);
   });
 
   it('relancée sur la même sauvegarde, elle laisse la base strictement identique', async () => {
-    await loadPlan(sql, plan, ORGANIZATION);
-    const before = await fingerprint();
+    await load();
+    const before = await contentOfBase();
 
-    await loadPlan(sql, plan, ORGANIZATION);
+    await load();
 
-    expect(await fingerprint()).toBe(before);
+    expect(await contentOfBase()).toBe(before);
   });
 
   it('si une étape échoue, la base reste dans l’état d’avant', async () => {
-    await loadPlan(sql, plan, ORGANIZATION);
-    const before = await fingerprint();
+    await load();
+    const before = await contentOfBase();
     const [firstPerformance, ...otherPerformances] = plan.rows.performances;
     if (!firstPerformance)
       throw new Error('La sauvegarde de démonstration n’a aucune performance.');
@@ -100,13 +107,13 @@ describe('charger une sauvegarde dans la base locale', () => {
     };
 
     // 23503 : violation de clé étrangère, levée après l'écriture des premières tables.
-    await expect(loadPlan(sql, brokenPlan, ORGANIZATION)).rejects.toMatchObject({ code: '23503' });
+    await expect(load(brokenPlan)).rejects.toMatchObject({ code: '23503' });
 
-    expect(await fingerprint()).toBe(before);
+    expect(await contentOfBase()).toBe(before);
   });
 
   it('les projections écrites sont exactement celles que le domaine calcule à partir des faits écrits', async () => {
-    const { organizationId } = await loadPlan(sql, plan, ORGANIZATION);
+    const { organizationId } = await load();
 
     const written = await readProjectionRows(sql, organizationId);
 
@@ -115,4 +122,20 @@ describe('charger une sauvegarde dans la base locale', () => {
     expect(written.player_season_ratings.length).toBeGreaterThan(0);
     expect(written).toEqual(recomputed);
   });
+
+  it('écrit aussi les inscriptions et les personnalisations de carte, comptes Riot compris', async () => {
+    const { organizationId } = await load();
+
+    const [counts] = await sql<{ registrations: number; accounts: string[] }[]>`
+      select
+        (select count(*)::int from registrations where organization_id = ${organizationId}) as registrations,
+        (select array_agg(account ->> 'riotId' order by account ->> 'riotId')
+         from card_customizations c, jsonb_array_elements(c.riot_accounts) account
+         where c.organization_id = ${organizationId}) as accounts`;
+
+    expect(counts).toEqual({ registrations: 2, accounts: ['Gouvernail#MER', 'Sextant#MER'] });
+  });
 });
+
+/** Les trois premiers de la démonstration, saison active, avec leur rang. */
+const PODIUM = ['Lanterne 1', 'Hauban 2', 'Misaine 3'];

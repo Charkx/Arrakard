@@ -1,32 +1,32 @@
 [
   {
     "id": "00000003-0000-4000-8000-000000000001",
-    "tag": "DNE",
-    "name": "Dune Esport",
+    "tag": "PHA",
+    "name": "Les Phares",
     "divisions": ["div1"],
     "logo_url": null,
     "archived_at": null
   },
   {
     "id": "00000003-0000-4000-8000-000000000002",
-    "tag": "NOX",
-    "name": "Nox Aeterna",
+    "tag": "MAR",
+    "name": "Marée Haute",
     "divisions": ["div1"],
     "logo_url": null,
     "archived_at": null
   },
   {
     "id": "00000003-0000-4000-8000-000000000003",
-    "tag": "ORB",
-    "name": "Orbital",
+    "tag": "GLG",
+    "name": "Grand Largue",
     "divisions": ["div2"],
     "logo_url": null,
     "archived_at": null
   },
   {
     "id": "00000003-0000-4000-8000-000000000004",
-    "tag": "SPC",
-    "name": "Spice Runners",
+    "tag": "VDB",
+    "name": "Vent Debout",
     "divisions": ["div2"],
     "logo_url": null,
     "archived_at": null

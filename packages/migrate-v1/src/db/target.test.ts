@@ -23,9 +23,15 @@ describe('assertTargetAllowed', () => {
   it('ne recopie jamais le mot de passe dans le message de refus', () => {
     const hosted = 'postgresql://postgres:secret@db.exemple.supabase.co:5432/postgres';
 
-    expect(() => {
+    let message = '';
+    try {
       assertTargetAllowed(hosted, false);
-    }).not.toThrow('secret');
+    } catch (refusal) {
+      message = String(refusal);
+    }
+
+    expect(message).toContain('db.exemple.supabase.co');
+    expect(message).not.toContain('secret');
   });
 
   it('accepte une base hébergée avec la confirmation explicite', () => {

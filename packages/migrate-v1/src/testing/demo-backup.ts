@@ -3,7 +3,8 @@ import type { V1Dump, V1Edition, V1Match, V1MatchRow, V1Player, V1Role, V1Team }
 /**
  * Sauvegarde de démonstration : une petite communauté entièrement inventée,
  * au format d'une sauvegarde v1. Elle sert aux tests d'écriture et au
- * développement des pages. Aucun joueur réel.
+ * développement des pages. Aucun joueur réel : les pseudos sont des mots de
+ * marine, choisis pour ne ressembler à aucun pseudo de la communauté.
  *
  * Elle est déterministe : le même appel donne toujours la même sauvegarde.
  */
@@ -21,37 +22,37 @@ const CHAMPIONS: Record<V1Role, readonly string[]> = {
 /** Une équipe, sa force (0 à 1) et ses cinq joueurs, dans l'ordre des rôles. */
 const ROSTERS = [
   {
-    tag: 'DNE',
-    name: 'Dune Esport',
+    tag: 'PHA',
+    name: 'Les Phares',
     division: 'div1',
     strength: 0.75,
-    players: ['Fremen', 'Shai-Hulud', 'Muadib', 'Stilgar', 'Chani'],
+    players: ['Lanterne', 'Boussole', 'Sextant', 'Balise', 'Amarre'],
   },
   {
-    tag: 'NOX',
-    name: 'Nox Aeterna',
+    tag: 'MAR',
+    name: 'Marée Haute',
     division: 'div1',
     strength: 0.5,
-    players: ['Vakarian', 'Corvus', 'Onyx', 'Pyro', 'Brume'],
+    players: ['Gouvernail', 'Astrolabe', 'Cabestan', 'Ancre', 'Voilure'],
   },
   {
-    tag: 'ORB',
-    name: 'Orbital',
+    tag: 'GLG',
+    name: 'Grand Largue',
     division: 'div2',
     strength: 0.6,
-    players: ['Basalte', 'Sable', 'Quartz', 'Mica', 'Opale'],
+    players: ['Misaine', 'Hauban', 'Drisse', 'Écoute', 'Carène'],
   },
   {
-    tag: 'SPC',
-    name: 'Spice Runners',
+    tag: 'VDB',
+    name: 'Vent Debout',
     division: 'div2',
     strength: 0.4,
-    players: ['Mistral', 'Tramontane', 'Alizé', 'Foehn', 'Bise'],
+    players: ['Étrave', 'Safran', 'Taquet', 'Winch', 'Bôme'],
   },
 ] as const;
 
 /** Joueurs sans équipe, vus seulement en In House. Le dernier est archivé. */
-const FREE_AGENTS = ['Nomade', 'Mirage', 'Vestige'] as const;
+const FREE_AGENTS = ['Vigie', 'Sillage', 'Épave'] as const;
 
 const SEASON_2 = uuid(1, 2);
 const SEASON_3 = uuid(1, 3);
@@ -72,11 +73,18 @@ export function demoBackup(): V1Dump {
 
   const players: V1Player[] = [
     ...ROSTERS.flatMap((roster, t) =>
-      roster.players.map((name, p) => aPlayer(t * 5 + p + 1, name, teams[t], roster.tag)),
+      roster.players.map((name, p) => ({
+        ...aPlayer(t * 5 + p + 1, name, teams[t], roster.tag),
+        // Un joueur a personnalisé sa carte, un autre a seulement lié son compte Riot.
+        ...(name === 'Sextant' && {
+          customization: { title: 'navigateur', accounts: [{ riotId: 'Sextant#MER', main: true }] },
+        }),
+        ...(name === 'Gouvernail' && { riot_id: 'Gouvernail#MER' }),
+      })),
     ),
     ...FREE_AGENTS.map((name, i) => ({
       ...aPlayer(ROSTERS.length * 5 + i + 1, name, undefined, null),
-      archived: name === 'Vestige',
+      archived: name === 'Épave',
     })),
   ];
 
@@ -96,7 +104,7 @@ export function demoBackup(): V1Dump {
       date: '2026-02-09',
       prestige: 'championship',
       display_number: 2,
-      mvp_player_name: 'Shai-Hulud',
+      mvp_player_name: 'Boussole',
     }),
     anEdition(3, {
       name: 'Ligue D2 #1',
@@ -111,6 +119,14 @@ export function demoBackup(): V1Dump {
       date: '2026-03-01',
       prestige: 'normal',
       display_number: 1,
+    }),
+    anEdition(6, {
+      name: 'In House #2',
+      type: 'inhouse',
+      date: '2026-12-05',
+      prestige: 'normal',
+      display_number: 2,
+      description: 'Soirée à venir : les inscriptions sont ouvertes.',
     }),
     anEdition(5, {
       name: 'LAN de printemps',
@@ -177,7 +193,8 @@ export function demoBackup(): V1Dump {
   };
 
   const [dne, nox, orb, spc] = ROSTERS;
-  const [league1, league2, leagueD2, inHouse, lan] = editions as [
+  const [league1, league2, leagueD2, inHouse, upcoming, lan] = editions as [
+    V1Edition,
     V1Edition,
     V1Edition,
     V1Edition,
@@ -194,14 +211,14 @@ export function demoBackup(): V1Dump {
   for (const journee of [1, 1, 2, 2, 3, 3]) play(leagueD2, orb, spc, { journee });
   // Saison 3 : une soirée In House, équipes mélangées le temps d'une soirée.
   const sand: Lineup = {
-    tag: 'Sable',
+    tag: 'Bâbord',
     strength: 0.5,
-    players: ['Fremen', 'Sable', 'Onyx', 'Nomade', 'Bise'],
+    players: ['Lanterne', 'Hauban', 'Cabestan', 'Vigie', 'Bôme'],
   };
   const wind: Lineup = {
-    tag: 'Vent',
+    tag: 'Tribord',
     strength: 0.5,
-    players: ['Mistral', 'Corvus', 'Mirage', 'Stilgar', 'Vestige'],
+    players: ['Étrave', 'Astrolabe', 'Sillage', 'Balise', 'Épave'],
   };
   for (let i = 0; i < 3; i++) play(inHouse, sand, wind);
 
@@ -238,12 +255,32 @@ export function demoBackup(): V1Dump {
     matches,
     match_rows,
     // Un événement externe n'a pas de match : seulement des participants.
-    edition_participants: ['Muadib', 'Chani', 'Vakarian'].map((name) => ({
+    edition_participants: ['Sextant', 'Amarre', 'Gouvernail'].map((name) => ({
       edition_id: lan.id,
       player_id: idOf(name),
     })),
-    registrations: [],
+    // Deux inscriptions à la soirée à venir.
+    registrations: [
+      aRegistration(1, upcoming.id, 'Vigie', 'ADC'),
+      aRegistration(2, upcoming.id, 'Sillage', 'MID'),
+    ],
     player_event_entries: [],
+  };
+}
+
+function aRegistration(n: number, editionId: string, pseudo: string, role: string) {
+  return {
+    id: uuid(8, n),
+    edition_id: editionId,
+    discord_user_id: `10000000000000000${n}`,
+    pseudo,
+    role,
+    secondary_role: 'FILL',
+    rank: 'Or II',
+    opgg: null,
+    alt_riot_id: null,
+    speaks_english: n === 2,
+    created_at: '2026-11-20T19:00:00Z',
   };
 }
 

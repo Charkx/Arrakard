@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "id": "00000008-0000-4000-8000-000000000001",
+    "edition_id": "00000005-0000-4000-8000-000000000006",
+    "discord_user_id": "100000000000000001",
+    "pseudo": "Vigie",
+    "role": "ADC",
+    "secondary_role": "FILL",
+    "rank": "Or II",
+    "opgg": null,
+    "alt_riot_id": null,
+    "speaks_english": false,
+    "created_at": "2026-11-20T19:00:00Z"
+  },
+  {
+    "id": "00000008-0000-4000-8000-000000000002",
+    "edition_id": "00000005-0000-4000-8000-000000000006",
+    "discord_user_id": "100000000000000002",
+    "pseudo": "Sillage",
+    "role": "MID",
+    "secondary_role": "FILL",
+    "rank": "Or II",
+    "opgg": null,
+    "alt_riot_id": null,
+    "speaks_english": true,
+    "created_at": "2026-11-20T19:00:00Z"
+  }
+]
