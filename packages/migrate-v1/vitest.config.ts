@@ -14,6 +14,7 @@ export default defineConfig({
         'src/**/*.test.ts',
         'src/cli.ts',
         'src/load-cli.ts',
+        'src/backup-cli.ts',
         'src/dump.ts',
         'src/db/load.ts',
         'src/db/read.ts',

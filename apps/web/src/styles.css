@@ -382,3 +382,14 @@ button {
   border: 1px solid var(--border-subtle);
   overflow: hidden;
 }
+
+/* Bandeau de la tranche 1 : le site se lit, les résultats se saisissent sur la v1 */
+.read-only-banner {
+  margin: 0;
+  padding: 6px 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--gold-lt);
+  background: rgba(239, 159, 39, 0.08);
+  border-bottom: 1px solid rgba(239, 159, 39, 0.2);
+}
