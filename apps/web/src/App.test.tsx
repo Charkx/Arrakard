@@ -52,6 +52,26 @@ describe('le site', () => {
     expect(pageTitle()).toBe('Leaderboard');
   });
 
+  it('prévient que le site est en lecture seule, sur chaque page', () => {
+    givenBrowserLanguage('fr-FR');
+
+    openSite('/player/inconnu');
+
+    expect(screen.getByRole('note').textContent).toBe(
+      'Site en lecture seule : les résultats se saisissent encore sur l’ancien site.',
+    );
+  });
+
+  it('prévient de la lecture seule en anglais aussi', () => {
+    givenBrowserLanguage('de-DE');
+
+    openSite('/leaderboard');
+
+    expect(screen.getByRole('note').textContent).toBe(
+      'Read-only site: results are still entered on the old site.',
+    );
+  });
+
   it('déclare sa langue dès le premier affichage', () => {
     givenBrowserLanguage('de-DE');
 
