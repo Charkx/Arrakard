@@ -5,6 +5,10 @@ Brouillon à publier sur le Discord d'Arrakis à la mise en ligne de la tranche 
 l'anomalie M9 ([migration](../domain/migration-spec.md)) et l'anomalie A6
 ([note](../domain/rating-spec.md)).
 
+Avant de publier, remplace `NOMBRE` et `NUMBER` par le nombre de joueurs
+concernés par A6 dans le rapport de la [mise en ligne](mise-en-ligne.md)
+(étape 3 ; un seul le 2026-10-05), et l'adresse si elle a changé.
+
 ---
 
 ## Français
@@ -21,15 +25,15 @@ jour après chaque événement.
 Les notes de la saison sont les mêmes sur les deux sites. Deux différences
 peuvent vous surprendre :
 
-- **La vue « toutes saisons » de l'ancien site affichait des chiffres périmés.**
-  Elle lisait des totaux calculés une fois, au printemps, et plus jamais mis à
-  jour. Le nouveau site recalcule tout à partir des matchs. Si vos chiffres de
-  carrière changent, ce sont les nouveaux qui sont justes.
+- **La vue « toutes saisons » de l'ancien site n'existe pas sur le nouveau.**
+  Elle lisait des totaux calculés une fois, en juin, et plus jamais mis à
+  jour : ses chiffres étaient faux pour beaucoup d'entre vous. Le nouveau site
+  montre la saison, recalculée à partir des matchs.
 - **Un joueur qui a joué autant de parties à deux rôles** peut voir ses
   sous-notes (impact, clutch) bouger de quelques points, sans que sa note
-  change. L'ancien site choisissait le rôle principal selon l'ordre de
-  rangement des données ; le nouveau prend le premier rôle joué dans la saison.
-  Un seul joueur est concerné aujourd'hui.
+  change. L'ancien site choisissait son rôle dominant selon l'ordre de
+  rangement des données ; le nouveau prend, à égalité, le premier de ces rôles
+  joué dans la saison. Cela concerne aujourd'hui NOMBRE joueur(s).
 
 Un doute sur un chiffre ? Écrivez-nous, avec le lien de votre profil.
 
@@ -46,14 +50,14 @@ event.
 
 Season ratings are the same on both sites. Two differences may surprise you:
 
-- **The old site's "all seasons" view showed stale numbers.** It read totals
-  computed once, in the spring, and never updated. The new site recomputes
-  everything from the matches. If your career numbers change, the new ones are
-  right.
+- **The old site's "all seasons" view is not on the new one.** It read
+  totals computed once, in June, and never updated: its numbers were wrong
+  for many of you. The new site shows the season, recomputed from the
+  matches.
 - **A player who played exactly as many games in two roles** may see their
   sub-scores (impact, clutch) move by a few points, with no change to their
-  rating. The old site picked the main role from the order the data was
-  stored in; the new one takes the first role played in the season. Only one
-  player is affected today.
+  rating. The old site picked their dominant role from the order the data was
+  stored in; the new one takes, on a tie, the first of those roles played in
+  the season. This affects NUMBER player(s) today.
 
 Doubt about a number? Message us with the link to your profile.

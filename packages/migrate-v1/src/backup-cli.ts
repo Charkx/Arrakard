@@ -7,10 +7,10 @@
  * Données réelles : le dossier doit être nouveau et hors du dépôt, pour ne
  * jamais être commité. La v1 n'est que lue.
  */
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve, sep } from 'node:path';
+import { existsSync } from 'node:fs';
+import { resolve, sep } from 'node:path';
 import { downloadTable, type ReadPage } from './backup.ts';
-import { TABLES } from './dump.ts';
+import { TABLES, writeDump, type BackupTable } from './dump.ts';
 
 const REPOSITORY = resolve(import.meta.dirname, '../../..');
 
@@ -32,23 +32,23 @@ if (existsSync(target)) {
   process.exit(1);
 }
 
+// `count=exact` : l'API donne aussi le total de la table, dans `Content-Range` (« 0-999/4170 »).
 const readPage: ReadPage = async (table, offset, limit) => {
   const response = await fetch(`${url}/rest/v1/${table}?select=*&offset=${offset}&limit=${limit}`, {
-    headers: { apikey: key, Authorization: `Bearer ${key}` },
+    headers: { apikey: key, Authorization: `Bearer ${key}`, Prefer: 'count=exact' },
   });
   if (!response.ok) throw new Error(`Lecture de ${table} refusée : ${response.status}`);
-  return (await response.json()) as unknown[];
+  const total = Number(response.headers.get('content-range')?.split('/')[1]);
+  if (!Number.isInteger(total)) throw new Error(`Lecture de ${table} : total inconnu`);
+  return { rows: (await response.json()) as unknown[], total };
 };
 
 // Tout est lu avant d'écrire : une lecture qui échoue ne laisse pas de sauvegarde à moitié.
-const tables = [];
+const tables: Partial<Record<BackupTable, unknown[]>> = {};
 for (const table of TABLES) {
   const rows = await downloadTable(readPage, table);
-  tables.push({ table, rows });
+  tables[table] = rows;
   console.log(`${table} : ${rows.length} lignes`);
 }
-mkdirSync(target, { recursive: true });
-for (const { table, rows } of tables) {
-  writeFileSync(join(target, `${table}.json`), JSON.stringify(rows, null, 2));
-}
+writeDump(target, tables);
 console.log(`## Sauvegarde écrite dans ${target}`);

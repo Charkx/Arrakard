@@ -118,6 +118,7 @@ l'ouverture de leur ticket.
 | ------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Fait**                        | —            | Donnée saisie, source de vérité : éditions, matchs, performances, publications, transferts, personnalisation.                                                                                |
 | **Projection**                  | —            | Donnée calculée à partir des faits : notes, historiques, classements, badges, récaps. Peut être supprimée et reconstruite à tout moment. Les brouillons n'y entrent pas, sauf dans l'aperçu. |
+| **Sauvegarde de la v1**         | `backup`     | Une copie de la base de la v1, un fichier JSON par table, faite par son API publique. Elle contient des données réelles : elle reste hors du dépôt.                                          |
 | **Sauvegarde de démonstration** | `demoBackup` | Une petite communauté entièrement inventée, au format d'une sauvegarde de la v1. Elle sert aux tests d'écriture et au développement des pages : aucun joueur réel.                           |
 | **Commande**                    | `Command`    | Une intention d'écriture nommée en langage métier (`importEdition`, `closeSeason`). Exécutée en une transaction côté serveur.                                                                |
 
