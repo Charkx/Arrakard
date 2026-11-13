@@ -314,3 +314,8 @@ elle ne montre rien de plus que les tables qu'elle rassemble, et ne s'écrit pas
 | `edition_standings_view`    | Édition    | Le classement de soirée, avec le pseudo de chaque joueur.                                                                                                                     |
 | `edition_matches_view`      | Édition    | Une ligne par joueur et par match : l'équipe gagnante, la ligne de rôle, le côté, le champion, le K/D/A.                                                                      |
 | `edition_participants_view` | Édition    | Les participants d'un événement externe, qui n'a pas de match.                                                                                                                |
+
+`player_season_ratings.breakdown` garde l'explication de note en JSON, telle
+que le domaine la calcule (`RatingBreakdown`, voir la
+[spécification de la note](../domain/rating-spec.md#explication-de-note)).
+Après une migration qui la vide, on relance le chargement (`load --replace`).

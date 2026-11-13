@@ -1,7 +1,7 @@
 -- Droits d'accès : lecture publique, aucune écriture directe (ADR 0005),
 -- adhésions par organisation (ADR 0008), inscriptions en libre-service.
 begin;
-select plan(34);
+select plan(35);
 
 -- ── Données ──────────────────────────────────────────────────────────────────
 -- La base peut déjà contenir une organisation chargée : les tests créent les
@@ -80,7 +80,7 @@ insert into player_season_ratings (
   games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form, breakdown
 )
 select organization_id, '10000000-0000-0000-0000-000000000001', id, 'MID', 78, 80, 75, 70, 'gold',
-       10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up', '{}'
+       10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up', '{"rating": 78}'
 from players where nickname = 'Meta';
 
 -- Deux utilisateurs connectés via Discord ; « admin » est admin d'Arrakis seulement.
@@ -138,6 +138,12 @@ select results_eq(
      where organization_id = '00000000-0000-0000-0000-00000000000a' order by nickname $$,
   $$ values ('Meta', 78, 'ARK', array['Ahri', 'Ornn', 'Vi']), ('Zed', null::int, null, '{}'::text[]) $$,
   'un visiteur lit le profil ; un joueur sans partie a un profil sans note'
+);
+select results_eq(
+  $$ select breakdown from player_profile_view
+     where organization_id = '00000000-0000-0000-0000-00000000000a' and nickname = 'Meta' $$,
+  $$ values ('{"rating": 78}'::jsonb) $$,
+  'un visiteur lit l''explication de la note dans le profil'
 );
 -- L'historique : chaque match du joueur, avec son édition.
 select results_eq(

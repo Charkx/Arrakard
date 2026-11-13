@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { explainRating } from '@arrakis/domain';
 import { aMatch, aProfile, anEntry, openSite } from '../testing/render.tsx';
 
 beforeEach(() => {
@@ -160,9 +161,9 @@ describe('pourquoi cette note', () => {
     openSite('/player/p-lanterne', { players: { 'p-lanterne': lanterne } });
 
     const section = await screen.findByRole('region', { name: 'Pourquoi cette note' });
-    expect(section.textContent).toContain('32,6 points');
-    expect(section.textContent).toContain('23,8 points');
-    expect(section.textContent).toContain('24,0 points');
+    expect(section.textContent).toContain('32,55 points');
+    expect(section.textContent).toContain('23,80 points');
+    expect(section.textContent).toContain('24,00 points');
     expect(section.textContent).toContain('Ensemble : 80,35, arrondi à 80.');
   });
 
@@ -183,6 +184,14 @@ describe('pourquoi cette note', () => {
       (r) => r.textContent,
     );
     expect(off).toEqual(['Prestige des éditions', 'Plafond du KDA', 'Plancher à 60']);
+    const titles = [...document.querySelectorAll('.why-rule-title')].map((r) => r.textContent);
+    expect(titles).toEqual([
+      'Comparé aux autres junglers',
+      'Prestige des éditions',
+      'Plafond du KDA',
+      'Peu de parties : prudence',
+      'Plancher à 60',
+    ]);
   });
 
   it('donne l’écart au palier suivant', async () => {
@@ -208,5 +217,35 @@ describe('pourquoi cette note', () => {
 
     await screen.findByText(/Pas encore de partie cette saison/);
     expect(screen.queryByRole('region', { name: 'Pourquoi cette note' })).toBeNull();
+  });
+
+  it('explique une note remontée au plancher de 60 (joueur F de la spec)', async () => {
+    // 3 parties en JGL, 1 victoire, 17 / 29 / 24 : le calcul donne 56.
+    const breakdown = explainRating(
+      [0, 1, 2].map((i) => ({
+        role: 'JGL' as const,
+        result: i === 0 ? ('win' as const) : ('loss' as const),
+        kills: i === 0 ? 17 : 0,
+        deaths: i === 0 ? 29 : 0,
+        assists: i === 0 ? 24 : 0,
+        weight: 1,
+      })),
+    );
+    const base = aProfile();
+    const season = base.season;
+    if (!season) throw new Error('La fiche de test a une saison.');
+    openSite('/player/p-f', {
+      players: {
+        'p-f': {
+          profile: { ...base, season: { ...season, rating: 60, tier: 'bronze', breakdown } },
+          matches: [],
+        },
+      },
+    });
+
+    const section = await screen.findByRole('region', { name: 'Pourquoi cette note' });
+    expect(section.textContent).toContain('arrondi à 56.');
+    expect(section.textContent).toContain('Le calcul donnait 56. Aucune carte ne descend sous 60.');
+    expect(section.textContent).toContain('10 points avant le palier Argent');
   });
 });

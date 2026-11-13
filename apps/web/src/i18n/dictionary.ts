@@ -121,16 +121,16 @@ const fr = {
   'why.intro':
     'La note mélange trois sous-notes. Voici ce que chacune apporte, et ce que chaque règle a changé.',
   'why.points': '{points} points',
-  'why.total': 'Ensemble : {sum}, arrondi à {rating}.',
+  'why.total': 'Ensemble : {sum}, arrondi à {raw}.',
   'why.impact.source': 'vient du KDA',
   'why.consistency.source': 'vient des victoires',
   'why.clutch.source': 'mélange les deux',
-  'why.rule.baseline': 'Comparé aux autres {role}',
+  'why.rule.baseline': 'Comparé aux autres {roles}',
   'why.rule.baseline.text':
     'Chaque rôle a sa référence. Un {role} moyen a un KDA de {kda} et gagne une partie sur deux : c’est le point de départ, à 60.',
   'why.rule.reliability': 'Peu de parties : prudence',
   'why.rule.reliability.text':
-    'Avec {games} parties sur les 15 qu’il faut pour être jugé pleinement, ses statistiques comptent pour {share} %. Le reste est celui d’un {role} moyen : son KDA passe de {kdaFrom} à {kdaTo}, ses victoires de {wrFrom} % à {wrTo} %.',
+    'Avec {games} parties sur les 15 qu’il faut pour être jugé pleinement, ses statistiques comptent pour {share} %. Le reste vient d’un {role} moyen : son KDA passe de {kdaFrom} à {kdaTo}, ses victoires de {wrFrom} % à {wrTo} %.',
   'why.rule.reliability.full': 'Assez de parties',
   'why.rule.reliability.full.text':
     'Avec {games} parties, ses statistiques comptent pleinement : rien n’est tiré vers la moyenne.',
@@ -144,9 +144,20 @@ const fr = {
   'why.rule.cap.none': 'Son KDA est sous 8 : le plafond ne retire rien.',
   'why.rule.floor': 'Plancher à 60',
   'why.rule.floor.text': 'Le calcul donnait {raw}. Aucune carte ne descend sous 60.',
-  'why.rule.floor.none': 'Aucune carte ne descend sous 60. La sienne est au-dessus.',
+  'why.rule.floor.none': 'Aucune carte ne descend sous 60 : la règle n’a pas joué ici.',
   'why.effect.none': 'aucun effet',
   'why.next': '{points} points avant le palier {tier}',
+  'why.next.one': '1 point avant le palier {tier}',
+  'role.TOP': 'toplaner',
+  'role.TOP.plural': 'toplaners',
+  'role.JGL': 'jungler',
+  'role.JGL.plural': 'junglers',
+  'role.MID': 'midlaner',
+  'role.MID.plural': 'midlaners',
+  'role.ADC': 'ADC',
+  'role.ADC.plural': 'ADC',
+  'role.SUP': 'support',
+  'role.SUP.plural': 'supports',
   'why.next.top': 'Palier le plus haut atteint',
 } as const;
 
@@ -271,16 +282,16 @@ const en: Record<TextKey, string> = {
   'why.intro':
     'The rating blends three sub-ratings. Here is what each one brings, and what each rule changed.',
   'why.points': '{points} points',
-  'why.total': 'Together: {sum}, rounded to {rating}.',
+  'why.total': 'Together: {sum}, rounded to {raw}.',
   'why.impact.source': 'from KDA',
   'why.consistency.source': 'from wins',
   'why.clutch.source': 'blends both',
-  'why.rule.baseline': 'Compared with other {role} players',
+  'why.rule.baseline': 'Compared with other {roles}',
   'why.rule.baseline.text':
     'Each role has its own reference. An average {role} has a KDA of {kda} and wins one game in two: that is the starting point, at 60.',
   'why.rule.reliability': 'Few games: caution',
   'why.rule.reliability.text':
-    'With {games} of the 15 games needed to be fully judged, their stats count for {share}%. The rest is an average {role}’s: their KDA goes from {kdaFrom} to {kdaTo}, their wins from {wrFrom}% to {wrTo}%.',
+    'With {games} of the 15 games needed to be fully judged, their stats count for {share}%. The rest comes from an average {role}: their KDA goes from {kdaFrom} to {kdaTo}, their wins from {wrFrom}% to {wrTo}%.',
   'why.rule.reliability.full': 'Enough games',
   'why.rule.reliability.full.text':
     'With {games} games, their stats count in full: nothing is pulled towards the average.',
@@ -293,9 +304,20 @@ const en: Record<TextKey, string> = {
   'why.rule.cap.none': 'Their KDA is below 8: the cap takes nothing away.',
   'why.rule.floor': 'Floor at 60',
   'why.rule.floor.text': 'The formula gave {raw}. No card goes below 60.',
-  'why.rule.floor.none': 'No card goes below 60. Theirs is above.',
+  'why.rule.floor.none': 'No card goes below 60: the rule did not apply here.',
   'why.effect.none': 'no effect',
   'why.next': '{points} points to reach {tier}',
+  'why.next.one': '1 point to reach {tier}',
+  'role.TOP': 'top laner',
+  'role.TOP.plural': 'top laners',
+  'role.JGL': 'jungler',
+  'role.JGL.plural': 'junglers',
+  'role.MID': 'mid laner',
+  'role.MID.plural': 'mid laners',
+  'role.ADC': 'ADC',
+  'role.ADC.plural': 'ADCs',
+  'role.SUP': 'support',
+  'role.SUP.plural': 'supports',
   'why.next.top': 'Highest tier reached',
 };
 
