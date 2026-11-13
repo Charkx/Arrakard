@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { explainRating } from '../rating/breakdown.ts';
 import { computeRating } from '../rating/rating.ts';
 import { V1_RATING_RULES, type RatingRules } from '../rating/rules.ts';
 import { computePlayerStats } from '../stats/stats.ts';
@@ -96,6 +97,35 @@ describe('project', () => {
       ]);
       expect(ratingOf('meta', 's1', projections)).toMatchObject({ rating: s1 });
       expect(ratingOf('meta', 's2', projections)).toMatchObject({ rating: s2 });
+    });
+
+    it('la note de saison porte le rôle dominant du joueur sur cette saison', () => {
+      const projections = project(
+        facts(
+          anEdition({ seasonId: 's1' }, [
+            [{ playerId: 'meta', role: 'MID' }],
+            [{ playerId: 'meta', role: 'SUP' }],
+            [{ playerId: 'meta', role: 'SUP' }],
+          ]),
+          anEdition({ seasonId: 's2' }, [[{ playerId: 'meta', role: 'TOP' }]]),
+        ),
+        V1_RATING_RULES,
+      );
+
+      expect(ratingOf('meta', 's1', projections)?.dominantRole).toBe('SUP');
+      expect(ratingOf('meta', 's2', projections)?.dominantRole).toBe('TOP');
+    });
+
+    it('la note de saison porte son explication, tirée du même calcul', () => {
+      const projections = project(
+        facts(anEdition({ seasonId: 's1' }, [[{ playerId: 'meta', kills: 9, deaths: 1 }]])),
+        V1_RATING_RULES,
+      );
+
+      const expected = explainRating([
+        { role: 'MID', result: 'win', kills: 9, deaths: 1, assists: 0, weight: 1 },
+      ]);
+      expect(ratingOf('meta', 's1', projections)?.breakdown).toEqual(expected);
     });
 
     it('les statistiques affichées incluent le GPM, déduit de l’or et de la durée', () => {

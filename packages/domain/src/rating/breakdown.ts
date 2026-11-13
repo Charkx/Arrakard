@@ -49,8 +49,8 @@ export interface StatSteps {
   /** Sur les totaux bruts : chaque partie compte autant. */
   readonly unweighted: number;
   /**
-   * Pondérée par le prestige des éditions. Si tous les poids valent 0, c'est
-   * la valeur brute qui est reprise.
+   * Pondérée par le prestige des éditions. Si tous les poids valent 0, le
+   * winrate reprend sa valeur brute ; le KDA, lui, vaut alors 0.
    */
   readonly weighted: number;
   /** Après la fiabilité : tirée vers la médiane du rôle sous 15 parties. C'est elle qui est notée. */

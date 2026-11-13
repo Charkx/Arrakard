@@ -41,12 +41,9 @@ jobs:
         with:
           version: 3.1.0
 
-      # Postgres seul suffit : applique les migrations, puis lance les tests pgTAP.
-      - run: supabase db start
+      # Postgres et son API (le site la lit), sans les autres services.
+      - run: supabase start -x gotrue,realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
 
-      - run: supabase test db
-
-      # Tests d'écriture : ils chargent une sauvegarde inventée dans cette base.
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
@@ -56,4 +53,5 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @arrakis/migrate-v1 test:db
+      # Droits d'accès (pgTAP), écriture, puis lecture par le site, sur la démonstration.
+      - run: pnpm test:db

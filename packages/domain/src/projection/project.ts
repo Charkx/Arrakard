@@ -1,4 +1,5 @@
-import type { MatchResult, Performance } from '../performance.ts';
+import type { MatchResult, Performance, Role } from '../performance.ts';
+import { explainRating, type RatingBreakdown } from '../rating/breakdown.ts';
 import { computeRating, type RatingResult } from '../rating/rating.ts';
 import type { RatingRules } from '../rating/rules.ts';
 import {
@@ -13,7 +14,11 @@ import type { EditionFact, Facts, MatchFact, PerformanceFact } from '../facts.ts
 export interface SeasonRating {
   readonly playerId: string;
   readonly seasonId: string;
+  /** Rôle le plus joué sur la saison : celui auquel la note le compare. */
+  readonly dominantRole: Role;
   readonly rating: RatingResult;
+  /** Explication de note (glossaire) : le détail du calcul de `rating`. */
+  readonly breakdown: RatingBreakdown;
   readonly stats: PlayerStats;
   /** Note avant la dernière édition de la saison ; null si le joueur la découvrait. */
   readonly previousRating: number | null;
@@ -128,15 +133,21 @@ function projectSeasonRatings(played: readonly Played[]): SeasonRating[] {
       const lastEditionId = seasonPlayed.at(-1)?.edition.id;
       return [...Map.groupBy(seasonPlayed, (p) => p.fact.playerId)]
         .sort(([a], [b]) => compareStrings(a, b))
-        .map(([playerId, own]) => {
+        .flatMap(([playerId, own]) => {
           const performances = own.map((p) => p.performance);
           const before = own
             .filter((p) => p.edition.id !== lastEditionId)
             .map((p) => p.performance);
+          const breakdown = explainRating(performances);
+          const { result, steps } = breakdown;
+          // Sans étape de calcul, le joueur n'a aucune performance : il n'a pas de note de saison.
+          if (!steps) return [];
           return {
             playerId,
             seasonId,
-            rating: computeRating(performances),
+            dominantRole: steps.dominantRole,
+            rating: result,
+            breakdown,
             stats: computePlayerStats(performances),
             previousRating: before.length > 0 ? computeRating(before).rating : null,
           };

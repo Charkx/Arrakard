@@ -1,6 +1,6 @@
 -- Structure du schéma : ADR 0003 (faits / projections) et ADR 0008 (multi-tenant).
 begin;
-select plan(20);
+select plan(30);
 
 -- Faits
 select has_table('public', 'organizations', 'organisations');
@@ -19,6 +19,18 @@ select has_table('public', 'registrations', 'inscriptions');
 -- Projections
 select has_table('public', 'player_season_ratings', 'notes par saison');
 select has_table('public', 'player_edition_history', 'historique par édition');
+
+-- Vues de lecture : une par besoin de page.
+select has_view('public', 'leaderboard_view', 'vue du classement');
+select has_view('public', 'player_profile_view', 'vue du profil d''un joueur');
+select has_view('public', 'player_matches_view', 'vue de l''historique des matchs');
+select has_view('public', 'edition_page_view', 'vue de l''en-tête d''une édition');
+select has_view('public', 'edition_standings_view', 'vue du classement de soirée');
+select has_view('public', 'edition_matches_view', 'vue des matchs d''une édition');
+select has_view('public', 'edition_participants_view', 'vue des participants d''un événement externe');
+select has_column('public', 'player_season_ratings', 'dominant_role', 'une note de saison porte le rôle dominant');
+select has_column('public', 'player_season_ratings', 'breakdown', 'une note de saison porte son explication');
+select has_column('public', 'player_profile_view', 'breakdown', 'le profil donne l''explication de la note');
 
 -- Un seul niveau de période, la saison (ADR 0014) : plus rien ne parle de split.
 select hasnt_table('public', 'splits', 'plus de table des splits');
@@ -52,7 +64,7 @@ select is_empty(
      join pg_namespace n on n.oid = c.relnamespace
      cross join (values ('anon'), ('authenticated')) as r (rolname)
      cross join (values ('INSERT'), ('UPDATE'), ('DELETE'), ('TRUNCATE')) as p (privilege)
-     where n.nspname = 'public' and c.relkind = 'r'
+     where n.nspname = 'public' and c.relkind in ('r', 'v')
        and not (c.relname = 'registrations' and p.privilege <> 'TRUNCATE')
        and case
              -- INSERT et UPDATE peuvent aussi s'accorder colonne par colonne.

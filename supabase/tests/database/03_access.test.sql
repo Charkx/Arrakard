@@ -1,7 +1,7 @@
 -- Droits d'accès : lecture publique, aucune écriture directe (ADR 0005),
 -- adhésions par organisation (ADR 0008), inscriptions en libre-service.
 begin;
-select plan(18);
+select plan(35);
 
 -- ── Données ──────────────────────────────────────────────────────────────────
 -- La base peut déjà contenir une organisation chargée : les tests créent les
@@ -16,12 +16,71 @@ insert into editions (id, organization_id, name, type, date, prestige) values
   ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'IH #2', 'inhouse', '2026-11-01', 'normal');
 insert into seasons (id, organization_id, name, year, status) values
   ('10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'Saison 3', 2026, 'open');
+-- Meta joue chez ARK aujourd'hui, après un passage chez OLD.
+insert into teams (id, organization_id, tag, name) values
+  ('60000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'ARK', 'Arrakis'),
+  ('60000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000a', 'OLD', 'Ancienne équipe');
+insert into team_memberships (organization_id, player_id, team_id, status, joined_on, left_on)
+select p.organization_id, p.id, t.id, 'starter', m.joined_on, m.left_on
+from players p
+join (values ('ARK', date '2026-01-10', null::date), ('OLD', date '2025-01-10', date '2026-01-09')) as m (tag, joined_on, left_on) on true
+join teams t on t.tag = m.tag and t.organization_id = p.organization_id
+where p.nickname = 'Meta' and p.organization_id = '00000000-0000-0000-0000-00000000000a';
+-- Meta a joué quatre matchs de l'IH #2 : deux fois Ahri, puis Vi et Ornn.
+update editions set season_id = '10000000-0000-0000-0000-000000000001' where id = '20000000-0000-0000-0000-000000000001';
+insert into matches (id, organization_id, edition_id, match_number, winner_team, duration_seconds)
+select ('40000000-0000-0000-0000-00000000000' || n)::uuid, '00000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-000000000001', n, 'ARK', 1800
+from generate_series(1, 4) as n;
+insert into performances (organization_id, match_id, line, side, player_id, team, role, champion, result, kills, deaths, assists, gold)
+select '00000000-0000-0000-0000-00000000000a', ('40000000-0000-0000-0000-00000000000' || g.n)::uuid, 2, 'A', p.id, 'ARK', 'MID', g.champion, g.result, 3, 1, 4, 10000
+from players p
+cross join (values (1, 'Ahri', 'win'), (2, 'Ahri', 'loss'), (3, 'Vi', 'win'), (4, 'Ornn', 'win')) as g (n, champion, result)
+where p.nickname = 'Meta' and p.organization_id = '00000000-0000-0000-0000-00000000000a';
+
+-- Un quatrième champion, joué une fois : à égalité, l'ordre alphabétique l'écarte des trois premiers.
+-- Trois Annie dans une saison clôturée : elles ne comptent pas pour la saison en cours.
+insert into seasons (id, organization_id, name, year, status) values
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000a', 'Saison 2', 2025, 'closed');
+insert into editions (id, organization_id, name, type, date, season_id) values
+  ('20000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000a', 'IH #1', 'inhouse', '2025-06-01', '10000000-0000-0000-0000-000000000002');
+insert into matches (id, organization_id, edition_id, match_number, winner_team, duration_seconds)
+select ('41000000-0000-0000-0000-00000000000' || n)::uuid, '00000000-0000-0000-0000-00000000000a',
+       case when n = 5 then '20000000-0000-0000-0000-000000000001'::uuid else '20000000-0000-0000-0000-000000000002'::uuid end,
+       n, 'ARK', 1800
+from generate_series(1, 5) as n;
+insert into performances (organization_id, match_id, line, side, player_id, team, role, champion, result, kills, deaths, assists, gold)
+select '00000000-0000-0000-0000-00000000000a', ('41000000-0000-0000-0000-00000000000' || g.n)::uuid, 2, 'A', p.id, 'ARK', 'MID', g.champion, 'win', 1, 1, 1, 9000
+from players p
+cross join (values (1, 'Annie'), (2, 'Annie'), (3, 'Annie'), (5, 'Zyra')) as g (n, champion)
+where p.nickname = 'Meta' and p.organization_id = '00000000-0000-0000-0000-00000000000a';
+
+-- Le classement de soirée de l'IH #2, et un événement externe avec un participant.
+insert into edition_standings (organization_id, edition_id, player_id, rank, team, role, champion, games, wins, losses,
+  kills, deaths, assists, is_event_mvp, match_mvp_count, result_points, stat_points, mvp_points, points)
+select '00000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-000000000001', id, 1, 'ARK', 'MID', 'Ahri', 5, 4, 1, 13, 5, 17, true, 2, 20, 12, 10, 42
+from players where nickname = 'Meta' and organization_id = '00000000-0000-0000-0000-00000000000a';
+insert into editions (id, organization_id, name, type, date) values
+  ('20000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-00000000000a', 'LAN de printemps', 'external_event', '2026-04-12');
+insert into edition_participants (organization_id, edition_id, player_id)
+select '00000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-000000000003', id from players where nickname = 'Zed' and organization_id = '00000000-0000-0000-0000-00000000000a';
+
+-- L'autre structure a sa saison, un joueur et sa note, sans équipe.
+insert into players (organization_id, nickname) values ('00000000-0000-0000-0000-00000000000b', 'Ailleurs');
+insert into seasons (id, organization_id, name, year, status) values
+  ('10000000-0000-0000-0000-00000000000b', '00000000-0000-0000-0000-00000000000b', 'Saison 1', 2026, 'open');
 insert into player_season_ratings (
-  organization_id, season_id, player_id, rating, impact, consistency, clutch, tier,
-  games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form
+  organization_id, season_id, player_id, dominant_role, rating, impact, consistency, clutch, tier,
+  games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form, breakdown
 )
-select organization_id, '10000000-0000-0000-0000-000000000001', id, 78, 80, 75, 70, 'gold',
-       10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up'
+select organization_id, '10000000-0000-0000-0000-00000000000b', id, 'TOP', 65, 65, 65, 65, 'bronze',
+       5, 2, 3, 40, 2.0, 5, 5, 5, 9000, 300, 'stable', '{}'
+from players where nickname = 'Ailleurs';
+insert into player_season_ratings (
+  organization_id, season_id, player_id, dominant_role, rating, impact, consistency, clutch, tier,
+  games, wins, losses, winrate, kda, kills, deaths, assists, avg_gold, avg_gpm, recent_form, breakdown
+)
+select organization_id, '10000000-0000-0000-0000-000000000001', id, 'MID', 78, 80, 75, 70, 'gold',
+       10, 6, 4, 60, 3.8, 40, 25, 55, 11000, 380, 'up', '{"rating": 78}'
 from players where nickname = 'Meta';
 
 -- Deux utilisateurs connectés via Discord ; « admin » est admin d'Arrakis seulement.
@@ -47,7 +106,7 @@ select throws_ok(
   $$ select discord_user_id from registrations $$,
   '42501', null, 'l''identifiant Discord des inscrits n''est pas public'
 );
-select is((select count(*)::int from seasons where organization_id = '00000000-0000-0000-0000-00000000000a'), 1, 'un visiteur lit les saisons');
+select is((select count(*)::int from seasons where organization_id = '00000000-0000-0000-0000-00000000000a'), 2, 'un visiteur lit les saisons');
 select is((select count(*)::int from player_season_ratings where organization_id = '00000000-0000-0000-0000-00000000000a'), 1, 'un visiteur lit les notes par saison');
 select throws_ok(
   $$ insert into seasons (organization_id, name, year, status)
@@ -57,6 +116,81 @@ select throws_ok(
 select throws_ok(
   $$ update player_season_ratings set rating = 99 $$,
   '42501', 'permission denied for table player_season_ratings', 'un visiteur ne modifie pas une note'
+);
+select results_eq(
+  $$ select nickname, dominant_role, rating, team_tag, season_status
+     from leaderboard_view where organization_id = '00000000-0000-0000-0000-00000000000a' $$,
+  $$ values ('Meta', 'MID', 78, 'ARK', 'open') $$,
+  'un visiteur lit le classement : la note, le joueur, son rôle et son équipe actuelle'
+);
+select is(
+  (select count(*)::int from leaderboard_view where organization_id = '00000000-0000-0000-0000-00000000000b'), 1,
+  'chaque organisation a son classement : l''autre structure n''y voit que son propre joueur'
+);
+select throws_ok(
+  $$ update leaderboard_view set rating = 99 $$,
+  '55000', null, 'la vue ne s''écrit pas : elle ne sert qu''à lire'
+);
+
+-- Le profil : la note de la saison en cours, l'équipe actuelle, les trois champions les plus joués.
+select results_eq(
+  $$ select nickname, rating, team_tag, top_champions from player_profile_view
+     where organization_id = '00000000-0000-0000-0000-00000000000a' order by nickname $$,
+  $$ values ('Meta', 78, 'ARK', array['Ahri', 'Ornn', 'Vi']), ('Zed', null::int, null, '{}'::text[]) $$,
+  'un visiteur lit le profil ; un joueur sans partie a un profil sans note'
+);
+select results_eq(
+  $$ select breakdown from player_profile_view
+     where organization_id = '00000000-0000-0000-0000-00000000000a' and nickname = 'Meta' $$,
+  $$ values ('{"rating": 78}'::jsonb) $$,
+  'un visiteur lit l''explication de la note dans le profil'
+);
+-- L'historique : chaque match du joueur, avec son édition.
+select results_eq(
+  $$ select edition_name, match_number, champion, result from player_matches_view
+     where organization_id = '00000000-0000-0000-0000-00000000000a' and nickname = 'Meta' and edition_name = 'IH #2'
+     order by match_number $$,
+  $$ values ('IH #2', 1, 'Ahri', 'win'), ('IH #2', 2, 'Ahri', 'loss'), ('IH #2', 3, 'Vi', 'win'), ('IH #2', 4, 'Ornn', 'win'), ('IH #2', 5, 'Zyra', 'win') $$,
+  'un visiteur lit l''historique des matchs d''un joueur'
+);
+select throws_ok(
+  $$ update player_profile_view set nickname = 'Pirate' $$,
+  '55000', null, 'la vue du profil ne s''écrit pas'
+);
+select throws_ok(
+  $$ update player_matches_view set kills = 99 $$,
+  '55000', null, 'la vue de l''historique ne s''écrit pas'
+);
+
+-- La page d'une édition : son en-tête, son classement de soirée, ses matchs.
+select results_eq(
+  $$ select name, type, season_name, match_count from edition_page_view where edition_id = '20000000-0000-0000-0000-000000000001' $$,
+  $$ values ('IH #2', 'inhouse', 'Saison 3', 5) $$,
+  'un visiteur lit l''en-tête d''une édition, avec sa saison et son nombre de matchs'
+);
+select results_eq(
+  $$ select rank, nickname, points from edition_standings_view where edition_id = '20000000-0000-0000-0000-000000000001' $$,
+  $$ values (1, 'Meta', 42) $$,
+  'un visiteur lit le classement de soirée, avec le pseudo de chaque joueur'
+);
+select results_eq(
+  $$ select match_number, nickname, champion, winner_team from edition_matches_view
+     where edition_id = '20000000-0000-0000-0000-000000000001' order by match_number limit 2 $$,
+  $$ values (1, 'Meta', 'Ahri', 'ARK'), (2, 'Meta', 'Ahri', 'ARK') $$,
+  'un visiteur lit les matchs d''une édition, une ligne par joueur'
+);
+select results_eq(
+  $$ select nickname from edition_participants_view where edition_id = '20000000-0000-0000-0000-000000000003' $$,
+  $$ values ('Zed') $$,
+  'un visiteur lit les participants d''un événement externe'
+);
+select throws_ok($$ update edition_page_view set name = 'Pirate' $$, '55000', null, 'la vue de l''en-tête d''une édition ne s''écrit pas');
+select throws_ok($$ update edition_standings_view set points = 99 $$, '55000', null, 'la vue du classement de soirée ne s''écrit pas');
+select throws_ok($$ update edition_matches_view set kills = 99 $$, '55000', null, 'la vue des matchs ne s''écrit pas');
+select throws_ok($$ update edition_participants_view set nickname = 'Pirate' $$, '55000', null, 'la vue des participants ne s''écrit pas');
+select is(
+  (select count(*)::int from edition_page_view where organization_id = '00000000-0000-0000-0000-00000000000b'), 0,
+  'les éditions d''Arrakis n''apparaissent pas dans l''autre structure'
 );
 
 -- ── Admin d'Arrakis ──────────────────────────────────────────────────────────
