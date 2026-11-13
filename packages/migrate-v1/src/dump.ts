@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { V1Dump } from './v1.ts';
 
-const TABLES = [
+/** Les tables d'une sauvegarde v1, un fichier `<table>.json` chacune. */
+export const TABLES = [
   'seasons',
   'splits',
   'teams',

@@ -12,6 +12,7 @@
     "report": "tsx src/cli.ts",
     "demo:write": "tsx src/testing/write-demo-backup.ts",
     "load": "tsx src/load-cli.ts",
+    "backup": "tsx src/backup-cli.ts",
     "test:db": "vitest run --config vitest.db.config.ts"
   },
   "dependencies": {
