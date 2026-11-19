@@ -56,23 +56,32 @@ Règles :
 
 ## Chemin d'écriture : une commande
 
+Trois couches ([ADR 0023](../adr/0023-ecritures-en-trois-couches.md)) :
+l'Edge Function est un adaptateur mince, la commande vit dans
+`packages/application` et ne parle à la base qu'à travers des ports, que
+`packages/postgres` implémente.
+
 ```mermaid
 sequenceDiagram
   participant UI as Admin (web)
   participant FN as Edge Function
+  participant CMD as Commande (application)
   participant DOM as domain
-  participant DB as Postgres
+  participant PG as Dépôts Postgres
   UI->>FN: importEdition(payload, expectedVersion) + JWT
-  FN->>FN: vérifie JWT et rôle admin
-  FN->>DOM: valide le payload (schéma + règles)
-  FN->>DB: BEGIN
-  FN->>DB: contrôle version (sinon 409 Conflict)
-  FN->>DB: écrit les faits
-  FN->>DB: lit tous les faits
-  FN->>DOM: project(faits)
-  FN->>DB: remplace les projections
-  FN->>DB: COMMIT
-  FN-->>UI: 200 + résumé
+  FN->>FN: lit le JWT (acteur), valide le payload (contrats)
+  FN->>PG: BEGIN, verrou de l'organisation
+  FN->>CMD: importEdition(entrée, acteur, ports)
+  CMD->>CMD: l'acteur est-il admin de l'organisation ?
+  CMD->>PG: lit la version (sinon conflit)
+  CMD->>DOM: règles métier
+  CMD->>PG: écrit les faits, puis le journal
+  CMD->>PG: lit tous les faits
+  CMD->>DOM: project(faits)
+  CMD->>PG: remplace les projections
+  CMD-->>FN: résumé, ou conflit
+  FN->>PG: COMMIT (ROLLBACK si erreur)
+  FN-->>UI: 200 + résumé (409 si conflit)
 ```
 
 En cas d'erreur à n'importe quelle étape : `ROLLBACK`, rien n'a changé.
