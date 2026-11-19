@@ -50,6 +50,7 @@ La marche à suivre est dans [Mise en ligne](../operations/mise-en-ligne.md).
 - Un projet Supabase gratuit **se met en pause après 7 jours sans activité**.
   Hors saison, il faut le relancer depuis le tableau de bord.
 - Deux projets gratuits sont pris : il n'en reste plus pour un environnement de
-  test hébergé. Les essais se font sur la base locale.
+  test hébergé. Le projet v2 sert donc de staging jusqu'à la bascule
+  ([ADR 0021](0021-staging-jusqu-a-la-bascule.md)).
 - Recharger remplace toute l'organisation : rien ne doit être saisi dans la v2
   tant que la tranche 2 n'a pas basculé l'écriture.

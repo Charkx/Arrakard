@@ -1,6 +1,6 @@
 # 0013 — Déduire le statut d'une édition
 
-- **Statut** : Proposé
+- **Statut** : Accepté (règle validée par Charly le 2026-11-19)
 - **Date** : 2026-11-11
 
 ## Contexte

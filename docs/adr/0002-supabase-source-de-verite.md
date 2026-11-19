@@ -25,6 +25,10 @@ gratuite.
 - Le claim admin est **revérifié** à chaque connexion, et retiré si le rôle
   Discord a disparu (cas d'usage S2).
 
+> **Amendé par [0021](0021-staging-jusqu-a-la-bascule.md).** Jusqu'à la
+> bascule, le staging est le projet v2 hébergé ; il ne devient un projet dédié
+> qu'une fois la v1 coupée.
+
 > **Amendé par [0008](0008-multi-tenant-et-portabilite.md).** Il n'y a plus de
 > claim JWT admin global : on est admin _d'une organisation_, par une ligne de
 > `organization_members`, vérifiée par `is_org_admin(organization_id)`. La

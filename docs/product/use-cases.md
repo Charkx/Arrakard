@@ -41,8 +41,8 @@ Les termes en gras sont définis dans le [glossaire](../domain/glossary.md).
 | ID  | Cas d'usage                                                                              | Tranche         |
 | --- | ---------------------------------------------------------------------------------------- | --------------- |
 | J1  | Se connecter avec Discord                                                                | T2              |
-| J2  | Personnaliser **sa** carte (titre, badges affichés, fond, comptes Riot) selon son palier | T2, peut suivre |
-| J3  | S'**inscrire** à une édition à venir, modifier ou annuler son inscription                | T2, peut suivre |
+| J2  | Personnaliser **sa** carte (titre, badges affichés, fond, comptes Riot) selon son palier | T2              |
+| J3  | S'**inscrire** à une édition à venir, modifier ou annuler son inscription                | T2              |
 | J4  | Exporter sa carte en PNG et la partager sur Discord                                      | T3              |
 | J5  | Voir où il en est : sa soirée en tête du récap, son résumé sur l'accueil. _Nouveau_      | T2, peut suivre |
 
@@ -58,11 +58,12 @@ Les termes en gras sont définis dans le [glossaire](../domain/glossary.md).
 | A6  | Lier une carte à un compte Discord                                                                                                                                  | T2              |
 | A7  | Ouvrir et clôturer une **saison** (la clôture fige les notes de la saison)                                                                                          | T2              |
 | A8  | Désigner le **MVP de soirée** et ajuster le **barème** d'une édition                                                                                                | T2, peut suivre |
-| A9  | Consulter et gérer les inscriptions d'une édition                                                                                                                   | T2, peut suivre |
+| A9  | Consulter et gérer les inscriptions d'une édition                                                                                                                   | T2              |
 | A10 | Configurer les chaînes Twitch suivies                                                                                                                               | T3              |
 | A11 | **Publier** les résultats en brouillon d'une édition, après avoir lu l'**aperçu** de ce qui va changer. _Nouveau_                                                   | T2              |
 | A12 | Obtenir une proposition d'équipes d'In House équilibrées, à partir des inscrits, de leurs rôles et de leurs notes. _Nouveau_                                        | T3              |
 | A13 | Simuler un changement de règle de note, puis le publier avec sa **note de patch**. _Nouveau_                                                                        | T3              |
+| A14 | **Saisir un match à la main**, en brouillon, quand il n'y a pas de fichier Excel (soirées In House)                                                                 | T2              |
 
 ## Système
 
@@ -98,15 +99,16 @@ suivants sont remplis. Ils se vérifient de la même façon.
 
 ### Fonctionnels
 
-- [ ] Tous les cas d'usage **T2** fonctionnent sur le staging, avec les
+- [ ] Tous les cas d'usage **T2** fonctionnent sur le staging (le projet v2
+      hébergé, [ADR 0021](../adr/0021-staging-jusqu-a-la-bascule.md)), avec les
       données de production migrées. Ceux marqués « peut suivre » ne bloquent
       pas.
 - [ ] Une édition réelle est importée, relue dans l'aperçu puis publiée sur le
       staging (A1, A11) avec le même fichier qu'en production, et donne le
       même classement de soirée.
-- [ ] _À trancher :_ J2 (personnalisation) et J3 (inscriptions) existent en v1
-      et sont marqués « peut suivre ». Les livrer à la bascule, ou accepter de
-      les retirer quelques semaines ?
+- [ ] J2 (personnalisation) et J3 (inscriptions), qui existent en v1,
+      fonctionnent en v2 : rien ne disparaît pour les joueurs à la bascule
+      (choix du 2026-11-19).
 
 ### Données
 

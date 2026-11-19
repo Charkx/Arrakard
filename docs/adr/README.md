@@ -32,7 +32,7 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0010](0010-travailler-avec-un-agent.md)                | Travailler avec un agent : trois portes, trois modes | Accepté |
 | [0011](0011-livrer-par-tranches.md)                     | Livrer par tranches, la lecture d'abord              | Accepté |
 | [0012](0012-publier-les-resultats.md)                   | Publier les résultats : brouillon, aperçu, récap     | Accepté |
-| [0013](0013-statut-d-edition-deduit.md)                 | Déduire le statut d'une édition                      | Proposé |
+| [0013](0013-statut-d-edition-deduit.md)                 | Déduire le statut d'une édition                      | Accepté |
 | [0014](0014-une-seule-periode-la-saison.md)             | Une seule période de compétition : la saison         | Accepté |
 | [0015](0015-logos-hors-de-la-base.md)                   | Stocker les logos d'équipe hors de la base           | Accepté |
 | [0016](0016-perimetre-repris-de-la-v1.md)               | Ne reprendre de la v1 que ce qui sert                | Accepté |
@@ -40,3 +40,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0018](0018-deux-langues-dictionnaire-maison.md)        | Deux langues, un dictionnaire maison                 | Accepté |
 | [0019](0019-lire-la-base-depuis-le-site.md)             | Lire la base depuis le site                          | Accepté |
 | [0020](0020-heberger-le-site-en-lecture.md)             | Héberger le site en lecture                          | Accepté |
+| [0021](0021-staging-jusqu-a-la-bascule.md)              | Le projet v2 sert de staging jusqu'à la bascule      | Accepté |
