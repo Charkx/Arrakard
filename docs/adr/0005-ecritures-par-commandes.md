@@ -1,6 +1,6 @@
 # 0005 — Écritures par commandes transactionnelles
 
-- **Statut** : Accepté (spike concluant, 2026-10-05), amendé par [0023](0023-ecritures-en-trois-couches.md) (trois couches)
+- **Statut** : Accepté (spike concluant, 2026-10-05), amendé par [0023](0023-ecritures-en-trois-couches.md) (trois couches, proposé)
 - **Date** : 2026-10-03
 - **Complété par** : [0009](0009-serialiser-et-journaliser-les-commandes.md) (verrou par organisation, journal)
 
@@ -27,12 +27,11 @@ Chaque commande est une Edge Function qui :
 5. écrit les faits, recalcule les projections ([ADR 0003](0003-faits-et-projections.md)),
    puis valide (`COMMIT`).
 
-> **Amendé par [0023](0023-ecritures-en-trois-couches.md).** Ces cinq étapes
-> ne vivent plus toutes dans l'Edge Function. Elle lit le JWT, valide l'entrée,
-> ouvre la transaction et traduit le résultat en HTTP. L'autorisation, le
-> contrôle de version, l'écriture des faits et le recalcul sont dans la
-> commande, une fonction de `packages/application` qui ne connaît que des
-> ports.
+> **Amendé par [0023](0023-ecritures-en-trois-couches.md)** (proposé). Ces
+> cinq étapes ne vivent plus dans l'Edge Function, qui ne fait que lire le JWT,
+> valider l'entrée et traduire le résultat en HTTP. Elles passent par
+> `executeCommand` (`packages/application`) : transaction et verrou,
+> autorisation, commande et contrôle de version, journal, recalcul.
 
 Le rôle `anon` / `authenticated` n'a **aucun droit d'écriture** direct sur les
 tables, à deux exceptions près, limitées par la RLS à la ligne du joueur

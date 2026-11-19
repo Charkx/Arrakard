@@ -56,31 +56,31 @@ Règles :
 
 ## Chemin d'écriture : une commande
 
-Trois couches ([ADR 0023](../adr/0023-ecritures-en-trois-couches.md)) :
-l'Edge Function est un adaptateur mince, la commande vit dans
-`packages/application` et ne parle à la base qu'à travers des ports, que
-`packages/postgres` implémente.
+Trois couches ([ADR 0023](../adr/0023-ecritures-en-trois-couches.md),
+proposé) : l'Edge Function est un adaptateur mince. `executeCommand`
+(`packages/application`) enchaîne toujours les mêmes étapes, et ne parle à la
+base qu'à travers des ports, que `packages/postgres` implémente.
 
 ```mermaid
 sequenceDiagram
   participant UI as Admin (web)
   participant FN as Edge Function
-  participant CMD as Commande (application)
+  participant APP as executeCommand
   participant DOM as domain
-  participant PG as Dépôts Postgres
+  participant PG as Ports Postgres
   UI->>FN: importEdition(payload, expectedVersion) + JWT
-  FN->>FN: lit le JWT (acteur), valide le payload (contrats)
-  FN->>PG: BEGIN, verrou de l'organisation
-  FN->>CMD: importEdition(entrée, acteur, ports)
-  CMD->>CMD: l'acteur est-il admin de l'organisation ?
-  CMD->>PG: lit la version (sinon conflit)
-  CMD->>DOM: règles métier
-  CMD->>PG: écrit les faits, puis le journal
-  CMD->>PG: lit tous les faits
-  CMD->>DOM: project(faits)
-  CMD->>PG: remplace les projections
-  CMD-->>FN: résumé, ou conflit
-  FN->>PG: COMMIT (ROLLBACK si erreur)
+  FN->>FN: utilisateur du JWT, valide le payload (contrats)
+  FN->>APP: importEdition, entrée, acteur
+  APP->>PG: BEGIN, verrou de l'organisation
+  APP->>PG: l'acteur est-il admin ?
+  APP->>PG: lit la version (sinon conflit)
+  APP->>DOM: règles métier
+  APP->>PG: écrit les faits, puis le journal
+  APP->>PG: lit tous les faits et les règles de note
+  APP->>DOM: project(faits)
+  APP->>PG: remplace les projections
+  APP->>PG: COMMIT (ROLLBACK si erreur)
+  APP-->>FN: résumé, ou conflit
   FN-->>UI: 200 + résumé (409 si conflit)
 ```
 
@@ -107,10 +107,13 @@ arrakis/
 │   │       ├── identity/    Alias, résolution de pseudo, fusion
 │   │       ├── import/      Analyse d'un import Excel (sans lire le fichier)
 │   │       └── projection/  project(faits) → projections
-│   └── contracts/           Schémas Zod des commandes et des vues
+│   ├── application/         Commandes, ports, executeCommand, recalcul (ADR 0023)
+│   ├── postgres/            Transaction et entrepôts SQL : implémente les ports
+│   ├── contracts/           Schémas Zod des entrées de commande
+│   └── migrate-v1/          Migration depuis une sauvegarde de la v1
 ├── supabase/
 │   ├── migrations/
-│   ├── functions/           Une fonction par commande
+│   ├── functions/           Une fonction par commande, mince (adaptateur HTTP)
 │   └── tests/               pgTAP : RLS et contraintes
 ├── tools/
 │   └── golden-master/       Extraction des données v1 et des notes attendues

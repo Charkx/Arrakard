@@ -1,6 +1,6 @@
 # 0001 — Monorepo TypeScript avec un domaine pur
 
-- **Statut** : Accepté, amendé par [0023](0023-ecritures-en-trois-couches.md) (deux paquets de plus)
+- **Statut** : Accepté, amendé par [0023](0023-ecritures-en-trois-couches.md) (deux paquets de plus, proposé)
 - **Date** : 2026-10-03
 
 ## Contexte
@@ -24,9 +24,9 @@ Un seul dépôt avec des workspaces **pnpm** :
   entre le web et les fonctions.
 - `apps/web` et `supabase/` consomment ces packages.
 
-> **Amendé par [0023](0023-ecritures-en-trois-couches.md).** S'y ajoutent
-> `packages/application` (les commandes et leurs ports, qui ne dépendent que du
-> domaine) et `packages/postgres` (les dépôts SQL). `packages/contracts` naît
+> **Amendé par [0023](0023-ecritures-en-trois-couches.md)** (proposé). S'y
+> ajoutent `packages/application` (les commandes et leurs ports, qui ne
+> dépendent que du domaine) et `packages/postgres` (les entrepôts SQL). `packages/contracts` naît
 > avec la première commande qui a une entrée à valider.
 
 TypeScript en mode `strict` partout. Identifiants de code en anglais,
