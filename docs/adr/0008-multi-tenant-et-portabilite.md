@@ -1,6 +1,6 @@
 # 0008 — Préparer le multi-tenant et la portabilité
 
-- **Statut** : Accepté
+- **Statut** : Accepté, amendé par [0021](0021-staging-jusqu-a-la-bascule.md) (une organisation d'essai)
 - **Date** : 2026-10-05
 - **Amende** : [0002](0002-supabase-source-de-verite.md) (le rôle admin n'est plus un claim JWT global)
 
@@ -39,6 +39,10 @@ En multi-tenant, on est admin _d'une organisation_, pas du système.
    rôle admin, jeu de règles de note (`v1` ou `e1_e2`, définis dans le
    domaine), barème de soirée par défaut.
 5. La v2 démarre avec **une seule organisation**, Arrakis.
+
+> **Amendé par [0021](0021-staging-jusqu-a-la-bascule.md).** Jusqu'à la
+> bascule, une seconde organisation, d'essai, sert aux répétitions des admins.
+> Elle a la même configuration Discord qu'Arrakis.
 
 **Règles de portabilité** (pour permettre un jour une installation on premise) :
 

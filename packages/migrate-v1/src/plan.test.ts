@@ -548,7 +548,7 @@ describe('planMigration', () => {
         {
           code: 'orphan-event-results',
           message:
-            '2 résultats « Tournoi de printemps » (tournament, 2026-01-18) rattachés à l’édition edition-1 (ligue_div1), sans match : non migrés (Q10).',
+            '2 résultats « Tournoi de printemps » (tournament, 2026-01-18) rattachés à l’édition edition-1 (ligue_div1), sans match : abandonnés (Q10).',
         },
       ]);
     });

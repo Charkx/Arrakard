@@ -2,6 +2,7 @@
 
 - **Statut** : Accepté
 - **Date** : 2026-11-19
+- **Amende** : [0002](0002-supabase-source-de-verite.md) (environnements), [0008](0008-multi-tenant-et-portabilite.md) (une seule organisation), [0020](0020-heberger-le-site-en-lecture.md) (essais)
 
 ## Contexte
 
@@ -20,13 +21,16 @@ dans la v2 n'est encore la vérité.
 
 - **Jusqu'à la bascule, le projet v2 hébergé est le staging.**
 - Les répétitions se font dans une **organisation d'essai** (`arrakis-essai`),
-  dans le même projet. Le site public ne lit que l'organisation `arrakis`
-  (`VITE_ORGANIZATION_SLUG`, [ADR 0008](0008-multi-tenant-et-portabilite.md)) :
+  dans le même projet, avec la même configuration Discord : les admins
+  d'Arrakis en sont les admins. Le site public ne lit que l'organisation `arrakis`
+  (`VITE_ORGANIZATION_SLUG`, [ADR 0019](0019-lire-la-base-depuis-le-site.md)) :
   une répétition n'y apparaît jamais.
 - L'organisation d'essai se remplit avec la même sauvegarde de la v1 que
-  `arrakis`, et se recharge à volonté.
+  `arrakis`, et se recharge à volonté : un chargement ne vide que
+  l'organisation visée (`clearOrganization`), jamais l'autre.
 - **À la bascule**, la v1 coupée libère un projet gratuit. Il devient le
-  staging dédié prévu par l'ADR 0002, et le projet v2 devient la production.
+  staging dédié prévu par l'ADR 0002. Le projet v2, qui porte déjà
+  l'organisation `arrakis` du site public, reste la production.
 
 ## Options écartées
 
@@ -39,13 +43,17 @@ dans la v2 n'est encore la vérité.
 
 - Les répétitions se font sur l'hébergement réel, avec les vraies données, sans
   rien coûter.
-- Une erreur de migration de base, pendant une répétition, toucherait aussi le
-  site public : les migrations s'essaient d'abord sur la base locale, comme
-  aujourd'hui.
+- Le risque écarté par l'ADR 0020 pour la v1 est accepté ici pour le site
+  public : une erreur de migration de base, pendant une répétition, le
+  toucherait aussi. Le site n'est qu'en lecture et se recharge depuis la v1 ;
+  les migrations s'essaient d'abord sur la base locale, comme aujourd'hui.
 - La page de connexion et les droits d'admin doivent être limités à
-  l'organisation choisie : un admin d'essai n'est pas admin d'`arrakis`. C'est
+  l'organisation choisie : un admin d’une autre organisation n’est pas admin d'`arrakis`. C'est
   déjà la règle (`is_org_admin(organization_id)`, ADR 0008), à tester sur les
   commandes.
 - La sauvegarde de la v1 doit pouvoir se charger dans une autre organisation
-  que `arrakis` : la commande `load` reçoit l'organisation en option, dans le
-  premier ticket qui en a besoin.
+  que `arrakis`. Ce n'est pas encore possible : les identifiants de la v1 sont
+  repris tels quels, et chacun ne peut exister qu'une fois dans la base. Le
+  premier ticket qui en a besoin donne à `load` l'organisation en option, et
+  réécrit les identifiants pour l'organisation d'essai, comme le fait déjà
+  `demoBackupCopy` pour les tests.

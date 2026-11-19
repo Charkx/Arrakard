@@ -106,9 +106,6 @@ suivants sont remplis. Ils se vérifient de la même façon.
 - [ ] Une édition réelle est importée, relue dans l'aperçu puis publiée sur le
       staging (A1, A11) avec le même fichier qu'en production, et donne le
       même classement de soirée.
-- [ ] J2 (personnalisation) et J3 (inscriptions), qui existent en v1,
-      fonctionnent en v2 : rien ne disparaît pour les joueurs à la bascule
-      (choix du 2026-11-19).
 
 ### Données
 
