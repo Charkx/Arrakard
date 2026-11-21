@@ -74,7 +74,7 @@ La base locale (Docker doit tourner) :
 
 ```bash
 pnpm db:start                                                  # démarre la base et son API, applique les migrations
-pnpm test:db                                                   # droits d'accès (pgTAP), écriture, lecture par le site
+pnpm test:db                                                   # droits d'accès (pgTAP), ports Postgres, écriture, lecture par le site
 pnpm --filter @arrakis/migrate-v1 load demo-backup --replace   # la remplit avec une communauté inventée
 pnpm dev                                                       # le site, sur http://localhost:5173, lit cette base
 ```
@@ -106,6 +106,18 @@ pnpm size              # poids du JavaScript initial (limite : 250 kB compressé
 | `import/`        | Lecture de la feuille Excel, analyse, plan d'import         | A1          |
 | `projection/`    | `project(faits)` : recalcul complet des projections         | S1          |
 | `golden-master/` | Preuve que le moteur reproduit la v1 sur les vraies données | —           |
+
+## Les couches ([ADR 0023](docs/adr/0023-ecritures-en-trois-couches.md))
+
+Chaque paquet n'importe que ceux plus au centre. Une règle de lint le vérifie pour le domaine, l'application et l'adaptateur Postgres.
+
+| Paquet                 | Rôle                                                               | Dépend de            |
+| ---------------------- | ------------------------------------------------------------------ | -------------------- |
+| `packages/domain`      | Règles métier pures                                                | rien                 |
+| `packages/application` | Cas d'usage et leurs ports (aujourd'hui : le recalcul), en mémoire | le domaine           |
+| `packages/postgres`    | Adaptateur : implémente les ports avec postgres.js                 | domaine, application |
+| `packages/migrate-v1`  | Outil de migration : écrit les faits, puis appelle le recalcul     | les trois            |
+| `apps/web`             | Le site : lit les vues par `DataSource` (ADR 0019)                 | le domaine           |
 
 ## Feuille de route
 
