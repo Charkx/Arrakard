@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Arrakis</title>
     <!-- Sur mobile, chaque aller-retour compte : la connexion à la base et les
-         polices partent avant que le code du site ne les demande. -->
+         polices partent avant que le code du site ne les demande. Sans
+         VITE_SUPABASE_URL (en local), le preconnect ne vise rien, sans gêner. -->
     <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
     <link rel="preload" href="/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link

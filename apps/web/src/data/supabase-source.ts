@@ -46,19 +46,10 @@ export function supabaseSource(
   organizationSlug = import.meta.env.VITE_ORGANIZATION_SLUG ?? 'arrakis',
 ): DataSource {
   const client = createClient(url, key, { auth: { persistSession: false } });
-  // L'organisation ne change pas pendant la visite : elle n'est cherchée qu'une fois.
-  let organization: Promise<string> | undefined;
-  const organizationOnce = () => {
-    organization ??= organizationId(client, organizationSlug).catch((error: unknown) => {
-      organization = undefined;
-      throw error;
-    });
-    return organization;
-  };
   return {
-    loadLeaderboard: () => loadLeaderboard(client, organizationSlug, organizationOnce),
-    loadPlayer: (playerId) => loadPlayer(client, organizationOnce, playerId),
-    loadEdition: (editionId) => loadEdition(client, organizationOnce, editionId),
+    loadLeaderboard: () => loadLeaderboard(client, organizationSlug),
+    loadPlayer: (playerId) => loadPlayer(client, organizationSlug, playerId),
+    loadEdition: (editionId) => loadEdition(client, organizationSlug, editionId),
   };
 }
 
@@ -74,11 +65,7 @@ async function organizationId(client: SupabaseClient, slug: string): Promise<str
   return organization.data.id;
 }
 
-async function loadLeaderboard(
-  client: SupabaseClient,
-  slug: string,
-  organizationOf: () => Promise<string>,
-): Promise<LeaderboardData> {
+async function loadLeaderboard(client: SupabaseClient, slug: string): Promise<LeaderboardData> {
   // La saison est cherchée par le slug, en même temps que l'organisation :
   // un aller-retour de moins sur mobile. L'organisation reste vérifiée, pour
   // qu'un slug faux soit une erreur et non un classement vide.
@@ -89,7 +76,7 @@ async function loadLeaderboard(
       .eq('organizations.slug', slug)
       .eq('status', 'open')
       .maybeSingle<{ id: string; name: string }>(),
-    organizationOf(),
+    organizationId(client, slug),
   ]);
   if (season.error) throw season.error;
   if (!season.data) return { seasonName: null, entries: [] };
@@ -173,11 +160,11 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function loadPlayer(
   client: SupabaseClient,
-  organizationOf: () => Promise<string>,
+  slug: string,
   playerId: string,
 ): Promise<PlayerPageData | MergedPlayer | null> {
   if (!UUID.test(playerId)) return null;
-  const organization = await organizationOf();
+  const organization = await organizationId(client, slug);
   // Profil et matchs en même temps : les matchs ne servent à rien sans profil,
   // mais les attendre l'un après l'autre coûte un aller-retour sur mobile.
   const [profile, matches] = await Promise.all([
@@ -287,11 +274,11 @@ async function rowsOf<T>(
 
 async function loadEdition(
   client: SupabaseClient,
-  organizationOf: () => Promise<string>,
+  slug: string,
   editionId: string,
 ): Promise<EditionPageData | null> {
   if (!UUID.test(editionId)) return null;
-  const organization = await organizationOf();
+  const organization = await organizationId(client, slug);
   const [edition] = await rowsOf(client, 'edition_page_view', organization, editionId, toHeader);
   if (!edition) return null;
 
