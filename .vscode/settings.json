@@ -1,11 +1,11 @@
 {
-  // Masque dans l'explorateur ce que git ignore et qu'on n'ouvre jamais :
-  // les traces de l'agent, les rapports de couverture, les builds, les caches.
+  // Masque dans l'explorateur ce qu'on n'ouvre jamais : les traces de l'agent,
+  // les rapports de couverture, les builds, les caches de Vite et de Supabase.
   "files.exclude": {
     "**/.claude/.cc-writes": true,
     "**/coverage": true,
     "**/dist": true,
-    "**/.DS_Store": true,
+    "**/src/node_modules": true,
     "supabase/.temp": true,
     "supabase/.branches": true
   }

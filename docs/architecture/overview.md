@@ -97,7 +97,7 @@ que ce qu'elle affiche. Pas de cache côté navigateur pour l'instant
 ```
 arrakis/
 ├── apps/
-│   └── web/                 Le site, rangé par fonctionnalité (classement, profil, édition…)
+│   └── web/                 Le site, à ranger par fonctionnalité (#56)
 ├── packages/
 │   ├── domain/              Règles métier pures — zéro dépendance runtime
 │   │   └── src/
@@ -106,9 +106,9 @@ arrakis/
 │   │       ├── identity/    Alias, résolution de pseudo, fusion
 │   │       ├── import/      Analyse d'un import Excel (sans lire le fichier)
 │   │       └── projection/  project(faits) → projections
-│   ├── application/         Cas d'usage et ports (ADR 0023)
+│   ├── application/         executeCommand, commandes, recalcul, ports (ADR 0023)
 │   │   └── src/
-│   │       ├── commands/    Une commande par fichier, avec son test
+│   │       ├── commands/    Une commande par fichier, avec son test (dès le #39)
 │   │       └── testing/     Ports en mémoire, jeu d'essai, suites de contrat
 │   ├── postgres/            Transaction et entrepôts SQL : implémente les ports
 │   ├── contracts/           Schémas Zod des entrées de commande
@@ -121,16 +121,6 @@ arrakis/
 │   └── golden-master/       Extraction des données v1 et des notes attendues
 └── docs/
 ```
-
-### Où ranger un fichier
-
-- **Par sujet, pas par type.** Le domaine se range par sujet métier
-  (`rating/`, `identity/`), les commandes par commande, le site par
-  fonctionnalité. On trouve un sujet à son nom.
-- **Le test à côté de son code** : `close-edition.ts` et
-  `close-edition.test.ts` dans le même dossier ; `*.db.test.ts` pour ceux qui
-  ont besoin de la base locale.
-- **Les outils de test dans `testing/`** du paquet qu'ils servent.
 
 ## Ce qui n'est pas encore décidé
 
