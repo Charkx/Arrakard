@@ -64,12 +64,7 @@ export function planMigration(dump: V1Dump): MigrationPlan {
     date: edition.date,
     performances: performancesOf(row, match, identities.playerIdOf, report),
   }));
-  const nicknames = new Map(identities.players.map((p) => [p.id, p.nickname]));
-  const performances = dropDuplicatePerformances(
-    played.flatMap((p) => p.performances),
-    (playerId) => nicknames.get(playerId) ?? playerId,
-    report,
-  );
+  const performances = played.flatMap((p) => p.performances);
   reportOrphanEventResults(dump, editionById, report);
 
   // Première édition jouée par chaque joueur sous chaque tag (date d'arrivée, M8).
@@ -204,34 +199,6 @@ function checkResults(match: V1Match, performances: readonly V2Performance[], re
     code: 'contradictory-result',
     message: `Match ${match.id} (${match.team_a} contre ${match.team_b}) : vainqueur enregistré « ${match.winner} », résultats des lignes A ${a} / B ${b}. Migré tel quel, à corriger après la bascule.`,
   });
-}
-
-/**
- * Un joueur n'a qu'une performance par match (M10). Si la v1 l'a saisi
- * plusieurs fois, la première performance dans l'ordre des rôles est gardée
- * (côté A avant côté B à rôle égal), les autres ne sont pas migrées.
- */
-function dropDuplicatePerformances(
-  performances: V2Performance[],
-  nicknameOf: (playerId: string) => string,
-  report: Anomaly[],
-): V2Performance[] {
-  const groups = Map.groupBy(performances, (p) => `${p.match_id}|${p.player_id}`);
-  const dropped = new Set<V2Performance>();
-  const describe = (ps: readonly V2Performance[]) =>
-    ps.map((p) => `${p.role} côté ${p.side}`).join(', ');
-  for (const group of groups.values()) {
-    const [kept, ...others] = group.toSorted(
-      (x, y) => x.line - y.line || x.side.localeCompare(y.side),
-    );
-    if (kept === undefined || others.length === 0) continue;
-    for (const other of others) dropped.add(other);
-    report.push({
-      code: 'duplicate-performance',
-      message: `Match ${kept.match_id} : ${nicknameOf(kept.player_id)} (${kept.player_id}) a ${group.length} performances (${describe([kept, ...others])}). Gardée : ${describe([kept])}. ${others.length > 1 ? 'Non migrées' : 'Non migrée'} : ${describe(others)}. À corriger après la bascule.`,
-    });
-  }
-  return performances.filter((p) => !dropped.has(p));
 }
 
 function performancesOf(

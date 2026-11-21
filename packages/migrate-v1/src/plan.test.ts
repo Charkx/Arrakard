@@ -202,53 +202,6 @@ describe('planMigration', () => {
       ]);
     });
 
-    it('garde la première performance d’un joueur présent deux fois dans un match, et le signale (M10)', () => {
-      const { rows, report } = planMigration(
-        aV1Dump({
-          match_rows: [
-            aV1Row({ id: 'row-adc', role: 'ADC', a_player_name: 'Alizé', b_champion: 'Jinx' }),
-            aV1Row({ id: 'row-mid', role: 'MID', a_player_name: 'Mistral', b_champion: 'Ahri' }),
-          ],
-        }),
-      );
-
-      const sideB = rows.performances.filter((p) => p.side === 'B');
-      expect(sideB.map((p) => [p.role, p.champion])).toEqual([['MID', 'Ahri']]);
-      expect(rows.performances).toHaveLength(3);
-      expect(report).toContainEqual({
-        code: 'duplicate-performance',
-        message: `Match match-1 : Sirocco (${sideB[0]?.player_id}) a 2 performances (MID côté B, ADC côté B). Gardée : MID côté B. Non migrée : ADC côté B. À corriger après la bascule.`,
-      });
-    });
-
-    it('signale en un seul message un joueur présent trois fois, des deux côtés', () => {
-      const { rows, report } = planMigration(
-        aV1Dump({
-          match_rows: [
-            aV1Row({
-              id: 'row-top',
-              role: 'TOP',
-              a_player_name: 'Sirocco',
-              b_player_name: 'Alizé',
-            }),
-            aV1Row({ id: 'row-jgl', role: 'JGL', a_player_name: 'Mistral' }),
-            aV1Row({ id: 'row-mid', role: 'MID', a_player_name: 'Bora' }),
-          ],
-        }),
-      );
-
-      const sirocco = rows.performances.filter(
-        (p) => p.player_id === rows.performances[0]?.player_id,
-      );
-      expect(sirocco.map((p) => [p.role, p.side])).toEqual([['TOP', 'A']]);
-      expect(report.filter((a) => a.code === 'duplicate-performance')).toEqual([
-        {
-          code: 'duplicate-performance',
-          message: `Match match-1 : Sirocco (${sirocco[0]?.player_id}) a 3 performances (TOP côté A, JGL côté B, MID côté B). Gardée : TOP côté A. Non migrées : JGL côté B, MID côté B. À corriger après la bascule.`,
-        },
-      ]);
-    });
-
     it('signale un vainqueur absent du match même si les lignes sont cohérentes', () => {
       const { rows, report } = planMigration(
         aV1Dump({
@@ -582,9 +535,10 @@ describe('planMigration', () => {
         speaks_english: false,
         created_at: '2026-01-20T00:00:00Z',
       };
-      const v1Row = { ...registration, updated_at: '2026-01-21T00:00:00Z' };
 
-      const plan = planMigration(aV1Dump({ registrations: [v1Row] }));
+      const plan = planMigration(
+        aV1Dump({ registrations: [{ ...registration, updated_at: '2026-01-21T00:00:00Z' }] }),
+      );
 
       expect(plan.rows.registrations).toEqual([registration]);
     });

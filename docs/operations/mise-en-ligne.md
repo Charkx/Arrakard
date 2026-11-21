@@ -85,8 +85,8 @@ corepack pnpm --filter @arrakis/migrate-v1 report "$BACKUP" "$BACKUP/v1-referenc
 ```
 
 Le rapport doit finir par **« Écarts de notes »** avec seulement des écarts
-expliqués par les anomalies A6 et M10 ([spécification de la migration](../domain/migration-spec.md)) :
-le 2026-11-21, il y en avait 8, pour 2 joueurs (2 pour A6, 6 pour M10). Le rapport cite des
+expliqués par l'anomalie A6 ([spécification de la migration](../domain/migration-spec.md)) :
+le 2026-10-05, il y en avait 2, pour un seul joueur. Le rapport cite des
 pseudos réels : ne le colle pas dans une issue ni dans une PR, donne seulement
 les nombres.
 
