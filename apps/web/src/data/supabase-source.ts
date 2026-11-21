@@ -66,14 +66,18 @@ async function organizationId(client: SupabaseClient, slug: string): Promise<str
 }
 
 async function loadLeaderboard(client: SupabaseClient, slug: string): Promise<LeaderboardData> {
-  const organization = { data: { id: await organizationId(client, slug) } };
-
-  const season = await client
-    .from('seasons')
-    .select('id, name')
-    .eq('organization_id', organization.data.id)
-    .eq('status', 'open')
-    .maybeSingle<{ id: string; name: string }>();
+  // La saison est cherchée par le slug, en même temps que l'organisation :
+  // un aller-retour de moins sur mobile. L'organisation reste vérifiée, pour
+  // qu'un slug faux soit une erreur et non un classement vide.
+  const [season] = await Promise.all([
+    client
+      .from('seasons')
+      .select('id, name, organizations!inner(slug)')
+      .eq('organizations.slug', slug)
+      .eq('status', 'open')
+      .maybeSingle<{ id: string; name: string }>(),
+    organizationId(client, slug),
+  ]);
   if (season.error) throw season.error;
   if (!season.data) return { seasonName: null, entries: [] };
 
@@ -161,25 +165,28 @@ async function loadPlayer(
 ): Promise<PlayerPageData | MergedPlayer | null> {
   if (!UUID.test(playerId)) return null;
   const organization = await organizationId(client, slug);
-  const profile = await client
-    .from('player_profile_view')
-    .select('*')
-    .eq('organization_id', organization)
-    .eq('player_id', playerId)
-    // Un joueur archivé est masqué des pages publiques (glossaire).
-    .eq('archived', false)
-    .maybeSingle<PlayerProfileViewRow>();
+  // Profil et matchs en même temps : les matchs ne servent à rien sans profil,
+  // mais les attendre l'un après l'autre coûte un aller-retour sur mobile.
+  const [profile, matches] = await Promise.all([
+    client
+      .from('player_profile_view')
+      .select('*')
+      .eq('organization_id', organization)
+      .eq('player_id', playerId)
+      // Un joueur archivé est masqué des pages publiques (glossaire).
+      .eq('archived', false)
+      .maybeSingle<PlayerProfileViewRow>(),
+    client
+      .from('player_matches_view')
+      .select(
+        'match_id, edition_id, edition_name, edition_date, match_number, matchday, role, champion, result, kills, deaths, assists',
+      )
+      .eq('organization_id', organization)
+      .eq('player_id', playerId)
+      .overrideTypes<PlayerMatchViewRow[], { merge: false }>(),
+  ]);
   if (profile.error) throw profile.error;
   if (!profile.data) return mergedInto(client, organization, playerId);
-
-  const matches = await client
-    .from('player_matches_view')
-    .select(
-      'match_id, edition_id, edition_name, edition_date, match_number, matchday, role, champion, result, kills, deaths, assists',
-    )
-    .eq('organization_id', organization)
-    .eq('player_id', playerId)
-    .overrideTypes<PlayerMatchViewRow[], { merge: false }>();
   if (matches.error) throw matches.error;
 
   const row = profile.data;
