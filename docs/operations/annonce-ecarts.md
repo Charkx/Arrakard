@@ -22,7 +22,8 @@ calcul de votre note, étape par étape.
 Les résultats se saisissent encore sur l'ancien site : le nouveau est mis à
 jour après chaque événement.
 
-Les notes de la saison sont les mêmes sur les deux sites. Quatre différences
+Les notes de la saison sont les mêmes sur les deux sites, sauf pour un joueur
+(dernier point). Quatre différences
 peuvent vous surprendre :
 
 - **La vue « toutes saisons » de l'ancien site n'existe pas sur le nouveau.**
@@ -36,7 +37,7 @@ peuvent vous surprendre :
   joué dans la saison. Cela concerne aujourd'hui NOMBRE joueur(s).
 - **14 résultats d'un ancien tournoi**, saisis sans leurs matchs, ne sont pas
   repris. Les notes n'en dépendent pas : elles sont identiques sans eux.
-- **Un match de juin**, où un joueur avait été inscrit à deux rôles à la fois,
+- **Un match de juin**, où un joueur avait été saisi à deux rôles à la fois,
   ne lui compte plus qu'une fois. Sa note bouge d'un point. Les admins
   corrigeront ce match quand les résultats se saisiront sur le nouveau site.
 
@@ -53,7 +54,8 @@ is calculated, step by step.
 Results are still entered on the old site: the new one is updated after each
 event.
 
-Season ratings are the same on both sites. Four differences may surprise you:
+Season ratings are the same on both sites, except for one player (last
+point). Four differences may surprise you:
 
 - **The old site's "all seasons" view is not on the new one.** It read
   totals computed once, in June, and never updated: its numbers were wrong

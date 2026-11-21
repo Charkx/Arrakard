@@ -202,7 +202,7 @@ describe('planMigration', () => {
       ]);
     });
 
-    it('garde la première ligne d’un joueur inscrit deux fois dans un match, et le signale (M10)', () => {
+    it('garde la première performance d’un joueur présent deux fois dans un match, et le signale (M10)', () => {
       const { rows, report } = planMigration(
         aV1Dump({
           match_rows: [
@@ -216,9 +216,37 @@ describe('planMigration', () => {
       expect(sideB.map((p) => [p.role, p.champion])).toEqual([['MID', 'Ahri']]);
       expect(rows.performances).toHaveLength(3);
       expect(report).toContainEqual({
-        code: 'duplicate-player',
-        message: `Match match-1 : le joueur ${sideB[0]?.player_id} a deux lignes côté B (MID et ADC). Ligne ADC non migrée, à corriger après la bascule.`,
+        code: 'duplicate-performance',
+        message: `Match match-1 : Sirocco (${sideB[0]?.player_id}) a 2 performances (MID côté B, ADC côté B). Gardée : MID côté B. Non migrée : ADC côté B. À corriger après la bascule.`,
       });
+    });
+
+    it('signale en un seul message un joueur présent trois fois, des deux côtés', () => {
+      const { rows, report } = planMigration(
+        aV1Dump({
+          match_rows: [
+            aV1Row({
+              id: 'row-top',
+              role: 'TOP',
+              a_player_name: 'Sirocco',
+              b_player_name: 'Alizé',
+            }),
+            aV1Row({ id: 'row-jgl', role: 'JGL', a_player_name: 'Mistral' }),
+            aV1Row({ id: 'row-mid', role: 'MID', a_player_name: 'Bora' }),
+          ],
+        }),
+      );
+
+      const sirocco = rows.performances.filter(
+        (p) => p.player_id === rows.performances[0]?.player_id,
+      );
+      expect(sirocco.map((p) => [p.role, p.side])).toEqual([['TOP', 'A']]);
+      expect(report.filter((a) => a.code === 'duplicate-performance')).toEqual([
+        {
+          code: 'duplicate-performance',
+          message: `Match match-1 : Sirocco (${sirocco[0]?.player_id}) a 3 performances (TOP côté A, JGL côté B, MID côté B). Gardée : TOP côté A. Non migrées : JGL côté B, MID côté B. À corriger après la bascule.`,
+        },
+      ]);
     });
 
     it('signale un vainqueur absent du match même si les lignes sont cohérentes', () => {
