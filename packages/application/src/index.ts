@@ -8,3 +8,10 @@ export type {
   PlayerRow,
   SeasonRow,
 } from './facts.ts';
+export { recomputeProjections } from './recompute.ts';
+export type {
+  FactsReader,
+  OrganizationRepository,
+  ProjectionStore,
+  RecomputePorts,
+} from './recompute.ts';
