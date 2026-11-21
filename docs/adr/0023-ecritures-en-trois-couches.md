@@ -1,6 +1,6 @@
 # 0023 — Les écritures en trois couches
 
-- **Statut** : Proposé
+- **Statut** : Accepté (2026-11-21)
 - **Date** : 2026-11-19
 - **Amende** : [0005](0005-ecritures-par-commandes.md) (où vit la logique d'une commande), [0001](0001-monorepo-et-domaine-pur.md) (les paquets)
 

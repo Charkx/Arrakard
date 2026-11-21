@@ -56,8 +56,7 @@ Règles :
 
 ## Chemin d'écriture : une commande
 
-Trois couches ([ADR 0023](../adr/0023-ecritures-en-trois-couches.md),
-proposé) : l'Edge Function est un adaptateur mince. `executeCommand`
+Trois couches ([ADR 0023](../adr/0023-ecritures-en-trois-couches.md)) : l'Edge Function est un adaptateur mince. `executeCommand`
 (`packages/application`) enchaîne toujours les mêmes étapes, et ne parle à la
 base qu'à travers des ports, que `packages/postgres` implémente.
 

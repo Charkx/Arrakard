@@ -1,6 +1,6 @@
 # 0005 — Écritures par commandes transactionnelles
 
-- **Statut** : Accepté (spike concluant, 2026-10-05), amendé par [0023](0023-ecritures-en-trois-couches.md) (trois couches, proposé)
+- **Statut** : Accepté (spike concluant, 2026-10-05), amendé par [0023](0023-ecritures-en-trois-couches.md) (trois couches)
 - **Date** : 2026-10-03
 - **Complété par** : [0009](0009-serialiser-et-journaliser-les-commandes.md) (verrou par organisation, journal)
 
@@ -27,7 +27,7 @@ Chaque commande est une Edge Function qui :
 5. écrit les faits, recalcule les projections ([ADR 0003](0003-faits-et-projections.md)),
    puis valide (`COMMIT`).
 
-> **Amendé par [0023](0023-ecritures-en-trois-couches.md)** (proposé). Ces
+> **Amendé par [0023](0023-ecritures-en-trois-couches.md)**. Ces
 > cinq étapes ne vivent plus dans l'Edge Function, qui ne fait que lire le JWT,
 > valider l'entrée et traduire le résultat en HTTP. Elles passent par
 > `executeCommand` (`packages/application`) : transaction et verrou,
