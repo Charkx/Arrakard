@@ -1,8 +1,8 @@
+import { toFacts } from '@arrakis/application';
 import { project, V1_RATING_RULES } from '@arrakis/domain';
 import { describe, expect, it } from 'vitest';
 import { planMigration } from '../plan.ts';
 import { aV1Dump } from '../testing/v1-builders.ts';
-import { toFacts } from '../verify.ts';
 import { toProjectionRows } from './projection-rows.ts';
 
 /** Une saison, une édition, un match d'une ligne : Zéphyr gagne 3/1/7, Sirocco perd 1/3/2. */

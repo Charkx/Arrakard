@@ -16,6 +16,7 @@
     "test:db": "vitest run --config vitest.db.config.ts"
   },
   "dependencies": {
+    "@arrakis/application": "workspace:*",
     "@arrakis/domain": "workspace:*",
     "postgres": "^4.1.0"
   },

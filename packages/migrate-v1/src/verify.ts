@@ -1,6 +1,6 @@
-import { project, V1_RATING_RULES, type Facts, type SeasonRating } from '@arrakis/domain';
+import { toFacts } from '@arrakis/application';
+import { project, V1_RATING_RULES, type SeasonRating } from '@arrakis/domain';
 import type { MigrationPlan } from './plan.ts';
-import type { V2Edition, V2Match, V2Performance, V2Player, V2Season } from './v2.ts';
 
 /** Une différence entre la note v1 affichée et la note recalculée en v2. */
 export interface Discrepancy {
@@ -10,58 +10,6 @@ export interface Discrepancy {
   readonly field: string;
   readonly v1: number | string;
   readonly v2: number | string;
-}
-
-/** Les lignes v2 vues comme faits du domaine, pour `project()`. */
-/** Ce que `project()` lit d'une ligne v2 : les colonnes qui portent un fait de jeu. */
-export interface FactRows {
-  readonly seasons: readonly Pick<V2Season, 'id'>[];
-  readonly editions: readonly Pick<
-    V2Edition,
-    'id' | 'type' | 'date' | 'season_id' | 'prestige' | 'event_mvp_player_id'
-  >[];
-  readonly matches: readonly Pick<
-    V2Match,
-    'id' | 'edition_id' | 'match_number' | 'winner_team' | 'duration_seconds'
-  >[];
-  readonly performances: readonly V2Performance[];
-  readonly players: readonly Pick<V2Player, 'id' | 'nickname'>[];
-}
-
-export function toFacts(rows: FactRows): Facts {
-  return {
-    seasons: rows.seasons.map((s) => ({ id: s.id })),
-    editions: rows.editions.map((e) => ({
-      id: e.id,
-      type: e.type,
-      date: e.date,
-      seasonId: e.season_id,
-      prestige: e.prestige,
-      ...(e.event_mvp_player_id === null ? {} : { eventMvpPlayerId: e.event_mvp_player_id }),
-    })),
-    matches: rows.matches.map((m) => ({
-      id: m.id,
-      editionId: m.edition_id,
-      matchNumber: m.match_number,
-      winnerTeam: m.winner_team,
-      durationSeconds: m.duration_seconds,
-    })),
-    performances: rows.performances.map((p) => ({
-      matchId: p.match_id,
-      line: p.line,
-      side: p.side,
-      playerId: p.player_id,
-      team: p.team,
-      role: p.role,
-      champion: p.champion,
-      result: p.result,
-      kills: p.kills,
-      deaths: p.deaths,
-      assists: p.assists,
-      gold: p.gold,
-    })),
-    players: rows.players.map((p) => ({ id: p.id, nickname: p.nickname })),
-  };
 }
 
 /**

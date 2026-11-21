@@ -1,7 +1,7 @@
 import type { Facts } from '@arrakis/domain';
 import type { Sql, TransactionSql } from 'postgres';
 import type { V2Edition, V2Match, V2Performance, V2Player, V2Season } from '../v2.ts';
-import { toFacts } from '../verify.ts';
+import { toFacts } from '@arrakis/application';
 import type { ProjectionRows } from './projection-rows.ts';
 
 type Db = Sql | TransactionSql;
