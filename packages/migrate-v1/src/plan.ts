@@ -64,7 +64,10 @@ export function planMigration(dump: V1Dump): MigrationPlan {
     date: edition.date,
     performances: performancesOf(row, match, identities.playerIdOf, report),
   }));
-  const performances = played.flatMap((p) => p.performances);
+  const performances = dropDuplicatePlayers(
+    played.flatMap((p) => p.performances),
+    report,
+  );
   reportOrphanEventResults(dump, editionById, report);
 
   // Première édition jouée par chaque joueur sous chaque tag (date d'arrivée, M8).
@@ -135,7 +138,20 @@ export function planMigration(dump: V1Dump): MigrationPlan {
         player_id,
       })),
       card_customizations: cardCustomizations(dump, report),
-      registrations: dump.registrations.map((r) => ({ ...r })),
+      // Colonne par colonne : la v1 en a d'autres (`updated_at`), que la v2 n'a pas.
+      registrations: dump.registrations.map((r) => ({
+        id: r.id,
+        edition_id: r.edition_id,
+        discord_user_id: r.discord_user_id,
+        pseudo: r.pseudo,
+        role: r.role,
+        secondary_role: r.secondary_role,
+        rank: r.rank,
+        opgg: r.opgg,
+        alt_riot_id: r.alt_riot_id,
+        speaks_english: r.speaks_english,
+        created_at: r.created_at,
+      })),
     },
     report,
     playerIdByKey: identities.playerIdByKey,
@@ -186,6 +202,27 @@ function checkResults(match: V1Match, performances: readonly V2Performance[], re
     code: 'contradictory-result',
     message: `Match ${match.id} (${match.team_a} contre ${match.team_b}) : vainqueur enregistré « ${match.winner} », résultats des lignes A ${a} / B ${b}. Migré tel quel, à corriger après la bascule.`,
   });
+}
+
+/**
+ * Un joueur n'a qu'une ligne par match (M10). Si la v1 l'a inscrit deux fois,
+ * la première ligne dans l'ordre des rôles est gardée, les autres sont écartées.
+ */
+function dropDuplicatePlayers(performances: V2Performance[], report: Anomaly[]): V2Performance[] {
+  const groups = Map.groupBy(performances, (p) => `${p.match_id}|${p.player_id}`);
+  const dropped = new Set<V2Performance>();
+  for (const group of groups.values()) {
+    const [kept, ...others] = group.toSorted((x, y) => x.line - y.line);
+    if (kept === undefined) continue;
+    for (const other of others) {
+      dropped.add(other);
+      report.push({
+        code: 'duplicate-player',
+        message: `Match ${kept.match_id} : le joueur ${kept.player_id} a deux lignes côté ${other.side} (${kept.role} et ${other.role}). Ligne ${other.role} non migrée, à corriger après la bascule.`,
+      });
+    }
+  }
+  return performances.filter((p) => !dropped.has(p));
 }
 
 function performancesOf(

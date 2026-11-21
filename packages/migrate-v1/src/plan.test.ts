@@ -202,6 +202,25 @@ describe('planMigration', () => {
       ]);
     });
 
+    it('garde la première ligne d’un joueur inscrit deux fois dans un match, et le signale (M10)', () => {
+      const { rows, report } = planMigration(
+        aV1Dump({
+          match_rows: [
+            aV1Row({ id: 'row-adc', role: 'ADC', a_player_name: 'Alizé', b_champion: 'Jinx' }),
+            aV1Row({ id: 'row-mid', role: 'MID', a_player_name: 'Mistral', b_champion: 'Ahri' }),
+          ],
+        }),
+      );
+
+      const sideB = rows.performances.filter((p) => p.side === 'B');
+      expect(sideB.map((p) => [p.role, p.champion])).toEqual([['MID', 'Ahri']]);
+      expect(rows.performances).toHaveLength(3);
+      expect(report).toContainEqual({
+        code: 'duplicate-player',
+        message: `Match match-1 : le joueur ${sideB[0]?.player_id} a deux lignes côté B (MID et ADC). Ligne ADC non migrée, à corriger après la bascule.`,
+      });
+    });
+
     it('signale un vainqueur absent du match même si les lignes sont cohérentes', () => {
       const { rows, report } = planMigration(
         aV1Dump({
@@ -518,6 +537,27 @@ describe('planMigration', () => {
       expect(plan.rows.edition_participants).toEqual([
         { edition_id: 'edition-1', player_id: 'player-zephyr' },
       ]);
+      expect(plan.rows.registrations).toEqual([registration]);
+    });
+
+    it('ne reprend d’une inscription que les colonnes que la v2 connaît', () => {
+      const registration = {
+        id: 'reg-1',
+        edition_id: 'edition-1',
+        discord_user_id: '42',
+        pseudo: 'Zéphyr',
+        role: 'TOP',
+        secondary_role: null,
+        rank: null,
+        opgg: null,
+        alt_riot_id: null,
+        speaks_english: false,
+        created_at: '2026-01-20T00:00:00Z',
+      };
+      const v1Row = { ...registration, updated_at: '2026-01-21T00:00:00Z' };
+
+      const plan = planMigration(aV1Dump({ registrations: [v1Row] }));
+
       expect(plan.rows.registrations).toEqual([registration]);
     });
 
