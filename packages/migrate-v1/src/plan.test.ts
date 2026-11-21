@@ -521,6 +521,28 @@ describe('planMigration', () => {
       expect(plan.rows.registrations).toEqual([registration]);
     });
 
+    it('ne reprend d’une inscription que les colonnes que la v2 connaît', () => {
+      const registration = {
+        id: 'reg-1',
+        edition_id: 'edition-1',
+        discord_user_id: '42',
+        pseudo: 'Zéphyr',
+        role: 'TOP',
+        secondary_role: null,
+        rank: null,
+        opgg: null,
+        alt_riot_id: null,
+        speaks_english: false,
+        created_at: '2026-01-20T00:00:00Z',
+      };
+
+      const plan = planMigration(
+        aV1Dump({ registrations: [{ ...registration, updated_at: '2026-01-21T00:00:00Z' }] }),
+      );
+
+      expect(plan.rows.registrations).toEqual([registration]);
+    });
+
     it('signale, sans les migrer, les résultats d’un événement rattachés à une édition d’un autre type (M4)', () => {
       const entry = (id: string, eventType: string) => ({
         id,

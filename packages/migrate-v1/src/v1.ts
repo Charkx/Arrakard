@@ -143,6 +143,8 @@ export interface V1Registration {
   readonly alt_riot_id: string | null;
   readonly speaks_english: boolean;
   readonly created_at: string;
+  /** Absente de la v2 : non reprise. */
+  readonly updated_at?: string;
 }
 
 export interface V1PlayerEventEntry {
