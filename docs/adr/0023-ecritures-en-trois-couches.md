@@ -101,6 +101,9 @@ Inchangé : des règles pures, sans I/O. L'heure est passée en paramètre.
 - Le **recalcul** (`recomputeProjections`) est une fonction de cette couche,
   avec la conversion des lignes en faits (`toFacts`) : les deux quittent
   `migrate-v1`.
+  Ces lignes (`FactRows`) portent les noms des colonnes SQL : c'est la forme
+  que partagent les adaptateurs, pas un accès à la base. L'application ne
+  fait aucune requête.
 
 ### 3. Adaptateurs
 
