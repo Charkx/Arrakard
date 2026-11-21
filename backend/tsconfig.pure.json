@@ -1,0 +1,11 @@
+{
+  // Le domaine et l'application tournent aussi sous Deno et dans le navigateur :
+  // vérifiés sans les types de Node, pour qu'aucune API de Node ne s'y glisse.
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["domain", "application"],
+  // Les tests et leurs outils ne tournent que sous Node, avec vitest.
+  "exclude": ["**/*.test.ts", "**/testing/**"]
+}

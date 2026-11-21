@@ -1,7 +1,13 @@
 # 0018 — Deux langues, un dictionnaire maison
 
-- **Statut** : Accepté
+- **Statut** : Accepté ; chemins amendés par [0025](0025-un-front-un-back.md)
 - **Date** : 2026-11-12
+
+> **Amendé par [0025](0025-un-front-un-back.md)**. Le dépôt n'a plus que trois paquets :
+> `packages/domain`, `packages/application` et `packages/postgres` sont
+> devenus `backend/domain`, `backend/application` et `backend/infrastructure` ;
+> `apps/web` est `frontend` ; `packages/migrate-v1` est `tools/migrate-v1`.
+> Le texte ci-dessous garde les chemins de sa date.
 
 ## Contexte
 

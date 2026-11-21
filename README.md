@@ -5,10 +5,10 @@ joueurs façon FUT, classements, pages d'événements, inscriptions et
 administration des résultats.
 
 > **Statut : tranche 1 en préparation (lecture).** Le domaine est terminé : les
-> règles métier sont écrites en TDD dans `packages/domain` et validées contre
+> règles métier sont écrites en TDD dans `backend/domain` et validées contre
 > la production v1 (golden master). Côté serveur, le schéma et ses
 > droits d'accès sont testés en pgTAP, et la migration v1 → v2 est planifiée
-> et vérifiée (`packages/migrate-v1`). Le socle du site existe (`apps/web`),
+> et vérifiée (`tools/migrate-v1`). Le socle du site existe (`frontend`),
 > encore sans page. Prochaine étape : mettre en ligne un site en lecture
 > seule, nourri par la migration.
 > L'ancienne version (`arrakis-cards`) reste en production : les admins y
@@ -68,7 +68,7 @@ pnpm install
 pnpm check             # lint + format + types + tests avec couverture (= la CI)
 ```
 
-Pendant le TDD : `pnpm --filter @arrakis/domain test:watch`.
+Pendant le TDD : `pnpm --filter @arrakis/backend test:watch`.
 
 La base locale (Docker doit tourner) :
 
@@ -84,17 +84,17 @@ et se charge en ligne selon la [mise en ligne](docs/operations/mise-en-ligne.md)
 
 Le site lit la base locale par défaut. Pour une autre base, il prend les
 variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` (voir
-`apps/web/env.example`).
+`frontend/env.example`).
 
-Le site (`apps/web`) :
+Le site (`frontend`) :
 
 ```bash
 pnpm dev               # démarre le site sur http://localhost:5173
-pnpm build             # construit le site dans apps/web/dist
+pnpm build             # construit le site dans frontend/dist
 pnpm size              # poids du JavaScript initial (limite : 250 kB compressé)
 ```
 
-## Le domaine (`packages/domain`)
+## Le domaine (`backend/domain`)
 
 | Module           | Rôle                                                        | Cas d'usage |
 | ---------------- | ----------------------------------------------------------- | ----------- |
@@ -107,17 +107,20 @@ pnpm size              # poids du JavaScript initial (limite : 250 kB compressé
 | `projection/`    | `project(faits)` : recalcul complet des projections         | S1          |
 | `golden-master/` | Preuve que le moteur reproduit la v1 sur les vraies données | —           |
 
-## Les couches ([ADR 0023](docs/adr/0023-ecritures-en-trois-couches.md))
+## Les couches ([ADR 0023](docs/adr/0023-ecritures-en-trois-couches.md), [ADR 0025](docs/adr/0025-un-front-un-back.md))
 
-Chaque paquet n'importe que ceux plus au centre. Une règle de lint le vérifie pour le domaine, l'application et l'adaptateur Postgres.
+Trois paquets : le site (`frontend`), le serveur (`backend`) et l'outil de
+migration (`tools/migrate-v1`). Le serveur est rangé en trois couches ; chacune
+n'importe que celles plus au centre, et une règle de lint le vérifie dossier
+par dossier.
 
-| Paquet                 | Rôle                                                               | Dépend de            |
-| ---------------------- | ------------------------------------------------------------------ | -------------------- |
-| `packages/domain`      | Règles métier pures                                                | rien                 |
-| `packages/application` | Cas d'usage et leurs ports (aujourd'hui : le recalcul), en mémoire | le domaine           |
-| `packages/postgres`    | Adaptateur : implémente les ports avec postgres.js                 | domaine, application |
-| `packages/migrate-v1`  | Outil de migration : écrit les faits, puis appelle le recalcul     | les trois            |
-| `apps/web`             | Le site : lit les vues par `DataSource` (ADR 0019)                 | le domaine           |
+| Dossier                  | Rôle                                                           | Dépend de            |
+| ------------------------ | -------------------------------------------------------------- | -------------------- |
+| `backend/domain`         | Règles métier pures                                            | rien                 |
+| `backend/application`    | Cas d'usage et leurs ports (aujourd'hui : le recalcul)         | le domaine           |
+| `backend/infrastructure` | Adaptateurs : implémente les ports avec postgres.js            | domaine, application |
+| `frontend`               | Le site : lit les vues par `DataSource` (ADR 0019)             | le domaine           |
+| `tools/migrate-v1`       | Outil de migration : écrit les faits, puis appelle le recalcul | tout le back         |
 
 ## Feuille de route
 
@@ -128,7 +131,7 @@ remplacent les anciennes phases 3 (backend), 4 (front) et 5 (bascule).
 | Étape                   | Contenu                                                                                                            | Livrable                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
 | **Phase 1. Cadrage**    | Vision, cas d'usage, glossaire, spec de note, ADR                                                                  | Cette documentation                                              |
-| **Phase 2. Domaine**    | Monorepo, `packages/domain` en TDD, golden master v1                                                               | Moteur de calcul validé contre la prod                           |
+| **Phase 2. Domaine**    | Monorepo, `backend/domain` en TDD, golden master v1                                                                | Moteur de calcul validé contre la prod                           |
 | **Tranche 1. Lecture**  | Écriture des données migrées, pages publiques, explication de la note, design v1 réutilisé                         | Site v2 en ligne en lecture seule ; les admins restent sur la v1 |
 | **Tranche 2. Soirée**   | Import, corrections, brouillon puis publication, récap, annonce Discord, connexion, inscriptions, personnalisation | Les admins passent sur la v2 ; v1 archivée (bascule)             |
 | **Tranche 3. Histoire** | Album de saison, notes de patch, équipes d'In House proposées, fiche de match                                      | Dans l'ordre que la communauté demande                           |

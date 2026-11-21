@@ -57,8 +57,8 @@ Règles :
 ## Chemin d'écriture : une commande
 
 Trois couches ([ADR 0023](../adr/0023-ecritures-en-trois-couches.md)) : l'Edge Function est un adaptateur mince. `executeCommand`
-(`packages/application`) enchaîne toujours les mêmes étapes, et ne parle à la
-base qu'à travers des ports, que `packages/postgres` implémente.
+(`backend/application`) enchaîne toujours les mêmes étapes, et ne parle à la
+base qu'à travers des ports, que `backend/infrastructure` implémente.
 
 ```mermaid
 sequenceDiagram
@@ -96,28 +96,25 @@ que ce qu'elle affiche. Pas de cache côté navigateur pour l'instant
 
 ```
 arrakis/
-├── apps/
-│   └── web/                 Le site, à ranger par fonctionnalité (#56)
-├── packages/
+├── frontend/                Le site React, à ranger par fonctionnalité (#56)
+├── backend/                 Un seul paquet, trois couches (ADR 0023, ADR 0025)
 │   ├── domain/              Règles métier pures — zéro dépendance runtime
-│   │   └── src/
-│   │       ├── rating/      Note, sous-notes, palier, fiabilité
-│   │       ├── standings/   Classement, classement de soirée
-│   │       ├── identity/    Alias, résolution de pseudo, fusion
-│   │       ├── import/      Analyse d'un import Excel (sans lire le fichier)
-│   │       └── projection/  project(faits) → projections
-│   ├── application/         executeCommand, commandes, recalcul, ports (ADR 0023)
-│   │   └── src/
-│   │       ├── commands/    Une commande par fichier, avec son test (dès le #39)
-│   │       └── testing/     Ports en mémoire, jeu d'essai, suites de contrat
-│   ├── postgres/            Transaction et entrepôts SQL : implémente les ports
-│   ├── contracts/           Schémas Zod des entrées de commande
-│   └── migrate-v1/          Migration depuis une sauvegarde de la v1
+│   │   ├── rating/          Note, sous-notes, palier, fiabilité
+│   │   ├── standings/       Classement, classement de soirée
+│   │   ├── identity/        Alias, résolution de pseudo, fusion
+│   │   ├── import/          Analyse d'un import Excel (sans lire le fichier)
+│   │   └── projection/      project(faits) → projections
+│   ├── application/         executeCommand, commandes, recalcul, ports
+│   │   ├── commands/        Une commande par fichier, avec son test (dès le #39)
+│   │   └── testing/         Ports en mémoire, jeu d'essai, suites de contrat
+│   ├── infrastructure/      Adaptateurs : transaction et entrepôts Postgres
+│   └── contracts/           Schémas Zod des entrées de commande (à venir)
 ├── supabase/
 │   ├── migrations/
-│   ├── functions/           Une fonction par commande, mince (adaptateur HTTP)
+│   ├── functions/           Adaptateur HTTP, une fonction mince par commande (place imposée par Supabase)
 │   └── tests/               pgTAP : RLS et contraintes
-├── tools/
+├── tools/                   Outils ponctuels
+│   ├── migrate-v1/          Migration depuis une sauvegarde de la v1
 │   └── golden-master/       Extraction des données v1 et des notes attendues
 └── docs/
 ```

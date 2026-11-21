@@ -1,8 +1,14 @@
 # 0005 — Écritures par commandes transactionnelles
 
-- **Statut** : Accepté (spike concluant, 2026-10-05), amendé par [0023](0023-ecritures-en-trois-couches.md) (trois couches)
+- **Statut** : Accepté (spike concluant, 2026-10-05), amendé par [0023](0023-ecritures-en-trois-couches.md) (trois couches) ; chemins amendés par [0025](0025-un-front-un-back.md)
 - **Date** : 2026-10-03
 - **Complété par** : [0009](0009-serialiser-et-journaliser-les-commandes.md) (verrou par organisation, journal)
+
+> **Amendé par [0025](0025-un-front-un-back.md)**. Le dépôt n'a plus que trois paquets :
+> `packages/domain`, `packages/application` et `packages/postgres` sont
+> devenus `backend/domain`, `backend/application` et `backend/infrastructure` ;
+> `apps/web` est `frontend` ; `packages/migrate-v1` est `tools/migrate-v1`.
+> Le texte ci-dessous garde les chemins de sa date.
 
 ## Contexte
 
