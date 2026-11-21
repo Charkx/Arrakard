@@ -19,6 +19,7 @@ const ONLY_RELATIVE = refuse(
   '^(?!\\.{1,2}/)',
   'Le domaine et l’application n’importent que des fichiers du back, en relatif (ADR 0025).',
 );
+const ONLY_RELATIVE_OR_VITEST = refuse('^(?!\\.{1,2}/|vitest$)', ONLY_RELATIVE.message);
 const NOT_APPLICATION = refuse(
   '/application/',
   'Le domaine ne dépend de rien : ni de l’application, ni de l’infrastructure (ADR 0023).',
@@ -29,22 +30,27 @@ const NOT_INFRASTRUCTURE = refuse(
 );
 const NOT_TESTING = refuse(
   '/testing/',
-  'Les ports en mémoire servent aux tests, pas au code (ADR 0023).',
+  'Les ports en mémoire et les jeux d’essai servent aux tests, pas au code (ADR 0023).',
 );
-const NOT_OUTSIDE = {
-  group: [
-    '@arrakis/frontend',
-    '@arrakis/frontend/*',
-    '@arrakis/migrate-v1',
-    '@arrakis/migrate-v1/*',
-  ],
-  message: 'Le back ne dépend ni du site ni de la migration (ADR 0025).',
-};
+const NOT_OUTSIDE = refuse(
+  '(^|/)(frontend|tools)/',
+  'Le back ne dépend ni du site ni des outils (ADR 0025).',
+);
+const NOT_BY_PACKAGE_NAME = refuse(
+  '^@arrakis/',
+  'Dans le back, on importe en relatif : ni le site, ni la migration, ni le back par son nom (ADR 0025).',
+);
+const DOMAIN_BY_ITS_ENTRY = refuse(
+  '/domain/(?!index\\.ts$)',
+  'Le domaine s’importe par son point d’entrée, `domain/index.ts` (ADR 0025).',
+);
+const APPLICATION_BY_ITS_ENTRY = refuse(
+  '/application/(?!index\\.ts$|testing/index\\.ts$)',
+  'L’application s’importe par son point d’entrée, `application/index.ts` (ADR 0025).',
+);
 const imports = (...patterns) => ({
   'no-restricted-imports': ['error', { patterns: [...patterns, EXTENSION_REQUIRED] }],
 });
-const TESTS = '**/*.test.ts';
-const TEST_TOOLS = ['backend/**/testing/**/*.ts', 'backend/**/*.test.ts'];
 
 export default defineConfig([
   globalIgnores(['**/dist', '**/coverage', '**/node_modules']),
@@ -72,33 +78,42 @@ export default defineConfig([
   // Le domaine : relatif seulement, rien d'une autre couche. Ses tests ont droit à vitest.
   {
     files: ['backend/domain/**/*.ts'],
-    rules: imports(ONLY_RELATIVE, NOT_APPLICATION, NOT_INFRASTRUCTURE),
+    rules: imports(ONLY_RELATIVE, NOT_APPLICATION, NOT_INFRASTRUCTURE, NOT_TESTING, NOT_OUTSIDE),
   },
   {
-    files: TEST_TOOLS.map((glob) => glob.replace('backend/', 'backend/domain/')),
-    rules: imports(
-      refuse('^(?!\\.{1,2}/|vitest$)', ONLY_RELATIVE.message),
-      NOT_APPLICATION,
-      NOT_INFRASTRUCTURE,
-    ),
+    files: ['backend/domain/**/*.test.ts', 'backend/domain/testing/**/*.ts'],
+    rules: imports(ONLY_RELATIVE_OR_VITEST, NOT_APPLICATION, NOT_INFRASTRUCTURE, NOT_OUTSIDE),
   },
   // L'application : le domaine seulement. Ses tests et ses outils de test ont droit à vitest.
   {
     files: ['backend/application/**/*.ts'],
-    rules: imports(ONLY_RELATIVE, NOT_INFRASTRUCTURE),
+    rules: imports(
+      ONLY_RELATIVE,
+      NOT_INFRASTRUCTURE,
+      NOT_TESTING,
+      NOT_OUTSIDE,
+      DOMAIN_BY_ITS_ENTRY,
+    ),
   },
   {
-    files: TEST_TOOLS.map((glob) => glob.replace('backend/', 'backend/application/')),
-    rules: imports(refuse('^(?!\\.{1,2}/|vitest$)', ONLY_RELATIVE.message), NOT_INFRASTRUCTURE),
+    files: ['backend/application/**/*.test.ts', 'backend/application/testing/**/*.ts'],
+    rules: imports(ONLY_RELATIVE_OR_VITEST, NOT_INFRASTRUCTURE, NOT_OUTSIDE, DOMAIN_BY_ITS_ENTRY),
   },
-  // L'infrastructure : la périphérie. Ni le site, ni la migration, ni les faux en mémoire hors tests.
+  // L'infrastructure : la périphérie. Ses paquets npm (postgres), mais rien du
+  // dépôt par son nom, et pas les faux en mémoire hors de ses tests.
   {
     files: ['backend/infrastructure/**/*.ts'],
-    rules: imports(NOT_OUTSIDE, NOT_TESTING),
+    rules: imports(
+      NOT_BY_PACKAGE_NAME,
+      NOT_TESTING,
+      NOT_OUTSIDE,
+      DOMAIN_BY_ITS_ENTRY,
+      APPLICATION_BY_ITS_ENTRY,
+    ),
   },
   {
-    files: [`backend/infrastructure/${TESTS}`],
-    rules: imports(NOT_OUTSIDE),
+    files: ['backend/infrastructure/**/*.test.ts'],
+    rules: imports(NOT_BY_PACKAGE_NAME, NOT_OUTSIDE, DOMAIN_BY_ITS_ENTRY, APPLICATION_BY_ITS_ENTRY),
   },
   // Le site lit par `DataSource` (ADR 0019) : du back, il n'utilise que le domaine.
   {

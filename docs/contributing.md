@@ -56,7 +56,7 @@ code : voir [Travailler avec un agent](#travailler-avec-un-agent).
   métier (`rating/`, `identity/`), les commandes une par fichier dans
   `backend/application/commands/`. Un test vit à côté de son code
   (`*.test.ts`, ou `*.db.test.ts` s'il lui faut la base locale), et les outils
-  de test dans le dossier `testing/` du paquet qu'ils servent. Le site suivra
+  de test dans le dossier `testing/` de la couche qu'ils servent. Le site suivra
   au ticket #56.
 - **Base de données** : une migration fusionnée ne se modifie plus. Tout
   changement de schéma est une nouvelle migration, écrite après ses tests

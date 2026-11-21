@@ -2,7 +2,7 @@
 
 - **Statut** : Accepté
 - **Date** : 2026-11-22
-- **Amende** : [0001](0001-monorepo-et-domaine-pur.md) (les paquets), [0023](0023-ecritures-en-trois-couches.md) (où vivent les couches)
+- **Amende** : [0001](0001-monorepo-et-domaine-pur.md) (les paquets), [0023](0023-ecritures-en-trois-couches.md) (où vivent les couches) ; les chemins cités par [0005](0005-ecritures-par-commandes.md), [0006](0006-tdd-et-golden-master.md), [0017](0017-outils-du-site.md), [0018](0018-deux-langues-dictionnaire-maison.md) et [0020](0020-heberger-le-site-en-lecture.md)
 
 ## Contexte
 
@@ -28,10 +28,14 @@ Trois paquets au lieu de cinq :
 `supabase/` reste à la racine, où l'outil de Supabase le cherche : ses Edge
 Functions sont des adaptateurs HTTP, rangés là par contrainte.
 
+`backend/contracts/` accueillera les contrats (Zod) prévus par l'ADR 0001,
+quand la première commande aura une entrée à valider.
+
 La règle des dépendances ne passe plus par les paquets mais par les dossiers.
 Le lint l'impose dossier par dossier : le domaine n'importe rien d'une autre
-couche, l'application rien de l'infrastructure, et le site n'utilise du back
-que le domaine (`@arrakis/backend/domain`). Le domaine et l'application sont
+couche, l'application rien de l'infrastructure, une couche n'en voit une autre
+que par son point d'entrée (`index.ts`), et le site n'utilise du back que le
+domaine (`@arrakis/backend/domain`). Le domaine et l'application sont
 vérifiés sans les types de Node (`tsconfig.pure.json`), comme avant.
 
 ## Options écartées
