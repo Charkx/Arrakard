@@ -1,8 +1,13 @@
 # 0005 — Écritures par commandes transactionnelles
 
-- **Statut** : Accepté (spike concluant, 2026-10-05), amendé par [0023](0023-ecritures-en-trois-couches.md) (trois couches)
+- **Statut** : Accepté (spike concluant, 2026-10-05), amendé par [0023](0023-ecritures-en-trois-couches.md) (trois couches) ; chemins amendés par [0025](0025-ranger-les-paquets-par-couche.md)
 - **Date** : 2026-10-03
 - **Complété par** : [0009](0009-serialiser-et-journaliser-les-commandes.md) (verrou par organisation, journal)
+
+> **Amendé par [0025](0025-ranger-les-paquets-par-couche.md)**. Les paquets ont quitté `packages/` :
+> `packages/domain` et `packages/application` sont dans `core/`,
+> `packages/postgres` dans `adapters/`, `packages/migrate-v1` dans `tools/`.
+> Le texte ci-dessous garde les chemins de sa date.
 
 ## Contexte
 
@@ -30,7 +35,7 @@ Chaque commande est une Edge Function qui :
 > **Amendé par [0023](0023-ecritures-en-trois-couches.md)**. Ces
 > cinq étapes ne vivent plus dans l'Edge Function, qui ne fait que lire le JWT,
 > valider l'entrée et traduire le résultat en HTTP. Elles passent par
-> `executeCommand` (`core/application`) : transaction et verrou,
+> `executeCommand` (`packages/application`) : transaction et verrou,
 > autorisation, commande et contrôle de version, journal, recalcul.
 
 Le rôle `anon` / `authenticated` n'a **aucun droit d'écriture** direct sur les
@@ -40,11 +45,11 @@ sa carte** (RPC dédiée, comme en v1).
 
 ## Résultats du spike
 
-| Question                                                    | Résultat                                                                                                                                                                        |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Une Edge Function (Deno) peut-elle importer `core/domain` ? | **Oui**, directement, à condition que les imports relatifs du domaine portent leur extension (`'./rating.ts'`). Une règle de lint l'impose. Pas de bundle ni de fichier généré. |
-| Transaction Postgres depuis une Edge Function ?             | **Oui**, via `SUPABASE_DB_URL` et le client `npm:postgres` : écriture validée, annulée en cas d'erreur.                                                                         |
-| Durée d'un recalcul complet ?                               | **83 ms** pour 12 540 performances (3× la production). Cible : < 2 s.                                                                                                           |
+| Question                                                        | Résultat                                                                                                                                                                        |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Une Edge Function (Deno) peut-elle importer `packages/domain` ? | **Oui**, directement, à condition que les imports relatifs du domaine portent leur extension (`'./rating.ts'`). Une règle de lint l'impose. Pas de bundle ni de fichier généré. |
+| Transaction Postgres depuis une Edge Function ?                 | **Oui**, via `SUPABASE_DB_URL` et le client `npm:postgres` : écriture validée, annulée en cas d'erreur.                                                                         |
+| Durée d'un recalcul complet ?                                   | **83 ms** pour 12 540 performances (3× la production). Cible : < 2 s.                                                                                                           |
 
 Reste à vérifier au premier déploiement sur le projet de staging : le
 bundler de `supabase functions deploy` embarque bien les fichiers du domaine

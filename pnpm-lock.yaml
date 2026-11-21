@@ -194,25 +194,6 @@ importers:
         specifier: ^8.71.0
         version: 8.71.0(eslint@10.12.0(jiti@2.7.0))(typescript@6.0.3)
 
-  adapters/postgres:
-    dependencies:
-      '@arrakis/application':
-        specifier: workspace:*
-        version: link:../../core/application
-      '@arrakis/domain':
-        specifier: workspace:*
-        version: link:../../core/domain
-      postgres:
-        specifier: ^4.1.0
-        version: 4.1.0
-    devDependencies:
-      '@vitest/coverage-v8':
-        specifier: ^5.0.3
-        version: 5.0.3(vitest@5.0.3)
-      vitest:
-        specifier: ^5.0.3
-        version: 5.0.3(@types/node@24.19.1)(@vitest/coverage-v8@5.0.3)(jsdom@31.0.0)(vite@8.3.7(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
   apps/web:
     dependencies:
       '@arrakis/domain':
@@ -304,6 +285,25 @@ importers:
       '@arrakis/postgres':
         specifier: workspace:*
         version: link:../../adapters/postgres
+      postgres:
+        specifier: ^4.1.0
+        version: 4.1.0
+    devDependencies:
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.3(vitest@5.0.3)
+      vitest:
+        specifier: ^5.0.3
+        version: 5.0.3(@types/node@24.19.1)(@vitest/coverage-v8@5.0.3)(jsdom@31.0.0)(vite@8.3.7(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  adapters/postgres:
+    dependencies:
+      '@arrakis/application':
+        specifier: workspace:*
+        version: link:../../core/application
+      '@arrakis/domain':
+        specifier: workspace:*
+        version: link:../../core/domain
       postgres:
         specifier: ^4.1.0
         version: 4.1.0
@@ -2828,8 +2828,8 @@ snapshots:
 
   magicast@0.5.5:
     dependencies:
-      '@babel/parser': 7.29.13
-      '@babel/types': 7.29.11
+      '@babel/parser': 7.29.9
+      '@babel/types': 7.29.8
       source-map-js: 1.2.2
 
   minimatch@10.2.6:

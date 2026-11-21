@@ -1,7 +1,12 @@
 # 0006 — TDD et golden master avant toute réécriture
 
-- **Statut** : Accepté
+- **Statut** : Accepté ; chemins amendés par [0025](0025-ranger-les-paquets-par-couche.md)
 - **Date** : 2026-10-03
+
+> **Amendé par [0025](0025-ranger-les-paquets-par-couche.md)**. Les paquets ont quitté `packages/` :
+> `packages/domain` et `packages/application` sont dans `core/`,
+> `packages/postgres` dans `adapters/`, `packages/migrate-v1` dans `tools/`.
+> Le texte ci-dessous garde les chemins de sa date.
 
 ## Contexte
 
@@ -25,7 +30,7 @@ reproduire **exactement**. Chaque écart doit être voulu, et justifié par un
 ADR.
 
 **2. TDD strict sur le domaine.** Cycle rouge → vert → refactor. Aucun code de
-`core/domain` sans un test qui échouait avant.
+`packages/domain` sans un test qui échouait avant.
 
 **3. Pyramide de tests.**
 

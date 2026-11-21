@@ -130,6 +130,7 @@ l'ouverture de leur ticket.
 | **Port**                        | —              | Une interface dont le code de l'application a besoin pour lire ou écrire, nommée en langage métier (`UnitOfWork`, `CommandLog`, `Clock`…). L'application ne connaît que ses ports, jamais la base (ADR 0023). |
 | **Entrepôt**                    | `…Repository`  | Le port qui lit et écrit un agrégat (ses faits, ou sa configuration pour une organisation) ; il rend sa version quand une commande le modifie.                                                                |
 | **Adaptateur**                  | —              | Ce qui branche l'application sur le monde extérieur : il implémente un port (entrepôts Postgres, entrepôts en mémoire des tests) ou appelle l'application (Edge Function, migration).                         |
+| **Cœur**                        | `core/`        | Les couches du centre, sans I/O : le domaine et l'application ([ADR 0025](../adr/0025-ranger-les-paquets-par-couche.md)). Tout le reste en dépend, jamais l'inverse.                                          |
 | **Acteur**                      | `Actor`        | L'utilisateur qui exécute une commande, et l'organisation où il agit. L'application vérifie qu'il en est admin.                                                                                               |
 
 ## Termes à ne plus utiliser

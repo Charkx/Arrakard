@@ -1,7 +1,12 @@
 # 0001 — Monorepo TypeScript avec un domaine pur
 
-- **Statut** : Accepté, amendé par [0023](0023-ecritures-en-trois-couches.md) (deux paquets de plus) et [0025](0025-ranger-les-paquets-par-couche.md) (les dossiers par couche)
+- **Statut** : Accepté, amendé par [0023](0023-ecritures-en-trois-couches.md) (deux paquets de plus) ; chemins amendés par [0025](0025-ranger-les-paquets-par-couche.md)
 - **Date** : 2026-10-03
+
+> **Amendé par [0025](0025-ranger-les-paquets-par-couche.md)**. Les paquets ont quitté `packages/` :
+> `packages/domain` et `packages/application` sont dans `core/`,
+> `packages/postgres` dans `adapters/`, `packages/migrate-v1` dans `tools/`.
+> Le texte ci-dessous garde les chemins de sa date.
 
 ## Contexte
 
@@ -17,21 +22,17 @@ Les règles doivent tourner à deux endroits : dans les commandes côté serveur
 
 Un seul dépôt avec des workspaces **pnpm** :
 
-- `core/domain` : règles métier en TypeScript **pur**, sans dépendance
+- `packages/domain` : règles métier en TypeScript **pur**, sans dépendance
   runtime, sans I/O, sans date courante implicite (l'heure est passée en
   paramètre). Entrées et sorties sont des données simples.
-- `core/contracts` : schémas **Zod** des commandes et des vues, partagés
+- `packages/contracts` : schémas **Zod** des commandes et des vues, partagés
   entre le web et les fonctions.
 - `apps/web` et `supabase/` consomment ces packages.
 
 > **Amendé par [0023](0023-ecritures-en-trois-couches.md)**. S'y
-> ajoutent `core/application` (les commandes et leurs ports, qui ne
-> dépendent que du domaine) et `adapters/postgres` (les entrepôts SQL). `core/contracts` naît
+> ajoutent `packages/application` (les commandes et leurs ports, qui ne
+> dépendent que du domaine) et `packages/postgres` (les entrepôts SQL). `packages/contracts` naît
 > avec la première commande qui a une entrée à valider.
-
-> **Amendé par [0025](0025-ranger-les-paquets-par-couche.md)**. Les
-> paquets se rangent par couche : `core/`, `adapters/`, `apps/` et `tools/`,
-> au lieu d'un seul dossier `packages/`.
 
 TypeScript en mode `strict` partout. Identifiants de code en anglais,
 documentation en français (correspondance dans le [glossaire](../domain/glossary.md)).
