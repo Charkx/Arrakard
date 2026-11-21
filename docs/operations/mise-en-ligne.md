@@ -50,7 +50,12 @@ l'historique. Ils ne vont dans aucun fichier du dépôt.
 La v1 n'est que lue, par son API publique. Il te faut son adresse et sa clé
 publique : tableau de bord Supabase, projet **de la v1**, **Project Settings →
 API Keys** (clé `anon` ou `publishable`) et **Data API** (l'adresse en
-`https://….supabase.co`).
+`https://<identifiant>.supabase.co`, pas celle du tableau de bord en
+`supabase.com/dashboard/…`).
+
+Chaque `read` affiche sa question et attend : copie la ligne telle quelle,
+Entrée, puis colle la valeur demandée et Entrée. Ce qui suit le `?` n'est que
+la question.
 
 ```sh
 read -r "V1_SUPABASE_URL?Adresse de la v1 : " && export V1_SUPABASE_URL
@@ -64,7 +69,7 @@ incomplète : dans ce cas, relance-la. Le dossier contient des données réelles
 il reste sur ta machine.
 
 Les nombres ne peuvent que grandir depuis la sauvegarde du 2026-10-05 :
-au moins 417 matchs, 4 170 lignes de match et 301 joueurs. S'il y en a moins,
+au moins 417 matchs, 2 085 lignes de match et 301 joueurs. S'il y en a moins,
 la clé publique ne voit pas tout : arrête-toi là et dis-le.
 
 ## 3. Vérifier les notes sur cette sauvegarde
