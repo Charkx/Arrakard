@@ -1,5 +1,6 @@
+import { LOCAL_DATABASE_URL } from '@arrakis/postgres';
 import { describe, expect, it } from 'vitest';
-import { assertTargetAllowed, LOCAL_DATABASE_URL } from './target.ts';
+import { assertTargetAllowed } from './target.ts';
 
 describe('assertTargetAllowed', () => {
   it.each([

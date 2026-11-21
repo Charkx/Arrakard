@@ -1,7 +1,7 @@
+import { toFacts } from '@arrakis/application';
 import { project, rankLeaderboard, V1_RATING_RULES } from '@arrakis/domain';
 import { planMigration } from '@arrakis/migrate-v1/src/plan.ts';
 import { demoBackup } from '@arrakis/migrate-v1/src/testing/demo-backup.ts';
-import { toFacts } from '@arrakis/migrate-v1/src/verify.ts';
 import { describe, expect, it } from 'vitest';
 import type { PlayerPageData } from './player.ts';
 import { supabaseSource } from './supabase-source.ts';

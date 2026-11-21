@@ -1,6 +1,3 @@
-/** Base locale de Supabase (`supabase db start`) : la cible par défaut. */
-export const LOCAL_DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
-
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 /**

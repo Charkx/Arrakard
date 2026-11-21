@@ -1,29 +1,29 @@
+import {
+  toFacts,
+  type EditionRow,
+  type MatchRow,
+  type PerformanceRow,
+  type PlayerRow,
+  type SeasonRow,
+} from '@arrakis/application';
 import type { Facts } from '@arrakis/domain';
-import type { Sql, TransactionSql } from 'postgres';
-import type { V2Edition, V2Match, V2Performance, V2Player, V2Season } from '../v2.ts';
-import { toFacts } from '../verify.ts';
-import type { ProjectionRows } from './projection-rows.ts';
-
-type Db = Sql | TransactionSql;
+import type { ProjectionRows } from './projections.ts';
+import type { Db } from './tables.ts';
 
 /** Les faits d'une organisation, tels que la base les rend, pour `project()`. */
 export async function readFacts(db: Db, organizationId: string): Promise<Facts> {
-  const seasons = await db<Pick<V2Season, 'id'>[]>`
+  const seasons = await db<SeasonRow[]>`
     select id from seasons where organization_id = ${organizationId}`;
-  const editions = await db<
-    Pick<V2Edition, 'id' | 'type' | 'date' | 'season_id' | 'prestige' | 'event_mvp_player_id'>[]
-  >`
+  const editions = await db<EditionRow[]>`
     select id, type, date::text, season_id, prestige, event_mvp_player_id
     from editions where organization_id = ${organizationId}`;
-  const matches = await db<
-    Pick<V2Match, 'id' | 'edition_id' | 'match_number' | 'winner_team' | 'duration_seconds'>[]
-  >`
+  const matches = await db<MatchRow[]>`
     select id, edition_id, match_number, winner_team, duration_seconds
     from matches where organization_id = ${organizationId}`;
-  const performances = await db<V2Performance[]>`
+  const performances = await db<PerformanceRow[]>`
     select match_id, line, side, player_id, team, role, champion, result, kills, deaths, assists, gold
     from performances where organization_id = ${organizationId}`;
-  const players = await db<Pick<V2Player, 'id' | 'nickname'>[]>`
+  const players = await db<PlayerRow[]>`
     select id, nickname from players where organization_id = ${organizationId}`;
 
   return toFacts({ seasons, editions, matches, performances, players });

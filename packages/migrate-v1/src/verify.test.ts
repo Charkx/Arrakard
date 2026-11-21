@@ -1,3 +1,4 @@
+import { toFacts } from '@arrakis/application';
 import { project, V1_RATING_RULES } from '@arrakis/domain';
 import { describe, expect, it } from 'vitest';
 import { planMigration, type MigrationPlan } from './plan.ts';
@@ -9,7 +10,7 @@ import {
   aV1Season,
   aV1Split,
 } from './testing/v1-builders.ts';
-import { toFacts, verifyRatings, type V1Reference, type V1ReferencePlayer } from './verify.ts';
+import { verifyRatings, type V1Reference, type V1ReferencePlayer } from './verify.ts';
 
 const plan = planMigration(aV1Dump({ editions: [aV1Edition({ mvp_player_name: 'Zéphyr' })] }));
 const { rows } = plan;
