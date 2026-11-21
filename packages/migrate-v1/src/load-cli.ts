@@ -15,8 +15,8 @@
  */
 import { LOCAL_DATABASE_URL } from '@arrakis/postgres';
 import postgres from 'postgres';
-import { loadPlan } from './db/load.ts';
-import { assertTargetAllowed } from './db/target.ts';
+import { loadPlan } from './load.ts';
+import { assertTargetAllowed } from './target.ts';
 import { readDump } from './dump.ts';
 import { planMigration } from './plan.ts';
 import { formatReport } from './report.ts';
