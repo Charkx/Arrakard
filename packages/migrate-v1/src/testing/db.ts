@@ -1,5 +1,5 @@
 import type { Sql } from 'postgres';
-import { clearOrganization, FACT_TABLES, PROJECTION_TABLES } from '../db/load.ts';
+import { clearOrganization, FACT_TABLES, PROJECTION_TABLES } from '@arrakis/postgres';
 
 /** Outils des tests d'écriture. Ils ne servent pas au chargement lui-même. */
 

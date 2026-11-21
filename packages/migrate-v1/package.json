@@ -18,6 +18,7 @@
   "dependencies": {
     "@arrakis/application": "workspace:*",
     "@arrakis/domain": "workspace:*",
+    "@arrakis/postgres": "workspace:*",
     "postgres": "^4.1.0"
   },
   "devDependencies": {

@@ -1,0 +1,22 @@
+{
+  "name": "@arrakis/postgres",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Adaptateur Postgres : implémente les ports de la couche application avec postgres.js (ADR 0023).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test:db": "vitest run --config vitest.db.config.ts"
+  },
+  "dependencies": {
+    "@arrakis/application": "workspace:*",
+    "@arrakis/domain": "workspace:*",
+    "postgres": "^4.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.3"
+  }
+}
