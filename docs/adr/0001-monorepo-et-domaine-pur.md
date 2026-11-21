@@ -1,6 +1,6 @@
 # 0001 — Monorepo TypeScript avec un domaine pur
 
-- **Statut** : Accepté, amendé par [0023](0023-ecritures-en-trois-couches.md) (deux paquets de plus)
+- **Statut** : Accepté, amendé par [0023](0023-ecritures-en-trois-couches.md) (deux paquets de plus) et [0025](0025-ranger-les-paquets-par-couche.md) (les dossiers par couche)
 - **Date** : 2026-10-03
 
 ## Contexte
@@ -17,17 +17,21 @@ Les règles doivent tourner à deux endroits : dans les commandes côté serveur
 
 Un seul dépôt avec des workspaces **pnpm** :
 
-- `packages/domain` : règles métier en TypeScript **pur**, sans dépendance
+- `core/domain` : règles métier en TypeScript **pur**, sans dépendance
   runtime, sans I/O, sans date courante implicite (l'heure est passée en
   paramètre). Entrées et sorties sont des données simples.
-- `packages/contracts` : schémas **Zod** des commandes et des vues, partagés
+- `core/contracts` : schémas **Zod** des commandes et des vues, partagés
   entre le web et les fonctions.
 - `apps/web` et `supabase/` consomment ces packages.
 
 > **Amendé par [0023](0023-ecritures-en-trois-couches.md)**. S'y
-> ajoutent `packages/application` (les commandes et leurs ports, qui ne
-> dépendent que du domaine) et `packages/postgres` (les entrepôts SQL). `packages/contracts` naît
+> ajoutent `core/application` (les commandes et leurs ports, qui ne
+> dépendent que du domaine) et `adapters/postgres` (les entrepôts SQL). `core/contracts` naît
 > avec la première commande qui a une entrée à valider.
+
+> **Amendé par [0025](0025-ranger-les-paquets-par-couche.md)**. Les
+> paquets se rangent par couche : `core/`, `adapters/`, `apps/` et `tools/`,
+> au lieu d'un seul dossier `packages/`.
 
 TypeScript en mode `strict` partout. Identifiants de code en anglais,
 documentation en français (correspondance dans le [glossaire](../domain/glossary.md)).

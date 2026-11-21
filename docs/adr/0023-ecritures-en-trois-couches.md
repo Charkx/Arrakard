@@ -15,7 +15,7 @@ recalcul. Il n'existe donc aucun endroit où brancher ces entrepôts en mémoire
 
 La tranche 1 montre le problème. Le recalcul des projections
 (`recomputeProjections`) et l'écriture des faits (`loadPlan`) vivent dans
-l'outil de migration `packages/migrate-v1`, et parlent SQL directement. Or
+l'outil de migration `tools/migrate-v1`, et parlent SQL directement. Or
 chaque commande de la tranche 2 a besoin du même recalcul.
 
 Côté lecture, la règle est déjà la bonne : les pages dépendent d'une interface
@@ -34,17 +34,17 @@ de lint (`no-restricted-imports`, déjà dans ESLint) l'impose paquet par paquet
 flowchart LR
   subgraph adapters["Adaptateurs"]
     fn["Edge Functions<br/>(points d'entrée HTTP)"]
-    pg["packages/postgres<br/>(transaction, entrepôts SQL)"]
+    pg["adapters/postgres<br/>(transaction, entrepôts SQL)"]
     mem["Entrepôts en mémoire<br/>(tests)"]
-    mig["packages/migrate-v1"]
+    mig["tools/migrate-v1"]
   end
-  subgraph application["packages/application"]
+  subgraph application["core/application"]
     exec["executeCommand"]
     cmd["Commandes"]
     rec["Recalcul"]
     ports["Ports"]
   end
-  domain["packages/domain"]
+  domain["core/domain"]
   fn --> exec
   exec --> cmd
   exec --> rec
@@ -57,11 +57,11 @@ flowchart LR
   mem -. implémente .-> ports
 ```
 
-### 1. Domaine (`packages/domain`)
+### 1. Domaine (`core/domain`)
 
 Inchangé : des règles pures, sans I/O. L'heure est passée en paramètre.
 
-### 2. Application (`packages/application`, qui ne dépend que du domaine)
+### 2. Application (`core/application`, qui ne dépend que du domaine)
 
 - **Une commande est une fonction** (`importEdition`, `closeSeason`…). Elle
   reçoit son entrée déjà validée, l'acteur et les entrepôts des faits qu'elle
@@ -107,19 +107,19 @@ Inchangé : des règles pures, sans I/O. L'heure est passée en paramètre.
 
 ### 3. Adaptateurs
 
-- `packages/postgres` implémente les ports avec postgres.js, déjà utilisé.
+- `adapters/postgres` implémente les ports avec postgres.js, déjà utilisé.
   Il tourne sous Node (migration) et sous Deno (`npm:postgres`, comme le spike
   de l'ADR 0005) : à vérifier au premier déploiement d'une fonction.
-- Des **entrepôts en mémoire** (`packages/application/src/testing`)
+- Des **entrepôts en mémoire** (`core/application/src/testing`)
   implémentent les mêmes ports. **Une même suite de tests de contrat** tourne
   contre les deux implémentations, pour qu'elles ne divergent pas (version,
   conflit, verrou).
 - Une **Edge Function** reste mince : lire le JWT pour en tirer l'utilisateur,
-  valider l'entrée (`packages/contracts`), appeler `executeCommand`, traduire
+  valider l'entrée (`core/contracts`), appeler `executeCommand`, traduire
   le résultat en HTTP (le conflit devient `409`).
-- `packages/migrate-v1` n'est pas une commande : c'est un outil qui ouvre
+- `tools/migrate-v1` n'est pas une commande : c'est un outil qui ouvre
   l'unité de travail, écrit les faits en masse par une opération propre à
-  `packages/postgres` (organisation, vidage, joueurs en deux passes, paquets
+  `adapters/postgres` (organisation, vidage, joueurs en deux passes, paquets
   de 500), puis appelle le même recalcul, dans la même transaction.
 
 ### La lecture reste à part
@@ -132,7 +132,7 @@ joueurs fusionnés écartés). Les pages les lisent par `DataSource` (ADR 0019).
 
 ### Les contrats
 
-`packages/contracts` (prévu par l'ADR 0001) naît avec la première commande qui
+`core/contracts` (prévu par l'ADR 0001) naît avec la première commande qui
 a une entrée à valider. Zod est une dépendance : elle sera redemandée à ce
 moment-là.
 

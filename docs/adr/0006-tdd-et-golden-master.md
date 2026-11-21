@@ -25,7 +25,7 @@ reproduire **exactement**. Chaque écart doit être voulu, et justifié par un
 ADR.
 
 **2. TDD strict sur le domaine.** Cycle rouge → vert → refactor. Aucun code de
-`packages/domain` sans un test qui échouait avant.
+`core/domain` sans un test qui échouait avant.
 
 **3. Pyramide de tests.**
 

@@ -4,7 +4,7 @@ La migration transforme une sauvegarde de la base v1 en faits v2. Elle est
 rejouée à chaque rafraîchissement du site en lecture, puis une dernière fois
 à la bascule ([ADR 0011](../adr/0011-livrer-par-tranches.md)). Elle est faite
 par le paquet
-[`packages/migrate-v1`](../../packages/migrate-v1), en deux temps :
+[`tools/migrate-v1`](../../tools/migrate-v1), en deux temps :
 
 1. **Planification** (`planMigration`, fonction pure) : lit la sauvegarde v1
    (un objet JSON par table), produit les lignes v2 et un **rapport
@@ -96,7 +96,7 @@ la sauvegarde.
 
 ### Règles décidées, pas encore appliquées
 
-Le code de `packages/migrate-v1` ne les applique pas encore. Chacune fera
+Le code de `tools/migrate-v1` ne les applique pas encore. Chacune fera
 l'objet d'un ticket :
 
 - les logos sont encore recopiés tels quels (ADR 0015) ;
@@ -147,7 +147,7 @@ les [cas d'usage](../product/use-cases.md#critères-de-mise-en-ligne-de-la-tranc
 ```sh
 # 1. Référence v1 (code v1 rejoué sur la sauvegarde)
 V1_REPO=../arrakis-cards V1_BACKUP=<sauvegarde> \
-  V1_REFERENCE=packages/migrate-v1/v1-reference.local.json pnpm golden-master:extract
+  V1_REFERENCE=tools/migrate-v1/v1-reference.local.json pnpm golden-master:extract
 
 # 2. Plan, anomalies et écarts (rien n'est écrit)
 pnpm --filter @arrakis/migrate-v1 report <sauvegarde> v1-reference.local.json
@@ -167,7 +167,7 @@ Le chargement affiche d'abord le rapport, puis écrit. Deux garde-fous :
   bascule, on ne rejoue donc plus la migration sur la base en service.
 
 Pour développer sans donnée réelle, le dépôt contient une **sauvegarde de
-démonstration** entièrement inventée (`packages/migrate-v1/demo-backup`) :
+démonstration** entièrement inventée (`tools/migrate-v1/demo-backup`) :
 
 ```sh
 pnpm --filter @arrakis/migrate-v1 load demo-backup --replace

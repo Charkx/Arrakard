@@ -57,8 +57,8 @@ Règles :
 ## Chemin d'écriture : une commande
 
 Trois couches ([ADR 0023](../adr/0023-ecritures-en-trois-couches.md)) : l'Edge Function est un adaptateur mince. `executeCommand`
-(`packages/application`) enchaîne toujours les mêmes étapes, et ne parle à la
-base qu'à travers des ports, que `packages/postgres` implémente.
+(`core/application`) enchaîne toujours les mêmes étapes, et ne parle à la
+base qu'à travers des ports, que `adapters/postgres` implémente.
 
 ```mermaid
 sequenceDiagram
@@ -98,7 +98,7 @@ que ce qu'elle affiche. Pas de cache côté navigateur pour l'instant
 arrakis/
 ├── apps/
 │   └── web/                 Le site, à ranger par fonctionnalité (#56)
-├── packages/
+├── core/                    Le centre : aucune I/O (ADR 0025)
 │   ├── domain/              Règles métier pures — zéro dépendance runtime
 │   │   └── src/
 │   │       ├── rating/      Note, sous-notes, palier, fiabilité
@@ -110,14 +110,15 @@ arrakis/
 │   │   └── src/
 │   │       ├── commands/    Une commande par fichier, avec son test (dès le #39)
 │   │       └── testing/     Ports en mémoire, jeu d'essai, suites de contrat
-│   ├── postgres/            Transaction et entrepôts SQL : implémente les ports
-│   ├── contracts/           Schémas Zod des entrées de commande
-│   └── migrate-v1/          Migration depuis une sauvegarde de la v1
+│   └── contracts/           Schémas Zod des entrées de commande
+├── adapters/                La périphérie : implémente les ports
+│   └── postgres/            Transaction et entrepôts SQL
 ├── supabase/
 │   ├── migrations/
-│   ├── functions/           Une fonction par commande, mince (adaptateur HTTP)
+│   ├── functions/           Adaptateur HTTP, une fonction mince par commande (place imposée par Supabase)
 │   └── tests/               pgTAP : RLS et contraintes
-├── tools/
+├── tools/                   Outils ponctuels, hors du site
+│   ├── migrate-v1/          Migration depuis une sauvegarde de la v1
 │   └── golden-master/       Extraction des données v1 et des notes attendues
 └── docs/
 ```

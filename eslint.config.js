@@ -42,8 +42,8 @@ export default defineConfig([
   // ADR 0001 : le domaine n'importe que lui-même (imports relatifs).
   // Seuls les tests ont droit à vitest.
   {
-    files: ['packages/domain/src/**/*.ts'],
-    ignores: ['packages/domain/src/**/*.test.ts'],
+    files: ['core/domain/src/**/*.ts'],
+    ignores: ['core/domain/src/**/*.test.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -62,7 +62,7 @@ export default defineConfig([
   // ADR 0023 : la couche application ne dépend que du domaine. Ses tests et
   // ses outils de test ont droit, en plus, à vitest.
   {
-    files: ['packages/application/src/**/*.ts'],
+    files: ['core/application/src/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -79,7 +79,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['packages/application/src/**/*.test.ts', 'packages/application/src/testing/**/*.ts'],
+    files: ['core/application/src/**/*.test.ts', 'core/application/src/testing/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -99,7 +99,7 @@ export default defineConfig([
   // ADR 0023 : l'adaptateur Postgres est à la périphérie, il ne dépend
   // d'aucun autre adaptateur ni du site.
   {
-    files: ['packages/postgres/src/**/*.ts'],
+    files: ['adapters/postgres/src/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -117,7 +117,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['packages/postgres/src/**/*.test.ts'],
+    files: ['adapters/postgres/src/**/*.test.ts'],
     rules: {
       'no-restricted-imports': ['error', { patterns: [OTHER_ADAPTERS, EXTENSION_REQUIRED] }],
     },

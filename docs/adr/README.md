@@ -44,3 +44,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0022](0022-perimetre-de-la-tranche-2.md)               | Le périmètre de la tranche 2                         | Accepté |
 | [0023](0023-ecritures-en-trois-couches.md)              | Les écritures en trois couches                       | Accepté |
 | [0024](0024-lire-avec-postgrest-js.md)                  | Lire la base avec postgrest-js                       | Accepté |
+| [0025](0025-ranger-les-paquets-par-couche.md)           | Ranger les paquets par couche                        | Accepté |

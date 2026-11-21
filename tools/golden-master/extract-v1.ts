@@ -22,7 +22,7 @@
  *
  * V1_REFERENCE=<fichier> : au lieu du golden master anonymisé, écrit une
  * référence NON anonymisée (clés de joueur réelles) pour vérifier la
- * migration (packages/migrate-v1). Données réelles : jamais dans git
+ * migration (tools/migrate-v1). Données réelles : jamais dans git
  * (`*.local.json` est ignoré).
  *
  * Les données sont lues dans l'ordre où la v1 les lit (select paginé sans
@@ -32,7 +32,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const OUTPUT = resolve(import.meta.dirname, '../../packages/domain/src/golden-master/v1.json');
+const OUTPUT = resolve(import.meta.dirname, '../../core/domain/src/golden-master/v1.json');
 
 const { V1_REPO, V1_EXPORT, V1_BACKUP, V1_REFERENCE, SUPABASE_URL, SUPABASE_ANON_KEY } =
   process.env;

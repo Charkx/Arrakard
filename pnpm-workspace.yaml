@@ -1,5 +1,7 @@
 packages:
-  - 'packages/*'
+  - 'core/*'
+  - 'adapters/*'
+  - 'tools/migrate-v1'
   - 'apps/*'
 
 # Scripts d'installation autorisés (pnpm les bloque par défaut).
