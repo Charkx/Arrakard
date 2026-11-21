@@ -1,8 +1,8 @@
 # Annonce des écarts connus avec la v1
 
 Brouillon à publier sur le Discord d'Arrakis à la mise en ligne de la tranche 1
-(ticket 16). Il couvre les deux écarts qu'un joueur peut remarquer :
-l'anomalie M9 ([migration](../domain/migration-spec.md)) et l'anomalie A6
+(ticket 16). Il couvre les trois écarts qu'un joueur peut remarquer :
+les anomalies M9 et M4 ([migration](../domain/migration-spec.md)) et l'anomalie A6
 ([note](../domain/rating-spec.md)).
 
 Avant de publier, remplace `NOMBRE` et `NUMBER` par le nombre de joueurs
@@ -22,7 +22,7 @@ calcul de votre note, étape par étape.
 Les résultats se saisissent encore sur l'ancien site : le nouveau est mis à
 jour après chaque événement.
 
-Les notes de la saison sont les mêmes sur les deux sites. Deux différences
+Les notes de la saison sont les mêmes sur les deux sites. Trois différences
 peuvent vous surprendre :
 
 - **La vue « toutes saisons » de l'ancien site n'existe pas sur le nouveau.**
@@ -34,6 +34,8 @@ peuvent vous surprendre :
   change. L'ancien site choisissait son rôle dominant selon l'ordre de
   rangement des données ; le nouveau prend, à égalité, le premier de ces rôles
   joué dans la saison. Cela concerne aujourd'hui NOMBRE joueur(s).
+- **14 résultats d'un ancien tournoi**, saisis sans leurs matchs, ne sont pas
+  repris. Les notes n'en dépendent pas : elles sont identiques sans eux.
 
 Un doute sur un chiffre ? Écrivez-nous, avec le lien de votre profil.
 
@@ -48,7 +50,7 @@ is calculated, step by step.
 Results are still entered on the old site: the new one is updated after each
 event.
 
-Season ratings are the same on both sites. Two differences may surprise you:
+Season ratings are the same on both sites. Three differences may surprise you:
 
 - **The old site's "all seasons" view is not on the new one.** It read
   totals computed once, in June, and never updated: its numbers were wrong
@@ -59,5 +61,8 @@ Season ratings are the same on both sites. Two differences may surprise you:
   rating. The old site picked their dominant role from the order the data was
   stored in; the new one takes, on a tie, the first of those roles played in
   the season. This affects NUMBER player(s) today.
+- **14 results from an old tournament**, entered without their matches, are
+  not carried over. Ratings do not depend on them: they are identical without
+  them.
 
 Doubt about a number? Message us with the link to your profile.

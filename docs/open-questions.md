@@ -14,15 +14,20 @@ réponse donne lieu à un ADR et à des tests.
 | Q6  | Interface bilingue FR/EN ?                     | Oui : une bonne partie de la communauté est anglophone                     | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
 | Q7  | Que deviennent les pages de laboratoire ?      | Non reprises ; leurs idées deviennent des cas d'usage ou disparaissent     | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
 | Q8  | Hébergement du dépôt                           | GitHub public ; aucune donnée joueur réelle non anonymisée                 | [ADR 0006](adr/0006-tdd-et-golden-master.md)           |
-| Q9  | Comment savoir qu'une édition est à venir ?    | Statut déduit, jamais saisi. La règle exacte est proposée dans l'ADR       | [ADR 0013](adr/0013-statut-d-edition-deduit.md)        |
+| Q9  | Comment savoir qu'une édition est à venir ?    | Statut déduit, jamais saisi ; règle validée le 2026-11-19                  | [ADR 0013](adr/0013-statut-d-edition-deduit.md)        |
+| Q10 | Résultats de tournoi sans match (M4) ?         | Abandonnés : ni migrés ni comptés, annoncés                                | [ADR 0022](adr/0022-perimetre-de-la-tranche-2.md)      |
 | Q11 | Garder la bio des cartes ?                     | Non                                                                        | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
 | Q12 | Où stocker les logos d'équipe ?                | Dans le stockage de fichiers ; la table ne garde que l'adresse             | [ADR 0015](adr/0015-logos-hors-de-la-base.md)          |
 | Q13 | Garder la composition des équipes d'In House ? | Non migrée : ces équipes n'existent que le temps d'une soirée              | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
+| Q16 | Saisir un match à la main ?                    | Oui, dès la tranche 2 (cas d'usage A14), en plus de l'import               | [ADR 0022](adr/0022-perimetre-de-la-tranche-2.md)      |
 | Q17 | Où héberger le site en lecture ?               | Nouveau projet Supabase gratuit et nouveau projet Vercel, séparés de la v1 | [ADR 0020](adr/0020-heberger-le-site-en-lecture.md)    |
 
 ## En attente
 
 ### Note
+
+Reportées après la tranche 2, qui garde la note v1 : elles partent dans un
+questionnaire aux admins ([ADR 0022](adr/0022-perimetre-de-la-tranche-2.md)).
 
 **Q2 bis — Quel multiplicateur pour chaque type d'édition ?**
 Proposition de départ, à valider : Div 1 ×1,6 · Div 2 ×1,3 · tournoi et LAN
@@ -39,29 +44,19 @@ Il masque les différences en bas du classement (anomalie A2).
 
 ### Produit
 
-**Q14 — Peut-on réduire la saisie grâce à l'API de Riot ?**
+**Q14 — Peut-on réduire la saisie grâce à l'API de Riot ?** _Reportée en tranche 3._
 Aujourd'hui les organisateurs remplissent un fichier Excel après chaque
 édition. Récupérer les statistiques des parties auprès de Riot supprimerait
 cette saisie. À étudier avant de promettre : il faut savoir comment les
 parties sont créées, et si Riot donne accès aux parties personnalisées.
 
-**Q15 — Comment les équipes d'In House sont-elles formées aujourd'hui ?**
+**Q15 — Comment les équipes d'In House sont-elles formées aujourd'hui ?** _Reportée en tranche 3._
 Le cas d'usage A12 propose des équipes équilibrées à partir des inscrits. Il
 faut d'abord savoir qui les forme, avec quels critères, et ce qui pose
 problème.
 
-**Q16 — Faut-il pouvoir saisir un match à la main ?**
-Les cas d'usage ne prévoient que l'import d'un fichier Excel (A1) et la
-correction (A2). En v1, des soirées In House ont été saisies match par match
-dans le site.
-
-### Migration
-
-Issues du profilage de la sauvegarde v1 ([spécification](domain/migration-spec.md)).
-La migration applique la proposition tant que la question est ouverte.
-
-**Q10 — Que faire des résultats de tournoi sans match (M4) ?**
-14 résultats individuels (victoire ou défaite, K/D/A) existent sans les
-matchs. Options : une table de faits `edition_results` pour ce cas, ou les
-abandonner. Proposition : à trancher selon leur importance pour les joueurs ;
-la migration les met de côté dans le rapport.
+**Q18 — Quel rôle du serveur Discord d'Arrakis fait un admin ?**
+La connexion par Discord et la revérification du rôle à chaque connexion sont
+décidées ([ADR 0002](adr/0002-supabase-source-de-verite.md),
+[ADR 0008](adr/0008-multi-tenant-et-portabilite.md)). Il manque le nom exact du
+rôle, et l'identifiant du serveur. Bloque le ticket de connexion de la tranche 2.

@@ -1,6 +1,6 @@
 # 0013 — Déduire le statut d'une édition
 
-- **Statut** : Proposé
+- **Statut** : Accepté
 - **Date** : 2026-11-11
 
 ## Contexte
@@ -19,8 +19,8 @@ sa date passée.
 Cette règle a un défaut. Une ligue dure plusieurs semaines, et sa fin dépend
 de l'agenda des équipes : elle serait « terminée » dès sa première journée.
 Elle doit aussi tenir compte des publications
-([ADR 0012](0012-publier-les-resultats.md)). Cet ADR propose la règle
-corrigée ; il reste à valider.
+([ADR 0012](0012-publier-les-resultats.md)). Cet ADR fixe la règle
+corrigée, validée par Charly le 2026-11-19.
 
 ## Décision
 

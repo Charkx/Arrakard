@@ -114,13 +114,17 @@ l'ouverture de leur ticket.
 
 ## Architecture
 
-| Terme                           | Code         | Définition                                                                                                                                                                                   |
-| ------------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Fait**                        | —            | Donnée saisie, source de vérité : éditions, matchs, performances, publications, transferts, personnalisation.                                                                                |
-| **Projection**                  | —            | Donnée calculée à partir des faits : notes, historiques, classements, badges, récaps. Peut être supprimée et reconstruite à tout moment. Les brouillons n'y entrent pas, sauf dans l'aperçu. |
-| **Sauvegarde de la v1**         | `backup`     | Une copie de la base de la v1, un fichier JSON par table, faite par son API publique. Elle contient des données réelles : elle reste hors du dépôt.                                          |
-| **Sauvegarde de démonstration** | `demoBackup` | Une petite communauté entièrement inventée, au format d'une sauvegarde de la v1. Elle sert aux tests d'écriture et au développement des pages : aucun joueur réel.                           |
-| **Commande**                    | `Command`    | Une intention d'écriture nommée en langage métier (`importEdition`, `closeSeason`). Exécutée en une transaction côté serveur.                                                                |
+| Terme                           | Code           | Définition                                                                                                                                                                                         |
+| ------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fait**                        | —              | Donnée saisie, source de vérité : éditions, matchs, performances, publications, transferts, personnalisation.                                                                                      |
+| **Projection**                  | —              | Donnée calculée à partir des faits : notes, historiques, classements, badges, récaps. Peut être supprimée et reconstruite à tout moment. Les brouillons n'y entrent pas, sauf dans l'aperçu.       |
+| **Organisation**                | `organization` | Une communauté qui tient ses compétitions dans la plateforme (Arrakis, slug `arrakis`). Toutes les données lui appartiennent, et on est admin d'une organisation, pas de la plateforme (ADR 0008). |
+| **Organisation d'essai**        | —              | Une organisation (slug `arrakis-essai`) où les admins répètent l'import et la publication, dans le projet v2, jusqu'à la bascule. Le site public ne la lit pas (ADR 0021).                         |
+| **Staging**                     | —              | L'environnement hébergé où l'on répète avant de toucher à la production. Jusqu'à la bascule, c'est le projet v2, dans l'organisation d'essai (ADR 0021).                                           |
+| **Bascule**                     | —              | Le moment où la v1 est coupée et où la v2 devient l'outil des admins, à la fin de la tranche 2 (ADR 0011).                                                                                         |
+| **Sauvegarde de la v1**         | `backup`       | Une copie de la base de la v1, un fichier JSON par table, faite par son API publique. Elle contient des données réelles : elle reste hors du dépôt.                                                |
+| **Sauvegarde de démonstration** | `demoBackup`   | Une petite communauté entièrement inventée, au format d'une sauvegarde de la v1. Elle sert aux tests d'écriture et au développement des pages : aucun joueur réel.                                 |
+| **Commande**                    | `Command`      | Une intention d'écriture nommée en langage métier (`importEdition`, `closeSeason`). Exécutée en une transaction côté serveur.                                                                      |
 
 ## Termes à ne plus utiliser
 

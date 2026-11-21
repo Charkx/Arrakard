@@ -61,4 +61,4 @@ qui compte les brouillons, et seul l'admin la voit.
   [modèle C4](../architecture/c4.md) ne décrivent pas encore les brouillons
   ni les publications. Ils seront mis à jour par le ticket qui les crée.
 - Le statut d'une édition se déduirait en partie des publications
-  ([ADR 0013](0013-statut-d-edition-deduit.md), proposé).
+  ([ADR 0013](0013-statut-d-edition-deduit.md)).

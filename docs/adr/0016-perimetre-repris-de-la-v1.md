@@ -47,3 +47,6 @@ son coût sur chaque texte : une bonne partie de la communauté est anglophone.
 - Chaque texte du site existe en deux langues. La façon de le faire se décide
   à l'ouverture du site, dans son propre ADR.
 - Les résultats de tournoi sans match restent une question ouverte (Q10).
+
+> **Amendé par [0022](0022-perimetre-de-la-tranche-2.md).** Les résultats de
+> tournoi sans match sont abandonnés.

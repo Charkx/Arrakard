@@ -244,7 +244,7 @@ function sortPerformances(performances: V2Performance[]): V2Performance[] {
 
 /**
  * M4 : résultats d'événement (`player_event_entries`) d'un autre type que leur
- * édition. Ce sont des faits sans match, que la v2 ne sait pas représenter (Q10).
+ * édition. Ce sont des faits sans match : ils sont abandonnés, et signalés (Q10).
  */
 function reportOrphanEventResults(
   dump: V1Dump,
@@ -264,7 +264,7 @@ function reportOrphanEventResults(
   for (const { entry, count } of groups.values()) {
     report.push({
       code: 'orphan-event-results',
-      message: `${count} résultats « ${entry.event_name} » (${entry.event_type}, ${entry.date}) rattachés à l’édition ${entry.edition_id} (${String(editionById.get(entry.edition_id)?.type)}), sans match : non migrés (Q10).`,
+      message: `${count} résultats « ${entry.event_name} » (${entry.event_type}, ${entry.date}) rattachés à l’édition ${entry.edition_id} (${String(editionById.get(entry.edition_id)?.type)}), sans match : abandonnés (Q10).`,
     });
   }
 }

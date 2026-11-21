@@ -1,6 +1,6 @@
 # 0020 — Héberger le site en lecture
 
-- **Statut** : Accepté
+- **Statut** : Accepté, amendé par [0021](0021-staging-jusqu-a-la-bascule.md) (staging)
 - **Date** : 2026-11-13
 
 ## Contexte
@@ -53,3 +53,7 @@ La marche à suivre est dans [Mise en ligne](../operations/mise-en-ligne.md).
   test hébergé. Les essais se font sur la base locale.
 - Recharger remplace toute l'organisation : rien ne doit être saisi dans la v2
   tant que la tranche 2 n'a pas basculé l'écriture.
+
+> **Amendé par [0021](0021-staging-jusqu-a-la-bascule.md).** Le projet v2 sert
+> de staging jusqu'à la bascule : les répétitions se font dans une organisation
+> d'essai, que le site public ne lit pas. Rien n'est saisi dans `arrakis`.
