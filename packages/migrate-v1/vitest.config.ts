@@ -16,7 +16,7 @@ export default defineConfig({
         'src/load-cli.ts',
         'src/backup-cli.ts',
         'src/dump.ts',
-        'src/db/load.ts',
+        'src/load.ts',
         'src/testing/**',
       ],
       thresholds: { lines: 95, functions: 95, branches: 95, statements: 95 },

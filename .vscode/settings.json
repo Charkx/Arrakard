@@ -1,0 +1,12 @@
+{
+  // Masque dans l'explorateur ce qu'on n'ouvre jamais : les traces de l'agent,
+  // les rapports de couverture, les builds, les caches de Vite et de Supabase.
+  "files.exclude": {
+    "**/.claude/.cc-writes": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/src/node_modules": true,
+    "supabase/.temp": true,
+    "supabase/.branches": true
+  }
+}
