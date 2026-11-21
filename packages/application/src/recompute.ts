@@ -32,6 +32,6 @@ export async function recomputeProjections(
   organizationId: string,
 ): Promise<void> {
   const rules = await organizations.ratingRules(organizationId);
-  const read = await facts.readFacts(organizationId);
-  await projections.replaceAll(organizationId, project(read, rules));
+  const currentFacts = await facts.readFacts(organizationId);
+  await projections.replaceAll(organizationId, project(currentFacts, rules));
 }

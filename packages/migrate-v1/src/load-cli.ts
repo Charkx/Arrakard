@@ -13,9 +13,10 @@
  * Le rapport cite des pseudos réels si la sauvegarde est réelle : il
  * s'affiche, il ne se commite pas.
  */
+import { LOCAL_DATABASE_URL } from '@arrakis/postgres';
 import postgres from 'postgres';
 import { loadPlan } from './db/load.ts';
-import { assertTargetAllowed, LOCAL_DATABASE_URL } from './db/target.ts';
+import { assertTargetAllowed } from './db/target.ts';
 import { readDump } from './dump.ts';
 import { planMigration } from './plan.ts';
 import { formatReport } from './report.ts';

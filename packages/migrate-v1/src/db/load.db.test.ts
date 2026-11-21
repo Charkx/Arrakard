@@ -1,12 +1,16 @@
 import { project, rankLeaderboard, V1_RATING_RULES } from '@arrakis/domain';
-import { readFacts, readProjectionRows, toProjectionRows } from '@arrakis/postgres';
+import {
+  LOCAL_DATABASE_URL,
+  readFacts,
+  readProjectionRows,
+  toProjectionRows,
+} from '@arrakis/postgres';
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { planMigration, type MigrationPlan } from '../plan.ts';
 import { fingerprint, removeOrganization } from '../testing/db.ts';
 import { demoBackupCopy } from '../testing/demo-backup.ts';
 import { loadPlan } from './load.ts';
-import { LOCAL_DATABASE_URL } from './target.ts';
 
 /**
  * Tests d'écriture, sur la base locale (`supabase db start`). Ils travaillent

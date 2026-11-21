@@ -10,6 +10,12 @@ const EXTENSION_REQUIRED = {
   message: 'Import relatif avec son extension (.ts) : requis par Deno.',
 };
 
+// L'adaptateur Postgres ne dépend d'aucun autre adaptateur ni du site (ADR 0023).
+const OTHER_ADAPTERS = {
+  group: ['@arrakis/migrate-v1', '@arrakis/migrate-v1/*', '@arrakis/web', '@arrakis/web/*'],
+  message: 'L’adaptateur Postgres ne dépend ni de la migration ni du site (ADR 0023).',
+};
+
 export default defineConfig([
   globalIgnores(['**/dist', '**/coverage', '**/node_modules']),
   js.configs.recommended,
@@ -99,16 +105,43 @@ export default defineConfig([
         'error',
         {
           patterns: [
+            OTHER_ADAPTERS,
             {
-              group: [
-                '@arrakis/migrate-v1',
-                '@arrakis/migrate-v1/*',
-                '@arrakis/web',
-                '@arrakis/web/*',
-              ],
-              message: 'L’adaptateur Postgres ne dépend ni de la migration ni du site (ADR 0023).',
+              group: ['@arrakis/application/testing'],
+              message: 'Les ports en mémoire servent aux tests, pas au code (ADR 0023).',
             },
             EXTENSION_REQUIRED,
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/postgres/src/**/*.test.ts'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [OTHER_ADAPTERS, EXTENSION_REQUIRED] }],
+    },
+  },
+  // Le site lit par `DataSource` (ADR 0019) : ni la base en direct, ni la migration.
+  {
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    ignores: ['apps/web/src/**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@arrakis/postgres',
+                '@arrakis/postgres/*',
+                '@arrakis/migrate-v1',
+                '@arrakis/migrate-v1/*',
+                '@arrakis/application/testing',
+              ],
+              message:
+                'Le site ne dépend ni de l’adaptateur Postgres, ni de la migration, ni des outils de test (ADR 0023).',
+            },
           ],
         },
       ],

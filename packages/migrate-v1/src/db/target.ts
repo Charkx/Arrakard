@@ -1,5 +1,3 @@
-export { LOCAL_DATABASE_URL } from '@arrakis/postgres';
-
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 /**
