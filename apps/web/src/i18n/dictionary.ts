@@ -7,6 +7,8 @@ const fr = {
   'nav.leaderboard': 'Classement',
   'lang.switch': 'EN',
   'lang.switch.label': 'Switch to English',
+  'banner.readOnly':
+    'Site en lecture seule : les résultats se saisissent encore sur l’ancien site.',
 
   'common.all': 'Tous',
   'common.loading': 'Chargement…',
@@ -170,6 +172,7 @@ const en: Record<TextKey, string> = {
   'nav.leaderboard': 'Leaderboard',
   'lang.switch': 'FR',
   'lang.switch.label': 'Passer en français',
+  'banner.readOnly': 'Read-only site: results are still entered on the old site.',
 
   'common.all': 'All',
   'common.loading': 'Loading…',

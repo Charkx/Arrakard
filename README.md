@@ -56,6 +56,7 @@ visuelle de la v1.
 | [Décisions (ADR)](docs/adr/README.md)                   | Pourquoi l'architecture est ce qu'elle est                |
 | [Contribuer](docs/contributing.md)                      | Workflow TDD, conventions, définition de « terminé »      |
 | [Questions ouvertes](docs/open-questions.md)            | Décisions produit en attente                              |
+| [Mise en ligne](docs/operations/mise-en-ligne.md)       | Mettre le site en ligne, le recharger après un événement  |
 
 ## Démarrer
 
@@ -77,6 +78,9 @@ pnpm test:db                                                   # droits d'accès
 pnpm --filter @arrakis/migrate-v1 load demo-backup --replace   # la remplit avec une communauté inventée
 pnpm dev                                                       # le site, sur http://localhost:5173, lit cette base
 ```
+
+Une sauvegarde réelle de la v1 se fait avec `pnpm --filter @arrakis/migrate-v1 backup`,
+et se charge en ligne selon la [mise en ligne](docs/operations/mise-en-ligne.md).
 
 Le site lit la base locale par défaut. Pour une autre base, il prend les
 variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` (voir

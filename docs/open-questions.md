@@ -1,23 +1,24 @@
 # Questions ouvertes
 
-Décisions **produit** en attente. Sauf Q17, elles ne bloquent pas la
+Décisions **produit** en attente. Elles ne bloquent pas la
 tranche 1 : la v2 reproduit d'abord les notes de la v1 telles quelles. Chaque
 réponse donne lieu à un ADR et à des tests.
 
 ## Tranchées
 
-| #   | Question                                       | Décision                                                               | Trace                                                  |
-| --- | ---------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ |
-| Q1  | Quelle formule pour la v2 ?                    | v1 à l'identique d'abord, puis évolutions isolées et annoncées         | [ADR 0007](adr/0007-evolution-de-la-note.md)           |
-| Q2  | Prestige saisi ou déduit du type d'édition ?   | Déduit du type ; exception possible, justifiée et enregistrée          | [ADR 0007](adr/0007-evolution-de-la-note.md), évol. E1 |
-| Q3  | Les In House comptent-ils dans la note ?       | Non : classement de soirée et badges uniquement                        | [ADR 0007](adr/0007-evolution-de-la-note.md), évol. E2 |
-| Q6  | Interface bilingue FR/EN ?                     | Oui : une bonne partie de la communauté est anglophone                 | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
-| Q7  | Que deviennent les pages de laboratoire ?      | Non reprises ; leurs idées deviennent des cas d'usage ou disparaissent | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
-| Q8  | Hébergement du dépôt                           | GitHub public ; aucune donnée joueur réelle non anonymisée             | [ADR 0006](adr/0006-tdd-et-golden-master.md)           |
-| Q9  | Comment savoir qu'une édition est à venir ?    | Statut déduit, jamais saisi. La règle exacte est proposée dans l'ADR   | [ADR 0013](adr/0013-statut-d-edition-deduit.md)        |
-| Q11 | Garder la bio des cartes ?                     | Non                                                                    | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
-| Q12 | Où stocker les logos d'équipe ?                | Dans le stockage de fichiers ; la table ne garde que l'adresse         | [ADR 0015](adr/0015-logos-hors-de-la-base.md)          |
-| Q13 | Garder la composition des équipes d'In House ? | Non migrée : ces équipes n'existent que le temps d'une soirée          | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
+| #   | Question                                       | Décision                                                                   | Trace                                                  |
+| --- | ---------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Q1  | Quelle formule pour la v2 ?                    | v1 à l'identique d'abord, puis évolutions isolées et annoncées             | [ADR 0007](adr/0007-evolution-de-la-note.md)           |
+| Q2  | Prestige saisi ou déduit du type d'édition ?   | Déduit du type ; exception possible, justifiée et enregistrée              | [ADR 0007](adr/0007-evolution-de-la-note.md), évol. E1 |
+| Q3  | Les In House comptent-ils dans la note ?       | Non : classement de soirée et badges uniquement                            | [ADR 0007](adr/0007-evolution-de-la-note.md), évol. E2 |
+| Q6  | Interface bilingue FR/EN ?                     | Oui : une bonne partie de la communauté est anglophone                     | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
+| Q7  | Que deviennent les pages de laboratoire ?      | Non reprises ; leurs idées deviennent des cas d'usage ou disparaissent     | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
+| Q8  | Hébergement du dépôt                           | GitHub public ; aucune donnée joueur réelle non anonymisée                 | [ADR 0006](adr/0006-tdd-et-golden-master.md)           |
+| Q9  | Comment savoir qu'une édition est à venir ?    | Statut déduit, jamais saisi. La règle exacte est proposée dans l'ADR       | [ADR 0013](adr/0013-statut-d-edition-deduit.md)        |
+| Q11 | Garder la bio des cartes ?                     | Non                                                                        | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
+| Q12 | Où stocker les logos d'équipe ?                | Dans le stockage de fichiers ; la table ne garde que l'adresse             | [ADR 0015](adr/0015-logos-hors-de-la-base.md)          |
+| Q13 | Garder la composition des équipes d'In House ? | Non migrée : ces équipes n'existent que le temps d'une soirée              | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
+| Q17 | Où héberger le site en lecture ?               | Nouveau projet Supabase gratuit et nouveau projet Vercel, séparés de la v1 | [ADR 0020](adr/0020-heberger-le-site-en-lecture.md)    |
 
 ## En attente
 
@@ -53,11 +54,6 @@ problème.
 Les cas d'usage ne prévoient que l'import d'un fichier Excel (A1) et la
 correction (A2). En v1, des soirées In House ont été saisies match par match
 dans le site.
-
-**Q17 — Où héberger le site en lecture de la tranche 1 ?**
-La v1 occupe déjà un projet Supabase et un projet Vercel. Il faut une
-adresse et une base pour la v2, en restant dans les offres gratuites
-([vision](product/vision.md#exigences-non-fonctionnelles)).
 
 ### Migration
 

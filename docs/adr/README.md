@@ -39,3 +39,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0017](0017-outils-du-site.md)                          | Les outils du site : React, Vite et Tailwind         | Accepté |
 | [0018](0018-deux-langues-dictionnaire-maison.md)        | Deux langues, un dictionnaire maison                 | Accepté |
 | [0019](0019-lire-la-base-depuis-le-site.md)             | Lire la base depuis le site                          | Accepté |
+| [0020](0020-heberger-le-site-en-lecture.md)             | Héberger le site en lecture                          | Accepté |
