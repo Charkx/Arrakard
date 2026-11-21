@@ -38,11 +38,12 @@ l'historique. Ils ne vont dans aucun fichier du dépôt.
    supabase link
    ```
 
-3. Envoie le schéma (les migrations du dépôt). La commande demande le mot de
-   passe de la base.
+3. Envoie le schéma (les migrations du dépôt). Sans `--remote`, la CLI 3
+   vise la base locale et répond « Local database is up to date ». La commande
+   demande le mot de passe de la base.
 
    ```sh
-   supabase db push
+   supabase db push --remote
    ```
 
 ## 2. Faire une sauvegarde de la v1
@@ -199,7 +200,7 @@ seule transaction : s'il échoue, le site garde les données d'avant. Le site
 n'a pas besoin d'être redéployé.
 
 Si une migration a été fusionnée depuis le dernier rechargement, lance
-d'abord `supabase db push`.
+d'abord `supabase db push --remote`.
 
 **Base en pause.** Un projet gratuit sans activité pendant 7 jours se met en
 pause, et le site n'affiche plus rien. Tableau de bord Supabase, projet
