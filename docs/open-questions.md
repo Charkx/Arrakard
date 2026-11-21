@@ -60,3 +60,14 @@ La connexion par Discord et la revérification du rôle à chaque connexion sont
 décidées ([ADR 0002](adr/0002-supabase-source-de-verite.md),
 [ADR 0008](adr/0008-multi-tenant-et-portabilite.md)). Il manque le nom exact du
 rôle, et l'identifiant du serveur. Bloque le ticket de connexion de la tranche 2.
+
+**Q19 — Faut-il envoyer des pages déjà remplies pour descendre sous 2 s sur mobile ?**
+La vision vise une page publique utilisable en moins de 2 s sur mobile 4G. À la
+mise en ligne (ticket 16, 2026-11-21), Lighthouse mesure sur un profil, en 4G
+lente simulée, un Largest Contentful Paint de 3,0 s (3,7 s avant les PR 33 et
+34). La base répond en quelques millisecondes : le temps part dans la chaîne
+« télécharger le code, l'exécuter, demander les données, dessiner ». Pour
+descendre nettement, il faudrait un pré-rendu ou un rendu serveur, ce qui
+change l'architecture et demande un ADR. Charly a accepté l'écart. À rouvrir
+si des joueurs trouvent le site lent, ou avec une mesure sur un vrai
+téléphone.
