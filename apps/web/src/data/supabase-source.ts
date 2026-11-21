@@ -32,8 +32,7 @@ interface LeaderboardViewRow {
 }
 
 /**
- * Clé publique de l'API locale. L'API de `supabase start` sert les visiteurs
- * sans clé, mais la bibliothèque en exige une. Une clé au format
+ * Clé publique de l'API locale, envoyée comme en ligne : une clé au format
  * « publishable » est acceptée par l'API locale comme celle d'un visiteur ;
  * une clé quelconque, elle, est refusée comme jeton de connexion invalide.
  */
@@ -47,7 +46,8 @@ export function supabaseSource(
 ): DataSource {
   // Le site ne fait que lire des vues : l'API REST suffit, sans la bibliothèque
   // complète de Supabase (connexion, stockage, temps réel), trop lourde sur mobile.
-  const client = new PostgrestClient(`${url}/rest/v1`, {
+  // Sans barre oblique finale : `…supabase.co/` donnerait `…co//rest/v1`.
+  const client = new PostgrestClient(`${url.replace(/\/+$/, '')}/rest/v1`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   });
   return {

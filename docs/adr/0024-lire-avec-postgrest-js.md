@@ -14,7 +14,7 @@ surtout dans le téléchargement et l'exécution du JavaScript (2,3 s de travail
 sur le fil principal), pas dans la base.
 
 Le code de nos pages pèse peu (36 kB de source). `supabase-js` embarque la
-connexion, le stockage de fichiers et le temps réel, soit environ 40 % du
+connexion, le stockage de fichiers et le temps réel, soit environ un tiers du
 JavaScript du site, alors que le site ne fait que lire des vues.
 
 ## Décision
