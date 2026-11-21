@@ -38,11 +38,12 @@ l'historique. Ils ne vont dans aucun fichier du dépôt.
    supabase link
    ```
 
-3. Envoie le schéma (les migrations du dépôt). La commande demande le mot de
-   passe de la base.
+3. Envoie le schéma (les migrations du dépôt). Sans `--remote`, la CLI 3
+   vise la base locale et répond « Local database is up to date ». La commande
+   demande le mot de passe de la base.
 
    ```sh
-   supabase db push
+   supabase db push --remote
    ```
 
 ## 2. Faire une sauvegarde de la v1
@@ -50,7 +51,12 @@ l'historique. Ils ne vont dans aucun fichier du dépôt.
 La v1 n'est que lue, par son API publique. Il te faut son adresse et sa clé
 publique : tableau de bord Supabase, projet **de la v1**, **Project Settings →
 API Keys** (clé `anon` ou `publishable`) et **Data API** (l'adresse en
-`https://….supabase.co`).
+`https://<identifiant>.supabase.co`, pas celle du tableau de bord en
+`supabase.com/dashboard/…`).
+
+Chaque `read` affiche sa question et attend : copie la ligne telle quelle,
+Entrée, puis colle la valeur demandée et Entrée. Ce qui suit le `?` n'est que
+la question.
 
 ```sh
 read -r "V1_SUPABASE_URL?Adresse de la v1 : " && export V1_SUPABASE_URL
@@ -64,7 +70,7 @@ incomplète : dans ce cas, relance-la. Le dossier contient des données réelles
 il reste sur ta machine.
 
 Les nombres ne peuvent que grandir depuis la sauvegarde du 2026-10-05 :
-au moins 417 matchs, 4 170 lignes de match et 301 joueurs. S'il y en a moins,
+au moins 417 matchs, 2 085 lignes de match et 301 joueurs. S'il y en a moins,
 la clé publique ne voit pas tout : arrête-toi là et dis-le.
 
 ## 3. Vérifier les notes sur cette sauvegarde
@@ -194,7 +200,7 @@ seule transaction : s'il échoue, le site garde les données d'avant. Le site
 n'a pas besoin d'être redéployé.
 
 Si une migration a été fusionnée depuis le dernier rechargement, lance
-d'abord `supabase db push`.
+d'abord `supabase db push --remote`.
 
 **Base en pause.** Un projet gratuit sans activité pendant 7 jours se met en
 pause, et le site n'affiche plus rien. Tableau de bord Supabase, projet
