@@ -4,6 +4,12 @@ import prettier from 'eslint-config-prettier';
 import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
+// Extension explicite : le même code tourne sous Node, Vite et Deno (ADR 0005).
+const EXTENSION_REQUIRED = {
+  regex: '^\\.{1,2}/.*(?<!\\.ts|\\.json)$',
+  message: 'Import relatif avec son extension (.ts) : requis par Deno.',
+};
+
 export default defineConfig([
   globalIgnores(['**/dist', '**/coverage', '**/node_modules']),
   js.configs.recommended,
@@ -41,11 +47,68 @@ export default defineConfig([
               regex: '^(?!\\.{1,2}/)',
               message: 'Le domaine est pur : uniquement des imports relatifs (ADR 0001).',
             },
+            EXTENSION_REQUIRED,
+          ],
+        },
+      ],
+    },
+  },
+  // ADR 0023 : la couche application ne dépend que du domaine. Ses tests et
+  // ses outils de test ont droit, en plus, à vitest.
+  {
+    files: ['packages/application/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
             {
-              // Extension explicite : le même code tourne sous Node, Vite et Deno (ADR 0005).
-              regex: '^\\.{1,2}/.*(?<!\\.ts|\\.json)$',
-              message: 'Import relatif avec son extension (.ts) : requis par Deno.',
+              regex: '^(?!\\.{1,2}/|@arrakis/domain$)',
+              message: 'La couche application ne dépend que du domaine (ADR 0023).',
             },
+            EXTENSION_REQUIRED,
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['packages/application/src/**/*.test.ts', 'packages/application/src/testing/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^(?!\\.{1,2}/|@arrakis/domain$|vitest$)',
+              message:
+                'Les tests de la couche application : le domaine et vitest seulement (ADR 0023).',
+            },
+            EXTENSION_REQUIRED,
+          ],
+        },
+      ],
+    },
+  },
+  // ADR 0023 : l'adaptateur Postgres est à la périphérie, il ne dépend
+  // d'aucun autre adaptateur ni du site.
+  {
+    files: ['packages/postgres/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@arrakis/migrate-v1',
+                '@arrakis/migrate-v1/*',
+                '@arrakis/web',
+                '@arrakis/web/*',
+              ],
+              message: 'L’adaptateur Postgres ne dépend ni de la migration ni du site (ADR 0023).',
+            },
+            EXTENSION_REQUIRED,
           ],
         },
       ],
