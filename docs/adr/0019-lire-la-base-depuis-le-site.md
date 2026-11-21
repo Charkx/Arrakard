@@ -1,6 +1,6 @@
 # 0019 — Lire la base depuis le site
 
-- **Statut** : Accepté
+- **Statut** : Accepté, amendé par [0024](0024-lire-avec-postgrest-js.md) (postgrest-js au lieu de supabase-js)
 - **Date** : 2026-11-12
 
 ## Contexte
@@ -22,6 +22,11 @@ qui changent après chaque publication, quelques fois par semaine.
   deux, le joueur et ses matchs), avec les droits d'un visiteur, limitée à
   l'organisation du site. Le site ne lit une table directement que pour une
   question simple (l'organisation, la saison en cours).
+
+  > **Amendé par [0024](0024-lire-avec-postgrest-js.md)**. La lecture passe
+  > par `@supabase/postgrest-js`, plus léger : `supabase-js` reviendra avec la
+  > connexion, seulement sur les pages qui en ont besoin.
+
 - **Pas de cache** : chaque page charge ses données à l'ouverture, par un
   petit crochet maison (`useLoaded`). Les pages sont derrière une source de
   données (`DataSource`) : les tests les nourrissent en mémoire.

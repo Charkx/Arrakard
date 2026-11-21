@@ -43,3 +43,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0021](0021-staging-jusqu-a-la-bascule.md)              | Le projet v2 sert de staging jusqu'à la bascule      | Accepté |
 | [0022](0022-perimetre-de-la-tranche-2.md)               | Le périmètre de la tranche 2                         | Accepté |
 | [0023](0023-ecritures-en-trois-couches.md)              | Les écritures en trois couches                       | Accepté |
+| [0024](0024-lire-avec-postgrest-js.md)                  | Lire la base avec postgrest-js                       | Accepté |
