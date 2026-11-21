@@ -7,9 +7,9 @@ import {
 } from '@arrakis/postgres';
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { planMigration, type MigrationPlan } from '../plan.ts';
-import { fingerprint, removeOrganization } from '../testing/db.ts';
-import { demoBackupCopy } from '../testing/demo-backup.ts';
+import { planMigration, type MigrationPlan } from './plan.ts';
+import { fingerprint, removeOrganization } from './testing/db.ts';
+import { demoBackupCopy } from './testing/demo-backup.ts';
 import { loadPlan } from './load.ts';
 
 /**

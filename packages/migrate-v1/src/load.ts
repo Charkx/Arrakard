@@ -8,7 +8,7 @@ import {
   writeFacts,
 } from '@arrakis/postgres';
 import type { Sql } from 'postgres';
-import type { MigrationPlan } from '../plan.ts';
+import type { MigrationPlan } from './plan.ts';
 
 export interface LoadedOrganization {
   readonly organizationId: string;

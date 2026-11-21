@@ -97,7 +97,7 @@ que ce qu'elle affiche. Pas de cache côté navigateur pour l'instant
 ```
 arrakis/
 ├── apps/
-│   └── web/                 React, pages, composants (design repris de la v1)
+│   └── web/                 Le site, à ranger par fonctionnalité (#56)
 ├── packages/
 │   ├── domain/              Règles métier pures — zéro dépendance runtime
 │   │   └── src/
@@ -106,7 +106,10 @@ arrakis/
 │   │       ├── identity/    Alias, résolution de pseudo, fusion
 │   │       ├── import/      Analyse d'un import Excel (sans lire le fichier)
 │   │       └── projection/  project(faits) → projections
-│   ├── application/         Commandes, ports, executeCommand, recalcul (ADR 0023)
+│   ├── application/         executeCommand, commandes, recalcul, ports (ADR 0023)
+│   │   └── src/
+│   │       ├── commands/    Une commande par fichier, avec son test (dès le #39)
+│   │       └── testing/     Ports en mémoire, jeu d'essai, suites de contrat
 │   ├── postgres/            Transaction et entrepôts SQL : implémente les ports
 │   ├── contracts/           Schémas Zod des entrées de commande
 │   └── migrate-v1/          Migration depuis une sauvegarde de la v1
