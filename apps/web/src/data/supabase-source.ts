@@ -46,10 +46,19 @@ export function supabaseSource(
   organizationSlug = import.meta.env.VITE_ORGANIZATION_SLUG ?? 'arrakis',
 ): DataSource {
   const client = createClient(url, key, { auth: { persistSession: false } });
+  // L'organisation ne change pas pendant la visite : elle n'est cherchée qu'une fois.
+  let organization: Promise<string> | undefined;
+  const organizationOnce = () => {
+    organization ??= organizationId(client, organizationSlug).catch((error: unknown) => {
+      organization = undefined;
+      throw error;
+    });
+    return organization;
+  };
   return {
-    loadLeaderboard: () => loadLeaderboard(client, organizationSlug),
-    loadPlayer: (playerId) => loadPlayer(client, organizationSlug, playerId),
-    loadEdition: (editionId) => loadEdition(client, organizationSlug, editionId),
+    loadLeaderboard: () => loadLeaderboard(client, organizationSlug, organizationOnce),
+    loadPlayer: (playerId) => loadPlayer(client, organizationOnce, playerId),
+    loadEdition: (editionId) => loadEdition(client, organizationOnce, editionId),
   };
 }
 
@@ -65,15 +74,23 @@ async function organizationId(client: SupabaseClient, slug: string): Promise<str
   return organization.data.id;
 }
 
-async function loadLeaderboard(client: SupabaseClient, slug: string): Promise<LeaderboardData> {
-  const organization = { data: { id: await organizationId(client, slug) } };
-
-  const season = await client
-    .from('seasons')
-    .select('id, name')
-    .eq('organization_id', organization.data.id)
-    .eq('status', 'open')
-    .maybeSingle<{ id: string; name: string }>();
+async function loadLeaderboard(
+  client: SupabaseClient,
+  slug: string,
+  organizationOf: () => Promise<string>,
+): Promise<LeaderboardData> {
+  // La saison est cherchée par le slug, en même temps que l'organisation :
+  // un aller-retour de moins sur mobile. L'organisation reste vérifiée, pour
+  // qu'un slug faux soit une erreur et non un classement vide.
+  const [season] = await Promise.all([
+    client
+      .from('seasons')
+      .select('id, name, organizations!inner(slug)')
+      .eq('organizations.slug', slug)
+      .eq('status', 'open')
+      .maybeSingle<{ id: string; name: string }>(),
+    organizationOf(),
+  ]);
   if (season.error) throw season.error;
   if (!season.data) return { seasonName: null, entries: [] };
 
@@ -156,30 +173,33 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function loadPlayer(
   client: SupabaseClient,
-  slug: string,
+  organizationOf: () => Promise<string>,
   playerId: string,
 ): Promise<PlayerPageData | MergedPlayer | null> {
   if (!UUID.test(playerId)) return null;
-  const organization = await organizationId(client, slug);
-  const profile = await client
-    .from('player_profile_view')
-    .select('*')
-    .eq('organization_id', organization)
-    .eq('player_id', playerId)
-    // Un joueur archivé est masqué des pages publiques (glossaire).
-    .eq('archived', false)
-    .maybeSingle<PlayerProfileViewRow>();
+  const organization = await organizationOf();
+  // Profil et matchs en même temps : les matchs ne servent à rien sans profil,
+  // mais les attendre l'un après l'autre coûte un aller-retour sur mobile.
+  const [profile, matches] = await Promise.all([
+    client
+      .from('player_profile_view')
+      .select('*')
+      .eq('organization_id', organization)
+      .eq('player_id', playerId)
+      // Un joueur archivé est masqué des pages publiques (glossaire).
+      .eq('archived', false)
+      .maybeSingle<PlayerProfileViewRow>(),
+    client
+      .from('player_matches_view')
+      .select(
+        'match_id, edition_id, edition_name, edition_date, match_number, matchday, role, champion, result, kills, deaths, assists',
+      )
+      .eq('organization_id', organization)
+      .eq('player_id', playerId)
+      .overrideTypes<PlayerMatchViewRow[], { merge: false }>(),
+  ]);
   if (profile.error) throw profile.error;
   if (!profile.data) return mergedInto(client, organization, playerId);
-
-  const matches = await client
-    .from('player_matches_view')
-    .select(
-      'match_id, edition_id, edition_name, edition_date, match_number, matchday, role, champion, result, kills, deaths, assists',
-    )
-    .eq('organization_id', organization)
-    .eq('player_id', playerId)
-    .overrideTypes<PlayerMatchViewRow[], { merge: false }>();
   if (matches.error) throw matches.error;
 
   const row = profile.data;
@@ -267,11 +287,11 @@ async function rowsOf<T>(
 
 async function loadEdition(
   client: SupabaseClient,
-  slug: string,
+  organizationOf: () => Promise<string>,
   editionId: string,
 ): Promise<EditionPageData | null> {
   if (!UUID.test(editionId)) return null;
-  const organization = await organizationId(client, slug);
+  const organization = await organizationOf();
   const [edition] = await rowsOf(client, 'edition_page_view', organization, editionId, toHeader);
   if (!edition) return null;
 

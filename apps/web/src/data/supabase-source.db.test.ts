@@ -39,6 +39,14 @@ describe('lire le classement dans la base locale', () => {
     expect(new Map(entries.map((e) => [e.playerId, e.rating]))).toEqual(domainRatings);
   });
 
+  it('refuse une organisation inconnue au lieu de montrer un classement vide', async () => {
+    const source = supabaseSource(undefined, undefined, 'organisation-inconnue');
+
+    await expect(source.loadLeaderboard()).rejects.toThrow(
+      'Organisation « organisation-inconnue » introuvable.',
+    );
+  });
+
   it('range les joueurs dans l’ordre attendu, sans le joueur archivé', async () => {
     const { entries } = await supabaseSource().loadLeaderboard();
     const nickname = (id: string) => entries.find((e) => e.playerId === id)?.nickname;
