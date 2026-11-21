@@ -1,5 +1,5 @@
 import type { Division, RatingBreakdown, RecentForm, Role, Tier } from '@arrakis/domain';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { PostgrestClient } from '@supabase/postgrest-js';
 import {
   toMatches,
   type EditionHeader,
@@ -45,7 +45,11 @@ export function supabaseSource(
   key = import.meta.env.VITE_SUPABASE_ANON_KEY ?? LOCAL_KEY,
   organizationSlug = import.meta.env.VITE_ORGANIZATION_SLUG ?? 'arrakis',
 ): DataSource {
-  const client = createClient(url, key, { auth: { persistSession: false } });
+  // Le site ne fait que lire des vues : l'API REST suffit, sans la bibliothèque
+  // complète de Supabase (connexion, stockage, temps réel), trop lourde sur mobile.
+  const client = new PostgrestClient(`${url}/rest/v1`, {
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
+  });
   return {
     loadLeaderboard: () => loadLeaderboard(client, organizationSlug),
     loadPlayer: (playerId) => loadPlayer(client, organizationSlug, playerId),
@@ -54,7 +58,7 @@ export function supabaseSource(
 }
 
 /** L'organisation que le site affiche (ADR 0008). Toute lecture se limite à elle. */
-async function organizationId(client: SupabaseClient, slug: string): Promise<string> {
+async function organizationId(client: PostgrestClient, slug: string): Promise<string> {
   const organization = await client
     .from('organizations')
     .select('id')
@@ -65,7 +69,7 @@ async function organizationId(client: SupabaseClient, slug: string): Promise<str
   return organization.data.id;
 }
 
-async function loadLeaderboard(client: SupabaseClient, slug: string): Promise<LeaderboardData> {
+async function loadLeaderboard(client: PostgrestClient, slug: string): Promise<LeaderboardData> {
   // La saison est cherchée par le slug, en même temps que l'organisation :
   // un aller-retour de moins sur mobile. L'organisation reste vérifiée, pour
   // qu'un slug faux soit une erreur et non un classement vide.
@@ -159,7 +163,7 @@ interface PlayerMatchViewRow {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function loadPlayer(
-  client: SupabaseClient,
+  client: PostgrestClient,
   slug: string,
   playerId: string,
 ): Promise<PlayerPageData | MergedPlayer | null> {
@@ -238,7 +242,7 @@ async function loadPlayer(
 
 /** Le profil n'existe plus si le joueur a été fusionné : on cherche le joueur conservé. */
 async function mergedInto(
-  client: SupabaseClient,
+  client: PostgrestClient,
   organization: string,
   playerId: string,
 ): Promise<MergedPlayer | null> {
@@ -257,7 +261,7 @@ async function mergedInto(
  * dans le site. `toItem` porte le type de la ligne qu'il attend.
  */
 async function rowsOf<T>(
-  client: SupabaseClient,
+  client: PostgrestClient,
   view: string,
   organization: string,
   editionId: string,
@@ -273,7 +277,7 @@ async function rowsOf<T>(
 }
 
 async function loadEdition(
-  client: SupabaseClient,
+  client: PostgrestClient,
   slug: string,
   editionId: string,
 ): Promise<EditionPageData | null> {
