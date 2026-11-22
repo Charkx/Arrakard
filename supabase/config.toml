@@ -457,3 +457,12 @@ verify_jwt = false
 
 [functions.link-discord-account]
 verify_jwt = false
+
+[functions.create-edition]
+verify_jwt = false
+
+[functions.update-edition]
+verify_jwt = false
+
+[functions.archive-edition]
+verify_jwt = false
