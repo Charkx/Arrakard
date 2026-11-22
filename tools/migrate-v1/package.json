@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@arrakis/backend": "workspace:*",
-    "postgres": "^4.1.0"
+    "postgres": "3.4.7"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^5.0.3",

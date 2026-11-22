@@ -143,6 +143,11 @@ joueurs fusionnés écartés). Les pages les lisent par `DataSource` (ADR 0019).
 a une entrée à valider. Zod est une dépendance : elle sera redemandée à ce
 moment-là.
 
+> **Amendé par [0026](0026-la-chaine-http-des-commandes.md).** L'Edge Function
+> identifie l'utilisateur auprès de Supabase Auth, valide l'entrée par un
+> contrat Zod de `backend/src/contracts/`, et ses codes de réponse sont fixés.
+> `postgres` est figé à 3.4.7, la version qui tourne sous Deno.
+
 ## Options écartées
 
 - **Garder l'ADR 0005 tel quel**, toute la commande dans l'Edge Function :

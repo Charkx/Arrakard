@@ -45,6 +45,11 @@ tables, à deux exceptions près, limitées par la RLS à la ligne du joueur
 connecté : ses **inscriptions** (libre-service) et la **personnalisation de
 sa carte** (RPC dédiée, comme en v1).
 
+> **Amendé par [0026](0026-la-chaine-http-des-commandes.md).** L'Edge Function
+> identifie l'utilisateur auprès de Supabase Auth, valide l'entrée par un
+> contrat Zod de `backend/src/contracts/`, et ses codes de réponse sont fixés.
+> `postgres` est figé à 3.4.7, la version qui tourne sous Deno.
+
 ## Résultats du spike
 
 | Question                                                        | Résultat                                                                                                                                                                        |

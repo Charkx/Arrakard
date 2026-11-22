@@ -7,9 +7,11 @@
   "exports": {
     "./domain": "./src/domain/index.ts",
     "./application": "./src/application/index.ts",
-    "./infrastructure": "./src/infrastructure/index.ts"
+    "./infrastructure": "./src/infrastructure/index.ts",
+    "./contracts": "./src/contracts/index.ts"
   },
   "imports": {
+    "#contracts/*": "./src/contracts/*",
     "#domain/*": "./src/domain/*",
     "#application/*": "./src/application/*",
     "#infrastructure/*": "./src/infrastructure/*",
@@ -23,7 +25,8 @@
     "test:db": "vitest run --config vitest.db.config.ts"
   },
   "dependencies": {
-    "postgres": "^4.1.0"
+    "postgres": "3.4.7",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^5.0.3",

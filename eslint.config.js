@@ -43,6 +43,10 @@ const DOMAIN_BY_ITS_ENTRY = refuse(
   '/domain/(?!index\\.ts$)',
   'Le domaine s’importe par son point d’entrée, `domain/index.ts` (ADR 0025).',
 );
+const CONTRACTS_BY_ITS_ENTRY = refuse(
+  '/contracts/(?!index\\.ts$)',
+  'Les contrats s’importent par leur point d’entrée, `contracts/index.ts` (ADR 0026).',
+);
 const APPLICATION_BY_ITS_ENTRY = refuse(
   '/application/(?!index\\.ts$)',
   'L’application s’importe par son point d’entrée, `application/index.ts` (ADR 0025).',
@@ -86,6 +90,21 @@ export default defineConfig([
     files: ['backend/src/application/**/*.ts'],
     rules: imports(ONLY_RELATIVE, NOT_INFRASTRUCTURE, NOT_TESTS, NOT_OUTSIDE, DOMAIN_BY_ITS_ENTRY),
   },
+  // Les contrats : la forme des entrées, partagée avec le site. Zod seulement.
+  {
+    files: ['backend/src/contracts/**/*.ts'],
+    rules: imports(
+      refuse(
+        '^(?!\\.{1,2}/|zod$)',
+        'Un contrat n’importe que Zod et d’autres contrats (ADR 0026).',
+      ),
+      refuse(
+        '/(domain|application|infrastructure)/',
+        'Un contrat ne dépend d’aucune couche (ADR 0026).',
+      ),
+      NOT_TESTS,
+    ),
+  },
   // L'infrastructure : la périphérie. Ses paquets npm (postgres), mais rien du
   // dépôt par son nom, et le reste du back par ses points d'entrée.
   {
@@ -96,6 +115,18 @@ export default defineConfig([
       NOT_OUTSIDE,
       DOMAIN_BY_ITS_ENTRY,
       APPLICATION_BY_ITS_ENTRY,
+      CONTRACTS_BY_ITS_ENTRY,
+    ),
+  },
+  // Les Edge Functions : des points d'entrée HTTP minces (ADR 0023). Elles
+  // importent le back par les points d'entrée de ses couches, rien d'autre.
+  {
+    files: ['supabase/functions/**/*.ts'],
+    rules: imports(
+      refuse(
+        '^(?!(\\.\\./){3}backend/src/(application|contracts|infrastructure)/index\\.ts$)',
+        'Une Edge Function n’importe que les points d’entrée du back (ADR 0026).',
+      ),
     ),
   },
   // Les tests du domaine et leurs outils restent du côté du domaine.

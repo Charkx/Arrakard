@@ -45,3 +45,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0023](0023-ecritures-en-trois-couches.md)              | Les écritures en trois couches                       | Accepté |
 | [0024](0024-lire-avec-postgrest-js.md)                  | Lire la base avec postgrest-js                       | Accepté |
 | [0025](0025-un-front-un-back.md)                        | Un front, un back                                    | Accepté |
+| [0026](0026-la-chaine-http-des-commandes.md)            | La chaîne HTTP des commandes                         | Accepté |

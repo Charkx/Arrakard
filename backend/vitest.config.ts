@@ -12,10 +12,13 @@ export default defineConfig({
       exclude: [
         '**/index.ts',
         // Ce qui parle à la base est couvert par les tests d'intégration (`pnpm test:db`).
+        'src/infrastructure/commands.ts',
+        'src/infrastructure/edge.ts',
         'src/infrastructure/local.ts',
         'src/infrastructure/organizations.ts',
         'src/infrastructure/ports.ts',
         'src/infrastructure/read.ts',
+        'src/infrastructure/supabase-auth.ts',
         'src/infrastructure/tables.ts',
         'src/infrastructure/write.ts',
       ],
@@ -23,6 +26,7 @@ export default defineConfig({
       thresholds: {
         'src/domain/**': AT_LEAST_95,
         'src/application/**': AT_LEAST_95,
+        'src/contracts/**': AT_LEAST_95,
         'src/infrastructure/**': AT_LEAST_95,
       },
     },
