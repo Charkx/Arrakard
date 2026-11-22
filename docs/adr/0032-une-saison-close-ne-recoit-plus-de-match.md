@@ -20,6 +20,9 @@ commande. `publishEdition` est la première ; la saisie (A14), l'import (A1),
 la correction (#48), la fusion de profils (A5) et le barème (A8) devront
 faire de même, et rattacher une édition à une saison clôturée sera refusé.
 
+> **Complété par 0034** : la fusion de deux profils est une deuxième
+> exception, car elle ne change aucun match, elle corrige qui l'a joué.
+
 **Changer les règles de note est l'exception assumée** (A13, ADR 0007) : le
 recalcul touche toutes les saisons, clôturées comprises. C'est un acte
 délibéré, annoncé par une note de patch.

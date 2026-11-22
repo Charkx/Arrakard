@@ -48,5 +48,5 @@ passages par l'API ordinaire, car ils sont publics (ADR 0031).
   départ le même jour) : c'est la trace honnête de ce qui s'est passé.
 - Corriger la date d'un passage demandera une commande à part, si le besoin
   vient.
-- La fusion de profils (#52) devra dire ce que deviennent les passages du
-  profil absorbé.
+- La fusion de profils termine le passage en cours du profil absorbé
+  (ADR 0034).
