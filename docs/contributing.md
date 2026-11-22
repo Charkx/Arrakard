@@ -67,11 +67,20 @@ code : voir [Travailler avec un agent](#travailler-avec-un-agent).
 
   Un test importe le code par les imports internes du paquet (`#domain/…`,
   `#application/…`, `#src/…`) et ses outils par `#support/…`. Le code de `src/`
-  n'importe jamais `tests/`. Le site sera rangé par fonctionnalité au ticket #56.
+  n'importe jamais `tests/`.
 
-- **Edge Functions en local** : le moteur ne voit que les fichiers du back
-  présents à son démarrage. Après avoir ajouté un fichier au back, relancer
-  `supabase stop && pnpm db:start`, sinon les fonctions répondent `503`.
+  Le site se range **par fonctionnalité** : `frontend/src/features/<page>/`
+  (classement, profil, édition) contient la page, ses composants, ses données
+  et son style. Ce qui sert à plusieurs pages va dans `frontend/src/shared/`
+  (composants, i18n, outils), qui ne dépend d'aucune page. La source de données
+  (`DataSource`, son contexte React et son implémentation Supabase) est dans
+  `frontend/src/data/`. Une page n'importe pas une autre : le lint l'impose
+  ([ADR 0029](adr/0029-le-site-par-fonctionnalite.md)).
+
+- **Edge Functions en local** : le moteur suit les fichiers du back tels qu'à
+  son démarrage. Après un changement de branche ou un fichier ajouté au back,
+  relancer `supabase stop && pnpm db:start`, sinon les fonctions répondent
+  `503`.
 - **Base de données** : une migration fusionnée ne se modifie plus. Tout
   changement de schéma est une nouvelle migration, écrite après ses tests
   pgTAP. Une migration qui crée une table lui retire d'abord les droits que

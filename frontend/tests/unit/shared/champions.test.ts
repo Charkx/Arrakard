@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { championImageId } from '#src/data/champions.ts';
+import { championImageId } from '#src/shared/champions.ts';
 
 describe('championImageId', () => {
   it.each([

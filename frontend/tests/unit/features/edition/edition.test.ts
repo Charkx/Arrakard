@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { byMatchday, formatDuration, toMatches, type MatchPlayerRow } from '#src/data/edition.ts';
+import {
+  byMatchday,
+  formatDuration,
+  toMatches,
+  type MatchPlayerRow,
+} from '#src/features/edition/edition.ts';
 
 function aRow(overrides: Partial<MatchPlayerRow> = {}): MatchPlayerRow {
   return {

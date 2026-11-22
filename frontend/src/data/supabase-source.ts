@@ -6,9 +6,10 @@ import {
   type EditionPageData,
   type MatchPlayerRow,
   type StandingRow,
-} from './edition.ts';
-import type { DataSource, LeaderboardData, LeaderboardEntry } from './leaderboard.ts';
-import type { MergedPlayer, PlayedMatch, PlayerPageData } from './player.ts';
+} from '../features/edition/edition.ts';
+import type { LeaderboardData, LeaderboardEntry } from '../features/leaderboard/leaderboard.ts';
+import type { DataSource } from './data-source.ts';
+import type { MergedPlayer, PlayedMatch, PlayerPageData } from '../features/player/player.ts';
 
 /** Une ligne de la vue `leaderboard_view` (migration 20261113000000_leaderboard.sql). */
 interface LeaderboardViewRow {

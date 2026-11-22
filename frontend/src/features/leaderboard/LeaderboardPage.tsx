@@ -5,19 +5,15 @@ import {
   type Role,
 } from '@arrakis/backend/domain';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { DeltaBadge } from '../components/DeltaBadge.tsx';
-import { PlayerCard } from '../components/PlayerCard.tsx';
-import { TierPill } from '../components/TierPill.tsx';
-import { useLoaded } from '../data/DataContext.tsx';
-import {
-  initialsOf,
-  ratingDelta,
-  type DataSource,
-  type LeaderboardData,
-  type LeaderboardEntry,
-} from '../data/leaderboard.ts';
-import type { TextKey } from '../i18n/dictionary.ts';
-import { useI18n } from '../i18n/i18n.tsx';
+import { DeltaBadge } from './DeltaBadge.tsx';
+import { PlayerCard } from '../../shared/components/PlayerCard.tsx';
+import { TierPill } from './TierPill.tsx';
+import { useLoaded } from '../../data/DataContext.tsx';
+import type { DataSource } from '../../data/data-source.ts';
+import { initialsOf } from '../../shared/initials.ts';
+import { ratingDelta, type LeaderboardData, type LeaderboardEntry } from './leaderboard.ts';
+import type { TextKey } from '../../shared/i18n/dictionary.ts';
+import { useI18n } from '../../shared/i18n/i18n.tsx';
 
 const ROLES: readonly Role[] = ['TOP', 'JGL', 'MID', 'ADC', 'SUP'];
 const DIVISIONS: readonly { readonly value: Division; readonly label: TextKey }[] = [

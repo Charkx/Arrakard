@@ -96,7 +96,7 @@ que ce qu'elle affiche. Pas de cache côté navigateur pour l'instant
 
 ```
 arrakis/
-├── frontend/                Le site React : src/ et tests/ (même forme), à ranger par fonctionnalité (#56)
+├── frontend/                Le site React : src/{features,shared,data} et tests/ (même forme)
 ├── backend/                 Un seul paquet, trois couches (ADR 0023, ADR 0025)
 │   ├── src/
 │   │   ├── domain/          Règles métier pures — zéro dépendance runtime

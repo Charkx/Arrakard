@@ -1,5 +1,5 @@
 import { createContext, use, useEffect, useState, type ReactNode } from 'react';
-import type { DataSource } from './leaderboard.ts';
+import type { DataSource } from './data-source.ts';
 
 const DataContext = createContext<DataSource | null>(null);
 

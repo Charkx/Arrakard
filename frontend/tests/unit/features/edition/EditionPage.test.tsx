@@ -5,7 +5,7 @@ import {
   type EditionPageData,
   type MatchPlayerRow,
   type StandingRow,
-} from '#src/data/edition.ts';
+} from '#src/features/edition/edition.ts';
 import { aMatch, aProfile, openSite } from '#support/render.tsx';
 
 beforeEach(() => {
