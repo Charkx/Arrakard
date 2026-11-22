@@ -194,6 +194,18 @@ const fr = {
   'admin.drafts.one': '1 brouillon',
   'admin.empty': 'Aucune édition pour l’instant.',
   'admin.error': 'Impossible de charger les éditions.',
+  'admin.active.title': 'Saison active',
+  'admin.active.current': '{season} est la saison active.',
+  'admin.active.none': 'Aucune saison n’est ouverte : les matchs ne comptent dans aucune note.',
+  'admin.active.close': 'Clôturer la saison',
+  'admin.active.confirm':
+    'Clôturer {season} ? Ses notes seront figées, et elle ne recevra plus de match.',
+  'admin.active.confirmYes': 'Oui, clôturer',
+  'admin.active.cancel': 'Annuler',
+  'admin.active.name': 'Nom de la saison',
+  'admin.active.year': 'Année',
+  'admin.active.open': 'Ouvrir la saison',
+  'admin.active.failed': 'Le serveur a refusé : {message}',
 } as const;
 
 /** Une clé de texte. Une clé inconnue ne compile pas. */
@@ -386,6 +398,18 @@ const en: Record<TextKey, string> = {
   'admin.drafts.one': '1 draft',
   'admin.empty': 'No edition yet.',
   'admin.error': 'Could not load the editions.',
+  'admin.active.title': 'Active season',
+  'admin.active.current': '{season} is the active season.',
+  'admin.active.none': 'No season is open: matches count towards no rating.',
+  'admin.active.close': 'Close the season',
+  'admin.active.confirm':
+    'Close {season}? Its ratings will be frozen, and it will get no more matches.',
+  'admin.active.confirmYes': 'Yes, close it',
+  'admin.active.cancel': 'Cancel',
+  'admin.active.name': 'Season name',
+  'admin.active.year': 'Year',
+  'admin.active.open': 'Open the season',
+  'admin.active.failed': 'The server refused: {message}',
 };
 
 export const DICTIONARY: Record<Language, Record<TextKey, string>> = { fr, en };

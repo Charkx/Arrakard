@@ -114,8 +114,12 @@ const NOBODY: AuthSource = {
   signOut: () => Promise.resolve(),
 };
 
+const refused = () => Promise.reject(new Error('Réservé aux admins.'));
 const REFUSED: AdminSource = {
-  editions: () => Promise.reject(new Error('Réservé aux admins.')),
+  editions: refused,
+  activeSeason: refused,
+  openSeason: refused,
+  closeSeason: refused,
 };
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */

@@ -2,7 +2,7 @@ import { AuthClient, type Session } from '@supabase/auth-js';
 import { PostgrestClient } from '@supabase/postgrest-js';
 import type { EditionType } from '@arrakis/backend/domain';
 import type { AdminEdition, SeasonStatus } from '../features/admin/admin.ts';
-import type { AdminSource } from './admin-source.ts';
+import { CommandFailed, type AdminSource } from './admin-source.ts';
 import type { AuthSource, MemberRole, SignedInUser } from './auth-source.ts';
 import { supabaseConfig } from './supabase-config.ts';
 import { organizationId } from './supabase-source.ts';
@@ -122,18 +122,57 @@ export function supabaseSession(
     },
   };
 
+  /** La session de l'admin connecté ; sans elle, rien ne se lit ni ne s'envoie. */
+  async function accessToken(): Promise<string> {
+    const { data, error } = await client.getSession();
+    if (error) throw error;
+    if (!data.session) throw new Error('Personne n’est connecté.');
+    return data.session.access_token;
+  }
+
+  /** Envoie une commande à son Edge Function (ADR 0026). */
+  async function command(name: string, input: Record<string, unknown>): Promise<void> {
+    const token = await accessToken();
+    const response = await fetch(`${api}/functions/v1/${name}`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        organizationId: await organizationId(rest(token), organizationSlug),
+        ...input,
+      }),
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      throw new CommandFailed(body.message ?? String(response.status));
+    }
+  }
+
   const admin: AdminSource = {
     async editions() {
-      const { data, error } = await client.getSession();
-      if (error) throw error;
-      if (!data.session) throw new Error('Personne n’est connecté.');
-      const db = rest(data.session.access_token);
+      const db = rest(await accessToken());
       const rows = await db.rpc('admin_editions', {
         org: await organizationId(db, organizationSlug),
       });
       if (rows.error) throw rows.error;
       return (rows.data as readonly AdminEditionRow[]).map(toAdminEdition);
     },
+    async activeSeason() {
+      const db = rest(await accessToken());
+      const { data, error } = await db
+        .from('seasons')
+        .select('id, name')
+        .eq('organization_id', await organizationId(db, organizationSlug))
+        .eq('status', 'open')
+        .maybeSingle<{ id: string; name: string }>();
+      if (error) throw error;
+      return data;
+    },
+    openSeason: (name, year) => command('open-season', { name, year }),
+    closeSeason: (seasonId) => command('close-season', { seasonId }),
   };
 
   return { auth, admin };

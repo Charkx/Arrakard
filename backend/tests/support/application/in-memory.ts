@@ -6,13 +6,20 @@ import {
   type TransactionPorts,
   type UnitOfWork,
 } from '#application/index.ts';
-import type { DiscordConfig, MemberRole, Publication } from '#application/index.ts';
-import type { EditionSnapshot } from './command-harness.ts';
+import type { DiscordConfig, MemberRole, Publication, SeasonStatus } from '#application/index.ts';
+import type { EditionSnapshot, SeasonRecord } from './command-harness.ts';
 
 /** Un match en brouillon : enregistré, mais pas encore dans les faits que lit le recalcul. */
 interface DraftMatch {
   readonly match: MatchFact;
   readonly performances: readonly PerformanceFact[];
+}
+
+/** Une saison telle que la mémoire la garde. */
+interface StoredSeason {
+  readonly name: string;
+  status: SeasonStatus;
+  endDate: string | null;
 }
 
 /** Une organisation telle que la mémoire la garde. */
@@ -24,6 +31,7 @@ interface StoredOrganization {
   readonly members: Map<string, MemberRole>;
   readonly editions: Map<string, EditionSnapshot>;
   readonly drafts: Map<string, DraftMatch>;
+  readonly seasons: Map<string, StoredSeason>;
   readonly commandLog: CommandLogEntry[];
   readonly publications: Publication[];
   projections?: Projections;
@@ -57,6 +65,8 @@ export interface InMemoryStore extends RecomputePorts {
   ): void;
   /** Ses projections écrites, ou `undefined` si rien n'a été écrit. */
   projectionsOf(organizationId: string): Projections | undefined;
+  /** L'état d'une saison de l'organisation. */
+  seasonOf(organizationId: string, seasonId: string): SeasonRecord | undefined;
   /** La version et la clôture d'une édition de l'organisation. */
   editionOf(organizationId: string, editionId: string): EditionSnapshot | undefined;
   /** Les lignes du journal des commandes de l'organisation. */
@@ -134,7 +144,10 @@ export function inMemoryStore(): InMemoryStore {
         const draftMatchIds = [...organization.drafts.values()]
           .filter((d) => d.match.editionId === editionId)
           .map((d) => d.match.id);
-        return Promise.resolve({ ...meta, draftMatchIds });
+        const seasonId = organization.facts.editions.find((e) => e.id === editionId)?.seasonId;
+        const seasonClosed =
+          seasonId != null && organization.seasons.get(seasonId)?.status === 'closed';
+        return Promise.resolve({ ...meta, draftMatchIds, seasonClosed });
       },
       close(organizationId, editionId, closedAt, version) {
         return Promise.resolve().then(() =>
@@ -170,6 +183,34 @@ export function inMemoryStore(): InMemoryStore {
     identities: {
       discordUserId: (userId) => Promise.resolve(discordIdentities.get(userId)),
     },
+    seasons: {
+      find(organizationId, seasonId) {
+        const season = organizations.get(organizationId)?.seasons.get(seasonId);
+        return Promise.resolve(season && { status: season.status });
+      },
+      activeSeasonId(organizationId) {
+        const open = [...find(organizationId).seasons].find(([, s]) => s.status === 'open');
+        return Promise.resolve(open?.[0]);
+      },
+      nameTaken(organizationId, name) {
+        return Promise.resolve(
+          [...find(organizationId).seasons.values()].some((s) => s.name === name),
+        );
+      },
+      open(organizationId, { name }) {
+        const seasonId = crypto.randomUUID();
+        find(organizationId).seasons.set(seasonId, { name, status: 'open', endDate: null });
+        return Promise.resolve(seasonId);
+      },
+      close(organizationId, seasonId, endDate) {
+        return Promise.resolve().then(() => {
+          const season = find(organizationId).seasons.get(seasonId);
+          if (!season) throw new Error(`Saison ${seasonId} introuvable.`);
+          season.status = 'closed';
+          season.endDate = endDate;
+        });
+      },
+    },
     commandLog: {
       append(entry) {
         return Promise.resolve().then(() => {
@@ -189,6 +230,12 @@ export function inMemoryStore(): InMemoryStore {
         members: new Map(),
         editions: new Map(facts.editions.map((e) => [e.id, { version: 1, closedAt: null }])),
         drafts: new Map(),
+        seasons: new Map(
+          facts.seasons.map((s, i) => [
+            s.id,
+            { name: `Saison ${String(i + 1)}`, status: 'open', endDate: null },
+          ]),
+        ),
         commandLog: [],
         publications: [],
       });
@@ -207,6 +254,8 @@ export function inMemoryStore(): InMemoryStore {
       find(organizationId).drafts.set(match.id, { match, performances });
     },
     projectionsOf: (organizationId) => organizations.get(organizationId)?.projections,
+    seasonOf: (organizationId, seasonId) =>
+      organizations.get(organizationId)?.seasons.get(seasonId),
     editionOf: (organizationId, editionId) =>
       organizations.get(organizationId)?.editions.get(editionId),
     commandLogOf: (organizationId) => organizations.get(organizationId)?.commandLog ?? [],

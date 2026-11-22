@@ -6,3 +6,5 @@ export { publishEditionRequest } from './publish-edition.ts';
 export type { PublishEditionRequest } from './publish-edition.ts';
 export { syncDiscordRoleRequest } from './sync-discord-role.ts';
 export type { SyncDiscordRoleRequest } from './sync-discord-role.ts';
+export { closeSeasonRequest, openSeasonRequest } from './season.ts';
+export type { CloseSeasonRequest, OpenSeasonRequest } from './season.ts';

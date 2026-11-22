@@ -52,5 +52,17 @@ export function inMemoryCommandHarness(): CommandHarness {
     publishedMatchIds: async (organizationId) =>
       (await store.facts.readFacts(organizationId)).matches.map((m) => m.id),
     publications: (organizationId) => Promise.resolve(store.publicationsOf(organizationId)),
+    season(organizationId, seasonId) {
+      const season = store.seasonOf(organizationId, seasonId);
+      return Promise.resolve(season && { status: season.status, endDate: season.endDate });
+    },
+    seasonRatings: (organizationId, seasonId) =>
+      Promise.resolve(
+        new Map(
+          (store.projectionsOf(organizationId)?.seasonRatings ?? [])
+            .filter((r) => r.seasonId === seasonId)
+            .map((r) => [r.playerId, r.rating.rating]),
+        ),
+      ),
   };
 }

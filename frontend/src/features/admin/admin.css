@@ -106,3 +106,42 @@
     width: fit-content;
   }
 }
+
+.admin-panel {
+  border: 0.5px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-raised);
+}
+
+.admin-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  color: var(--text-secondary);
+}
+
+.admin-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.admin-form input {
+  padding: 8px 10px;
+  border: 0.5px solid var(--border-med);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-primary);
+  font: inherit;
+  min-width: 0;
+}

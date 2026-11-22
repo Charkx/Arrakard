@@ -5,6 +5,8 @@ import {
   type EditionRepository,
   type IdentityRepository,
   type MembershipRepository,
+  type SeasonRepository,
+  type SeasonStatus,
   type UnitOfWork,
 } from '../application/index.ts';
 import type { Sql, TransactionSql } from 'postgres';
@@ -29,6 +31,7 @@ export function postgresUnitOfWork(sql: Sql): UnitOfWork {
           memberships: postgresMemberships(tx),
           identities: postgresIdentities(tx),
           editions: postgresEditions(tx),
+          seasons: postgresSeasons(tx),
           commandLog: postgresCommandLog(tx),
         });
       })) as Awaited<ReturnType<typeof work>>;
@@ -76,18 +79,26 @@ function postgresEditions(tx: TransactionSql): EditionRepository {
   return {
     async find(organizationId, editionId) {
       const [edition] = await tx<
-        { version: number; closed_at: Date | null; draft_match_ids: string[] }[]
+        {
+          version: number;
+          closed_at: Date | null;
+          draft_match_ids: string[];
+          season_closed: boolean;
+        }[]
       >`
         select e.version, e.closed_at,
                array(select m.id from matches m where m.edition_id = e.id and m.draft order by m.id)
-                 as draft_match_ids
+                 as draft_match_ids,
+               coalesce(s.status = 'closed', false) as season_closed
         from editions e
+        left join seasons s on s.id = e.season_id
         where e.organization_id = ${organizationId} and e.id = ${editionId}`;
       return (
         edition && {
           version: edition.version,
           closedAt: toIso(edition.closed_at),
           draftMatchIds: edition.draft_match_ids,
+          seasonClosed: edition.season_closed,
         }
       );
     },
@@ -130,6 +141,39 @@ async function bumpVersion(
     returning version`;
   if (!edition) throw new CommandRejected('conflict', `Édition ${editionId} : version périmée.`);
   return edition.version;
+}
+
+function postgresSeasons(tx: TransactionSql): SeasonRepository {
+  return {
+    async find(organizationId, seasonId) {
+      const [season] = await tx<{ status: SeasonStatus }[]>`
+        select status from seasons where organization_id = ${organizationId} and id = ${seasonId}`;
+      return season && { status: season.status };
+    },
+    async activeSeasonId(organizationId) {
+      const [season] = await tx<{ id: string }[]>`
+        select id from seasons where organization_id = ${organizationId} and status = 'open'`;
+      return season?.id;
+    },
+    async nameTaken(organizationId, name) {
+      const [season] = await tx`
+        select 1 from seasons where organization_id = ${organizationId} and name = ${name}`;
+      return season !== undefined;
+    },
+    async open(organizationId, { name, year, startDate }) {
+      const [season] = await tx<{ id: string }[]>`
+        insert into seasons (organization_id, name, year, start_date, status)
+        values (${organizationId}, ${name}, ${year}, ${startDate}, 'open')
+        returning id`;
+      if (!season) throw new Error(`Saison ${name} : écriture impossible.`);
+      return season.id;
+    },
+    async close(organizationId, seasonId, endDate) {
+      await tx`
+        update seasons set status = 'closed', end_date = ${endDate}
+        where organization_id = ${organizationId} and id = ${seasonId}`;
+    },
+  };
 }
 
 function postgresCommandLog(tx: TransactionSql): CommandLog {

@@ -97,3 +97,8 @@ pour que `pnpm test:db` essaie la fonction de bout en bout.
 - `Access-Control-Allow-Origin: *` : n'importe quel site peut appeler une
   commande, mais seulement avec le jeton d'un admin, que seul notre site
   obtient. On le resserrera au domaine du site si besoin.
+
+> **Précision (2026-11-22, #43 et #50).** Deux raisons répondent aussi en
+> `409` : `nothing_to_publish` (une édition sans brouillon) et
+> `season_closed` (une édition d'une saison clôturée). Le champ `error` dit
+> laquelle, et `message` l'explique à l'admin.
