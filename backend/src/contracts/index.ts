@@ -4,3 +4,5 @@ export { closeEditionRequest } from './close-edition.ts';
 export type { CloseEditionRequest } from './close-edition.ts';
 export { publishEditionRequest } from './publish-edition.ts';
 export type { PublishEditionRequest } from './publish-edition.ts';
+export { syncDiscordRoleRequest } from './sync-discord-role.ts';
+export type { SyncDiscordRoleRequest } from './sync-discord-role.ts';

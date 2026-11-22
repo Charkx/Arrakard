@@ -1,4 +1,5 @@
 import type { EditionRepository } from './editions.ts';
+import type { MemberRole } from './sync-discord-role.ts';
 import { recomputeProjections, type RecomputePorts } from './recompute.ts';
 
 /** L'utilisateur qui exécute une commande, et l'organisation où il agit. */
@@ -12,9 +13,13 @@ export interface Clock {
   now(): Date;
 }
 
-/** Dit si un utilisateur est admin d'une organisation (ADR 0008). */
+/** Les adhésions : qui est admin ou membre de quelle organisation (ADR 0008). */
 export interface MembershipRepository {
   isAdmin(organizationId: string, userId: string): Promise<boolean>;
+  /** L'identifiant Discord de l'utilisateur, ou `undefined` s'il ne s'est pas connecté avec Discord. */
+  discordUserId(userId: string): Promise<string | undefined>;
+  /** Donne ce rôle à l'utilisateur dans l'organisation ; `null` retire son adhésion. */
+  setRole(organizationId: string, userId: string, role: MemberRole | null): Promise<void>;
 }
 
 /** Une ligne du journal des commandes (ADR 0009). */

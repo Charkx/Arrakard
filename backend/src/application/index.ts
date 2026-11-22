@@ -28,6 +28,16 @@ export type {
   PlayerRow,
   SeasonRow,
 } from './facts.ts';
+export { syncDiscordRole } from './sync-discord-role.ts';
+export type {
+  DiscordConfig,
+  DiscordGateway,
+  GuildMember,
+  MemberRole,
+  SyncDiscordRoleInput,
+  SyncDiscordRoleOutcome,
+  SyncDiscordRoleServices,
+} from './sync-discord-role.ts';
 export { recomputeProjections } from './recompute.ts';
 export type {
   FactsReader,

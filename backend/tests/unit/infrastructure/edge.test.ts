@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { closeEdition } from '#application/index.ts';
 import { closeEditionRequest } from '#contracts/index.ts';
 import { describe, expect, it } from 'vitest';
-import { edgeCommandHandler } from '#infrastructure/edge.ts';
+import { edgeCommandHandler, edgeSyncDiscordRoleHandler } from '#infrastructure/edge.ts';
 
 /** Lit un fichier JSON du dépôt, depuis la racine. */
 const readJson = (path: string): unknown =>
@@ -32,5 +32,16 @@ describe('edgeCommandHandler', () => {
         SUPABASE_ANON_KEY: 'clé',
       }),
     ).toThrow('Variable SUPABASE_URL manquante.');
+  });
+});
+
+describe('edgeSyncDiscordRoleHandler', () => {
+  it('refuse de démarrer sans la clé publique de Supabase', () => {
+    expect(() =>
+      edgeSyncDiscordRoleHandler({
+        SUPABASE_DB_URL: 'postgresql://127.0.0.1:1/aucune',
+        SUPABASE_URL: 'http://127.0.0.1:1',
+      }),
+    ).toThrow('Variable SUPABASE_ANON_KEY manquante.');
   });
 });

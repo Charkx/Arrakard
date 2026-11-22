@@ -42,6 +42,25 @@ function postgresMemberships(tx: TransactionSql): MembershipRepository {
         where organization_id = ${organizationId} and user_id = ${userId} and role = 'admin'`;
       return member !== undefined;
     },
+    async discordUserId(userId) {
+      // L'identité Discord vient de Supabase Auth, pas du site (ADR 0002).
+      const [identity] = await tx<{ provider_id: string }[]>`
+        select provider_id from auth.identities
+        where user_id = ${userId} and provider = 'discord'`;
+      return identity?.provider_id;
+    },
+    async setRole(organizationId, userId, role) {
+      if (role === null) {
+        await tx`
+          delete from organization_members
+          where organization_id = ${organizationId} and user_id = ${userId}`;
+        return;
+      }
+      await tx`
+        insert into organization_members (organization_id, user_id, role)
+        values (${organizationId}, ${userId}, ${role})
+        on conflict (organization_id, user_id) do update set role = excluded.role`;
+    },
   };
 }
 

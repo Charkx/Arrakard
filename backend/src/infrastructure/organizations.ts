@@ -33,5 +33,16 @@ export function postgresOrganizations(db: Db): OrganizationRepository {
       }
       return rules;
     },
+    async discordConfig(organizationId) {
+      const [organization] = await db<
+        { discord_guild_id: string | null; discord_admin_role_id: string | null }[]
+      >`
+        select discord_guild_id, discord_admin_role_id from organizations where id = ${organizationId}`;
+      if (!organization?.discord_guild_id || !organization.discord_admin_role_id) return undefined;
+      return {
+        guildId: organization.discord_guild_id,
+        adminRoleId: organization.discord_admin_role_id,
+      };
+    },
   };
 }

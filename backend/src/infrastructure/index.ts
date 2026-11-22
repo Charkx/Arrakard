@@ -1,7 +1,8 @@
 // Adaptateur Postgres (ADR 0023) : les ports de la couche application, avec postgres.js.
 export { postgresUnitOfWork, systemClock } from './commands.ts';
-export { edgeCommandHandler } from './edge.ts';
-export { commandHandler } from './http.ts';
+export { discordGateway, DISCORD_API_URL } from './discord.ts';
+export { edgeCommandHandler, edgeSyncDiscordRoleHandler } from './edge.ts';
+export { commandHandler, requestHandler } from './http.ts';
 export type { Authenticator, CommandContract } from './http.ts';
 export { supabaseAuthenticator } from './supabase-auth.ts';
 export { LOCAL_DATABASE_URL } from './local.ts';
