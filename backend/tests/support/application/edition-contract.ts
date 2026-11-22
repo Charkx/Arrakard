@@ -91,6 +91,18 @@ export function describeEditionContract(name: string, harness: () => CommandHarn
       expect(await commandLog(organizationId)).toEqual([]);
     });
 
+    it('seul un événement externe a une victoire saisie', async () => {
+      const { services, seed } = harness();
+      const { organizationId, adminId } = await seed();
+
+      await expect(
+        executeCommand(services, { userId: adminId, organizationId }, createEdition, {
+          ...IH,
+          arrakisWon: false,
+        }),
+      ).rejects.toMatchObject({ reason: 'conflict' });
+    });
+
     it('un participant est un joueur non fusionné de l’organisation', async () => {
       const { services, seed } = harness();
       const { organizationId, adminId } = await seed();

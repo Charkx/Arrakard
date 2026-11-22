@@ -7,6 +7,14 @@ alter table editions add column archived_at timestamptz;
 drop policy "lecture publique" on editions;
 create policy "lecture publique" on editions for select using (archived_at is null);
 
+-- Les participants d'une édition archivée disparaissent avec elle : la vue
+-- passe par `editions`, dont les droits cachent l'archivée.
+create or replace view edition_participants_view with (security_invoker = true) as
+select ep.organization_id, ep.edition_id, ep.player_id, p.nickname
+from edition_participants ep
+join editions e on e.id = ep.edition_id
+join players p on p.id = ep.player_id;
+
 create or replace function admin_editions(org uuid)
 returns table (
   edition_id    uuid,

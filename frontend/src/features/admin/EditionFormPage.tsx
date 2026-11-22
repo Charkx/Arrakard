@@ -4,10 +4,10 @@ import { useAdminSource } from '../../data/DataContext.tsx';
 import type { AdminSource } from '../../data/admin-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
 import { todayInParis } from '../../shared/today.ts';
+import { isExternal } from '@arrakis/backend/domain';
 import {
   blankEdition,
   EDITION_TYPES,
-  isExternal,
   PRESTIGES,
   toSend,
   type EditionDetails,
@@ -203,15 +203,18 @@ function EditionFields({
           {external && (
             <fieldset className="admin-wide admin-participants">
               <legend>{t('admin.edition.participants')}</legend>
-              <label className="admin-check">
-                <input
-                  type="checkbox"
-                  checked={details.arrakisWon === true}
-                  onChange={(e) => {
-                    set({ arrakisWon: e.target.checked ? true : null });
-                  }}
-                />
+              <label>
                 {t('admin.edition.won')}
+                <select
+                  value={details.arrakisWon === null ? '' : String(details.arrakisWon)}
+                  onChange={(e) => {
+                    set({ arrakisWon: e.target.value === '' ? null : e.target.value === 'true' });
+                  }}
+                >
+                  <option value="">{t('admin.edition.won.unknown')}</option>
+                  <option value="true">{t('admin.edition.won.yes')}</option>
+                  <option value="false">{t('admin.edition.won.no')}</option>
+                </select>
               </label>
               <label>
                 {t('admin.edition.search')}

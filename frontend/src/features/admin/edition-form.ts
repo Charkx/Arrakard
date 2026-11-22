@@ -1,4 +1,4 @@
-import type { EditionType, Prestige } from '@arrakis/backend/domain';
+import { isExternal, type EditionType, type Prestige } from '@arrakis/backend/domain';
 import type { SeasonStatus } from './admin.ts';
 
 export const EDITION_TYPES: readonly EditionType[] = [
@@ -12,10 +12,6 @@ export const EDITION_TYPES: readonly EditionType[] = [
 ];
 
 export const PRESTIGES: readonly Prestige[] = ['normal', 'premium', 'championship'];
-
-/** Les types sans match : seulement des participants (glossaire, « Événement externe »). */
-export const isExternal = (type: EditionType): boolean =>
-  type === 'external_lan' || type === 'external_event';
 
 /** Ce qu'un admin saisit d'une édition (contrat `createEditionRequest`). */
 export interface EditionDetails {

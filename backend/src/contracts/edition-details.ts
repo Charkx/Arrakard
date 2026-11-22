@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { editionAtVersion } from './edition.ts';
 
 const optionalText = (max: number) =>
   z
@@ -44,11 +45,7 @@ export const updateEditionRequest = z.strictObject({
 });
 
 /** L'entrée de « archiver une édition ». */
-export const archiveEditionRequest = z.strictObject({
-  organizationId: z.guid(),
-  editionId: z.guid(),
-  version: z.int().min(1),
-});
+export const archiveEditionRequest = editionAtVersion;
 
 export type CreateEditionRequest = z.infer<typeof createEditionRequest>;
 export type UpdateEditionRequest = z.infer<typeof updateEditionRequest>;

@@ -24,9 +24,6 @@ export interface Publication {
   readonly publishedBy: string;
 }
 
-/** Les types d'édition sans match : seulement des participants (glossaire, « Événement externe »). */
-export const EXTERNAL_TYPES: readonly EditionType[] = ['external_lan', 'external_event'];
-
 /** Ce qu'un admin saisit d'une édition, à la création comme à la modification. */
 export interface EditionDetails {
   readonly name: string;

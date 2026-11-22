@@ -1,6 +1,6 @@
 import type { Command } from '../command.ts';
 import type { EditionDetails } from '../editions.ts';
-import { checkEditionDetails } from './edition-details.ts';
+import { checkEditionDetails } from '../edition-checks.ts';
 
 export type CreateEditionInput = EditionDetails;
 

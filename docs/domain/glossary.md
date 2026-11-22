@@ -86,7 +86,7 @@ Voir l'[ADR 0012](../adr/0012-publier-les-resultats.md).
 | **Profil absorbé**    | `absorbedId`         | Dans une fusion, le profil en double, qui ne sera plus qu'un renvoi (`merged_into`).                                                                                                                                                                                          |
 | **Profil conservé**   | `keptId`             | Dans une fusion, le profil qui reste et reçoit les performances.                                                                                                                                                                                                              |
 | **Lien Discord**      | `linkDiscordAccount` | Le compte Discord lié à une carte, par un admin. Un compte n'est lié qu'à une carte de l'organisation. Il n'est pas public.                                                                                                                                                   |
-| **Archivage**         | `archived`           | Masque un joueur ou une équipe des pages publiques sans supprimer son historique. Archiver une équipe (`archiveTeam`) termine le jour même les passages de ses joueurs.                                                                                                       |
+| **Archivage**         | `archived`           | Masque un joueur, une équipe ou une édition des pages publiques sans supprimer son historique. Archiver une équipe (`archiveTeam`) termine le jour même les passages de ses joueurs.                                                                                          |
 
 ## Notation
 

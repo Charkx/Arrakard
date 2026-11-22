@@ -129,14 +129,14 @@ describe('le formulaire d’édition', () => {
     fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'external_lan' } });
     fireEvent.change(screen.getByLabelText('Chercher un joueur'), { target: { value: 'siro' } });
     fireEvent.click(screen.getByRole('checkbox', { name: 'Sirocco' }));
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Arrakis a gagné' }));
+    fireEvent.change(screen.getByLabelText('Arrakis a gagné ?'), { target: { value: 'false' } });
     fireEvent.click(screen.getByRole('button', { name: 'Créer l’édition' }));
 
     expect(admin.createEdition).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'external_lan',
         participantIds: ['p-sirocco'],
-        arrakisWon: true,
+        arrakisWon: false,
       }),
     );
   });

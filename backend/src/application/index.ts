@@ -13,7 +13,6 @@ export type {
   TransactionPorts,
   UnitOfWork,
 } from './command.ts';
-export { EXTERNAL_TYPES } from './editions.ts';
 export type { EditionDetails, EditionRepository, EditionState, Publication } from './editions.ts';
 export { createEdition } from './commands/create-edition.ts';
 export type { CreateEditionInput, CreateEditionOutcome } from './commands/create-edition.ts';

@@ -1,6 +1,7 @@
 import { CommandRejected, type Command } from '../command.ts';
-import { EXTERNAL_TYPES, type EditionDetails } from '../editions.ts';
-import { checkEditionDetails, checkVersion } from './edition-details.ts';
+import { isExternal } from '../../domain/index.ts';
+import type { EditionDetails } from '../editions.ts';
+import { checkEditionDetails, checkVersion } from '../edition-checks.ts';
 
 export interface UpdateEditionInput extends EditionDetails {
   readonly editionId: string;
@@ -29,7 +30,7 @@ export const updateEdition: Command<UpdateEditionInput, UpdateEditionOutcome> = 
     if (edition.seasonClosed) {
       throw new CommandRejected('season_closed', 'La saison de cette édition est clôturée.');
     }
-    if (edition.matchCount > 0 && EXTERNAL_TYPES.includes(details.type)) {
+    if (edition.matchCount > 0 && isExternal(details.type)) {
       throw new CommandRejected(
         'conflict',
         'Cette édition a des matchs : elle ne devient pas un événement externe.',

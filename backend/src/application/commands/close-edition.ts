@@ -1,5 +1,5 @@
 import { CommandRejected, type Command } from '../command.ts';
-import { checkVersion } from './edition-details.ts';
+import { checkVersion } from '../edition-checks.ts';
 
 export interface CloseEditionInput {
   readonly editionId: string;

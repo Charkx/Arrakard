@@ -356,7 +356,7 @@ interface EditionRow {
   readonly closed_at: string | null;
 }
 
-/** Une ligne de `admin_editions` (migration 20261122050000_admin_editions.sql). */
+/** Une ligne de `admin_editions` (migrations 20261122050000_admin_editions.sql et 20261122070000_archived_editions.sql). */
 interface AdminEditionRow {
   readonly edition_id: string;
   readonly name: string;
