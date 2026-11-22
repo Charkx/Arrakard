@@ -83,6 +83,9 @@ function anEdition(overrides: Partial<EditionPageData> = {}): EditionPageData {
       location: null,
       description: null,
       eventMvp: null,
+      closedAt: null,
+      hasPublishedResults: false,
+      hasPublishedFinal: false,
     },
     standings: [],
     matches: [],
@@ -231,5 +234,47 @@ describe('la page d’une édition', () => {
 
     expect(await screen.findByText('Night standings')).toBeDefined();
     expect(screen.getByText('League · Division 1')).toBeDefined();
+  });
+});
+
+describe('le statut d’une édition (ADR 0013)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-02-15T12:00:00Z'));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const header = anEdition().edition;
+
+  it.each([
+    ['à venir', { ...header, date: '2026-03-01' }, 'À venir'],
+    ['en cours, sans finale publiée', { ...header, hasPublishedResults: true }, 'En cours'],
+    [
+      'terminée, finale publiée',
+      { ...header, hasPublishedResults: true, hasPublishedFinal: true },
+      'Terminée',
+    ],
+    [
+      'terminée, clôturée par un admin',
+      { ...header, closedAt: '2026-02-10T20:00:00Z' },
+      'Terminée',
+    ],
+  ])('s’affiche %s', async (_case, edition, label) => {
+    openSite('/event/e-1', { editions: { 'e-1': anEdition({ edition }) } });
+
+    expect(await screen.findByText(label)).toBeDefined();
+  });
+
+  it.each([
+    [{ ...header, date: '2026-03-01' }, 'Upcoming'],
+    [header, 'Ongoing'],
+    [{ ...header, closedAt: '2026-02-10T20:00:00Z' }, 'Completed'],
+  ])('se lit en anglais : %#', async (edition, label) => {
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-GB');
+    openSite('/event/e-1', { editions: { 'e-1': anEdition({ edition }) } });
+
+    expect(await screen.findByText(label)).toBeDefined();
   });
 });

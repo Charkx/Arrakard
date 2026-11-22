@@ -311,6 +311,11 @@ interface EditionPageRow {
   readonly location: string | null;
   readonly description: string | null;
   readonly event_mvp_nickname: string | null;
+  // Absentes tant que la base en ligne n'a pas reçu la migration du statut :
+  // le site déployé ne doit pas devancer la base (ticket #38).
+  readonly closed_at?: string | null;
+  readonly match_count: number;
+  readonly has_final?: boolean;
 }
 
 const toHeader = (r: EditionPageRow): EditionHeader => ({
@@ -322,6 +327,10 @@ const toHeader = (r: EditionPageRow): EditionHeader => ({
   location: r.location,
   description: r.description,
   eventMvp: r.event_mvp_nickname,
+  closedAt: r.closed_at ?? null,
+  // Tout match en base est publié, jusqu'aux brouillons (ticket #43).
+  hasPublishedResults: r.match_count > 0,
+  hasPublishedFinal: r.has_final ?? false,
 });
 
 interface StandingViewRow {

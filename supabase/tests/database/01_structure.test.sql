@@ -1,6 +1,6 @@
 -- Structure du schéma : ADR 0003 (faits / projections) et ADR 0008 (multi-tenant).
 begin;
-select plan(30);
+select plan(32);
 
 -- Faits
 select has_table('public', 'organizations', 'organisations');
@@ -25,6 +25,8 @@ select has_view('public', 'leaderboard_view', 'vue du classement');
 select has_view('public', 'player_profile_view', 'vue du profil d''un joueur');
 select has_view('public', 'player_matches_view', 'vue de l''historique des matchs');
 select has_view('public', 'edition_page_view', 'vue de l''en-tête d''une édition');
+select has_column('public', 'edition_page_view', 'closed_at', 'la page d''une édition lit sa clôture, pour son statut');
+select has_column('public', 'edition_page_view', 'has_final', 'la page d''une édition sait si un match final existe, pour son statut');
 select has_view('public', 'edition_standings_view', 'vue du classement de soirée');
 select has_view('public', 'edition_matches_view', 'vue des matchs d''une édition');
 select has_view('public', 'edition_participants_view', 'vue des participants d''un événement externe');

@@ -91,3 +91,5 @@ export type {
   MergePlanResult,
   MergePlayer,
 } from './identity/merge.ts';
+export { editionStatus, isExternal } from './edition/status.ts';
+export type { EditionStatus, EditionStatusFacts } from './edition/status.ts';

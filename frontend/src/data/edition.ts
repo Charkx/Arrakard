@@ -11,6 +11,11 @@ export interface EditionHeader {
   readonly location: string | null;
   readonly description: string | null;
   readonly eventMvp: string | null;
+  /** Date de la clôture par un admin, ou null (ADR 0013). */
+  readonly closedAt: string | null;
+  /** L'édition a-t-elle des matchs publiés, et parmi eux son match final ? */
+  readonly hasPublishedResults: boolean;
+  readonly hasPublishedFinal: boolean;
 }
 
 /** Une ligne du classement de soirée (vue `edition_standings_view`), calculée par la base. */
@@ -134,4 +139,9 @@ export function byMatchday(
 /** Durée d'un match, comme dans les feuilles de résultats : 31:05. */
 export function formatDuration(seconds: number): string {
   return `${String(Math.floor(seconds / 60))}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+/** Le jour qu'il est à Arrakis (AAAA-MM-JJ), pour déduire le statut d'une édition. */
+export function todayInParis(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(now);
 }
