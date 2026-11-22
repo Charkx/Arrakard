@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { closeEditionRequest } from '#contracts/close-edition.ts';
+import { editionAtVersion } from '#contracts/edition.ts';
 
 const VALID = {
   organizationId: '00000000-0000-4000-8000-000000000001',
@@ -7,9 +7,9 @@ const VALID = {
   version: 1,
 };
 
-describe('closeEditionRequest', () => {
+describe('editionAtVersion', () => {
   it('accepte une organisation, une édition et une version', () => {
-    expect(closeEditionRequest.parse(VALID)).toEqual(VALID);
+    expect(editionAtVersion.parse(VALID)).toEqual(VALID);
   });
 
   it.each([
@@ -19,6 +19,6 @@ describe('closeEditionRequest', () => {
     ['une édition qui n’est pas un identifiant', { ...VALID, editionId: 'IH #2' }],
     ['un champ en trop', { ...VALID, closedAt: '2026-11-22' }],
   ])('refuse %s', (_case, body) => {
-    expect(closeEditionRequest.safeParse(body).success).toBe(false);
+    expect(editionAtVersion.safeParse(body).success).toBe(false);
   });
 });

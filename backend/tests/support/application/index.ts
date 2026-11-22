@@ -1,6 +1,9 @@
 // Outils de test de la couche application : ports en mémoire, jeu d'essai, suites de contrat.
-export { describeCloseEditionContract, NOW } from './close-edition-contract.ts';
-export type { CommandHarness, SeededOrganizations } from './close-edition-contract.ts';
+export { describeCloseEditionContract } from './close-edition-contract.ts';
+export { DRAFT_MATCH_NUMBER, NOW } from './command-harness.ts';
+export type { CommandHarness, EditionSnapshot, SeededOrganizations } from './command-harness.ts';
+export { inMemoryCommandHarness } from './in-memory-harness.ts';
+export { describePublishEditionContract } from './publish-edition-contract.ts';
 export { describeRecomputePortsContract } from './contract.ts';
 export type { ContractHarness, ProjectionCounts } from './contract.ts';
 export * from './fixture.ts';

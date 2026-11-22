@@ -10,7 +10,7 @@ import type { Facts } from '../domain/index.ts';
 import type { ProjectionRows } from './projections.ts';
 import type { Db } from './tables.ts';
 
-/** Les faits d'une organisation, tels que la base les rend, pour `project()`. */
+/** Les faits publiés d'une organisation, pour `project()` : les brouillons n'y sont pas (ADR 0012). */
 export async function readFacts(db: Db, organizationId: string): Promise<Facts> {
   const seasons = await db<SeasonRow[]>`
     select id from seasons where organization_id = ${organizationId}`;
@@ -19,10 +19,12 @@ export async function readFacts(db: Db, organizationId: string): Promise<Facts> 
     from editions where organization_id = ${organizationId}`;
   const matches = await db<MatchRow[]>`
     select id, edition_id, match_number, winner_team, duration_seconds
-    from matches where organization_id = ${organizationId}`;
+    from matches where organization_id = ${organizationId} and not draft`;
   const performances = await db<PerformanceRow[]>`
-    select match_id, line, side, player_id, team, role, champion, result, kills, deaths, assists, gold
-    from performances where organization_id = ${organizationId}`;
+    select f.match_id, f.line, f.side, f.player_id, f.team, f.role, f.champion, f.result,
+           f.kills, f.deaths, f.assists, f.gold
+    from performances f join matches m on m.id = f.match_id
+    where f.organization_id = ${organizationId} and not m.draft`;
   const players = await db<PlayerRow[]>`
     select id, nickname from players where organization_id = ${organizationId}`;
 

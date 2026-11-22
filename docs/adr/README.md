@@ -47,3 +47,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0025](0025-un-front-un-back.md)                        | Un front, un back                                    | Accepté |
 | [0026](0026-la-chaine-http-des-commandes.md)            | La chaîne HTTP des commandes                         | Accepté |
 | [0027](0027-statut-calcule-a-l-affichage.md)            | Le statut d'une édition se calcule à l'affichage     | Accepté |
+| [0028](0028-brouillons-caches-par-les-droits.md)        | Les brouillons, cachés par les droits d'accès        | Accepté |

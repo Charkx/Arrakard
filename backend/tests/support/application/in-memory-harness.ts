@@ -1,0 +1,56 @@
+import { toFacts } from '#application/index.ts';
+import { V1_RATING_RULES } from '#domain/index.ts';
+import { DRAFT_MATCH_NUMBER, NOW, type CommandHarness } from './command-harness.ts';
+import { FIXTURE_ROWS, SIROCCO_ID, ZEPHYR_ID } from './fixture.ts';
+import { inMemoryStore } from './in-memory.ts';
+
+const NO_ROWS = { seasons: [], editions: [], matches: [], performances: [], players: [] };
+
+/** Le harnais des suites de contrat des commandes, sur les entrepôts en mémoire. */
+export function inMemoryCommandHarness(): CommandHarness {
+  const store = inMemoryStore();
+  return {
+    services: { unitOfWork: store.unitOfWork, clock: { now: () => NOW } },
+    seed() {
+      const seeded = {
+        organizationId: crypto.randomUUID(),
+        adminId: crypto.randomUUID(),
+        memberId: crypto.randomUUID(),
+        otherOrganizationId: crypto.randomUUID(),
+        otherAdminId: crypto.randomUUID(),
+      };
+      store.addOrganization(seeded.organizationId, V1_RATING_RULES, toFacts(FIXTURE_ROWS));
+      store.addOrganization(seeded.otherOrganizationId, V1_RATING_RULES, toFacts(NO_ROWS));
+      store.addMember(seeded.organizationId, seeded.adminId, 'admin');
+      store.addMember(seeded.organizationId, seeded.memberId, 'member');
+      store.addMember(seeded.otherOrganizationId, seeded.otherAdminId, 'admin');
+      return Promise.resolve(seeded);
+    },
+    edition: (organizationId, editionId) =>
+      Promise.resolve(store.editionOf(organizationId, editionId)),
+    commandLog: (organizationId) => Promise.resolve(store.commandLogOf(organizationId)),
+    hasProjections: (organizationId) =>
+      Promise.resolve(store.projectionsOf(organizationId) !== undefined),
+    addDraftMatch(organizationId, editionId) {
+      const matchId = crypto.randomUUID();
+      const { performances } = toFacts(FIXTURE_ROWS);
+      store.addDraftMatch(
+        organizationId,
+        {
+          id: matchId,
+          editionId,
+          matchNumber: DRAFT_MATCH_NUMBER,
+          winnerTeam: 'ARK',
+          durationSeconds: 1500,
+        },
+        performances
+          .filter((p) => p.playerId === ZEPHYR_ID || p.playerId === SIROCCO_ID)
+          .map((p) => ({ ...p, matchId })),
+      );
+      return Promise.resolve(matchId);
+    },
+    publishedMatchIds: async (organizationId) =>
+      (await store.facts.readFacts(organizationId)).matches.map((m) => m.id),
+    publications: (organizationId) => Promise.resolve(store.publicationsOf(organizationId)),
+  };
+}

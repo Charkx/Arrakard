@@ -1,46 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  closeEdition,
-  CommandRejected,
-  executeCommand,
-  type CommandLogEntry,
-  type CommandServices,
-  type EditionState,
-} from '#application/index.ts';
+import { closeEdition, CommandRejected, executeCommand } from '#application/index.ts';
+import { NOW, type CommandHarness } from './command-harness.ts';
 import { LEAGUE_ID } from './fixture.ts';
-
-/** L'heure que donne l'horloge des tests. */
-export const NOW = new Date('2026-11-22T20:00:00.000Z');
-
-/** Ce qu'une organisation d'essai contient, une fois créée par le harnais. */
-export interface SeededOrganizations {
-  /** L'organisation du jeu d'essai, dont `LEAGUE_ID` est une édition. */
-  readonly organizationId: string;
-  /** Un admin de cette organisation. */
-  readonly adminId: string;
-  /** Un simple membre de cette organisation. */
-  readonly memberId: string;
-  /** Une autre organisation, sans édition, et son admin. */
-  readonly otherOrganizationId: string;
-  readonly otherAdminId: string;
-}
-
-/** Ce qu'une implémentation des ports fournit à la suite de contrat des commandes. */
-export interface CommandHarness {
-  /** Les services, avec une horloge arrêtée à `NOW`. */
-  readonly services: CommandServices;
-  /** Crée les organisations d'essai, avec le jeu d'essai, leurs admins et un membre. */
-  readonly seed: () => Promise<SeededOrganizations>;
-  /** L'état d'une édition, tel qu'écrit. */
-  readonly edition: (
-    organizationId: string,
-    editionId: string,
-  ) => Promise<EditionState | undefined>;
-  /** Les lignes du journal des commandes de l'organisation. */
-  readonly commandLog: (organizationId: string) => Promise<readonly CommandLogEntry[]>;
-  /** L'organisation a-t-elle des projections écrites ? */
-  readonly hasProjections: (organizationId: string) => Promise<boolean>;
-}
 
 /**
  * La clôture d'une édition, contre chaque implémentation des ports (en mémoire

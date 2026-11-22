@@ -69,6 +69,9 @@ code : voir [Travailler avec un agent](#travailler-avec-un-agent).
   `#application/…`, `#src/…`) et ses outils par `#support/…`. Le code de `src/`
   n'importe jamais `tests/`. Le site sera rangé par fonctionnalité au ticket #56.
 
+- **Edge Functions en local** : le moteur ne voit que les fichiers du back
+  présents à son démarrage. Après avoir ajouté un fichier au back, relancer
+  `supabase stop && pnpm db:start`, sinon les fonctions répondent `503`.
 - **Base de données** : une migration fusionnée ne se modifie plus. Tout
   changement de schéma est une nouvelle migration, écrite après ses tests
   pgTAP. Une migration qui crée une table lui retire d'abord les droits que

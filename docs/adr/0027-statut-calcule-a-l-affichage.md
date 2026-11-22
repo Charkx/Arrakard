@@ -42,3 +42,7 @@ serveur, avec la même fonction du domaine.
 - La règle n'a qu'un endroit, testé, que le site et le serveur partagent.
 - Au ticket des brouillons (#43), la vue ne devra compter que les matchs
   publiés.
+
+> **Complété par [0028](0028-brouillons-caches-par-les-droits.md).**
+> Les droits d'accès cachent les brouillons : la vue ne compte que les matchs
+> publiés, sans avoir été réécrite.

@@ -60,6 +60,8 @@ export interface CommandServices {
 /** Ce que la commande sait de son exécution. */
 export interface CommandContext {
   readonly organizationId: string;
+  /** L'utilisateur qui exécute la commande. */
+  readonly actorUserId: string;
   /** L'heure de la commande, en ISO, la même pour tout ce qu'elle écrit. */
   readonly now: string;
 }
@@ -75,9 +77,11 @@ export interface Command<Input, Outcome> {
 
 /**
  * Pourquoi une commande est refusée. L'adaptateur HTTP en tire son code (403,
- * 404, 409). `already_done` : ce que la commande demande est déjà fait.
+ * 404, 409). `already_done` : ce que la commande demande est déjà fait ;
+ * `nothing_to_publish` : l'édition n'a aucun brouillon.
  */
-export type RejectionReason = 'forbidden' | 'not_found' | 'conflict' | 'already_done';
+export type RejectionReason =
+  'forbidden' | 'not_found' | 'conflict' | 'already_done' | 'nothing_to_publish';
 
 /** Une commande refusée pour une raison métier. Rien n'est écrit. */
 export class CommandRejected extends Error {
@@ -106,7 +110,7 @@ export function executeCommand<Input, Outcome>(
       throw new CommandRejected('forbidden', 'Seul un admin de l’organisation peut le faire.');
     }
     const now = clock.now().toISOString();
-    const outcome = await command.run(ports, { organizationId, now }, input);
+    const outcome = await command.run(ports, { organizationId, actorUserId: userId, now }, input);
     await ports.commandLog.append({
       organizationId,
       command: command.name,

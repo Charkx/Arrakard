@@ -1,7 +1,7 @@
 import { closeEdition, toFacts } from '#application/index.ts';
 import { closeEditionRequest } from '#contracts/index.ts';
 import { V1_RATING_RULES } from '#domain/index.ts';
-import { NOW } from '#support/application/close-edition-contract.ts';
+import { NOW } from '#support/application/command-harness.ts';
 import { FIXTURE_ROWS, LEAGUE_ID } from '#support/application/fixture.ts';
 import { inMemoryStore } from '#support/application/in-memory.ts';
 import { describe, expect, it, vi } from 'vitest';

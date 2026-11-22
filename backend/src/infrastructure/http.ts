@@ -22,6 +22,7 @@ const STATUS: Readonly<Record<RejectionReason, number>> = {
   not_found: 404,
   conflict: 409,
   already_done: 409,
+  nothing_to_publish: 409,
 };
 
 /** Le site appelle les fonctions depuis un autre domaine : il faut l'y autoriser. */
