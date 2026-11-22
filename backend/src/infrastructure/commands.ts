@@ -208,14 +208,14 @@ function postgresTeams(tx: TransactionSql): TeamRepository {
         update team_memberships set left_on = ${on}
         where organization_id = ${organizationId} and team_id = ${teamId} and left_on is null`;
     },
-    async player(organizationId, playerId) {
+    async playerPlace(organizationId, playerId) {
       const [player] = await tx<{ team_id: string | null; status: RosterStatus | null }[]>`
         select m.team_id, m.status from players p
         left join team_memberships m on m.player_id = p.id and m.left_on is null
-        where p.organization_id = ${organizationId} and p.id = ${playerId}`;
+        where p.organization_id = ${organizationId} and p.id = ${playerId} and p.merged_into is null`;
       if (!player) return undefined;
       const { team_id: teamId, status } = player;
-      return { current: teamId === null || status === null ? null : { teamId, status } };
+      return { place: teamId === null || status === null ? null : { teamId, status } };
     },
     async transfer(organizationId, playerId, to, on) {
       await tx`

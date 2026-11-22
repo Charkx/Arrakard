@@ -24,7 +24,7 @@ export interface TransferPlayerOutcome {
 export const transferPlayer: Command<TransferPlayerInput, TransferPlayerOutcome> = {
   name: 'transferPlayer',
   async run({ teams }, { organizationId, now }, { playerId, to }) {
-    const player = await teams.player(organizationId, playerId);
+    const player = await teams.playerPlace(organizationId, playerId);
     if (!player) throw new CommandRejected('not_found', `Joueur ${playerId} introuvable.`);
     if (to !== null) {
       const team = await teams.find(organizationId, to.teamId);
@@ -33,7 +33,7 @@ export const transferPlayer: Command<TransferPlayerInput, TransferPlayerOutcome>
         throw new CommandRejected('conflict', 'Cette équipe est archivée : elle ne recrute plus.');
       }
     }
-    const from = player.current;
+    const from = player.place;
     if (samePlace(from, to)) {
       throw new CommandRejected('already_done', 'Le joueur est déjà à cette place.');
     }

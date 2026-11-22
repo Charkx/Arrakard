@@ -23,9 +23,9 @@ export interface RosterPlace {
   readonly status: RosterStatus;
 }
 
-/** Ce qu'une commande lit d'un joueur : son passage en cours, s'il en a un. */
-export interface PlayerRoster {
-  readonly current: RosterPlace | null;
+/** Ce qu'une commande lit d'un joueur : sa place actuelle, null s'il est sans équipe. */
+export interface PlayerPlace {
+  readonly place: RosterPlace | null;
 }
 
 /**
@@ -45,8 +45,11 @@ export interface TeamRepository {
    * passages en cours de ses joueurs.
    */
   archive(organizationId: string, teamId: string, archivedAt: string, on: string): Promise<void>;
-  /** Le joueur de cette organisation et son passage en cours, ou `undefined`. */
-  player(organizationId: string, playerId: string): Promise<PlayerRoster | undefined>;
+  /**
+   * Le joueur de cette organisation et son passage en cours, ou `undefined`,
+   * aussi pour un profil fusionné : il n'est plus un joueur, mais un renvoi.
+   */
+  playerPlace(organizationId: string, playerId: string): Promise<PlayerPlace | undefined>;
   /**
    * Termine ce jour-là le passage en cours du joueur, s'il en a un, et en
    * commence un nouveau à cette place, sauf si `to` est null.

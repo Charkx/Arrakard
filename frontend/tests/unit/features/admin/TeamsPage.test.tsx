@@ -151,7 +151,7 @@ describe('la page des équipes', () => {
     openSite('/admin/teams', { auth: authAs(ADMIN), admin });
 
     fireEvent.change(await screen.findByLabelText('Joueur'), { target: { value: 'p-zephyr' } });
-    fireEvent.change(screen.getByLabelText('Vers'), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText('Vers'), { target: { value: 'none' } });
     expect(screen.getByLabelText<HTMLSelectElement>('Statut').disabled).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Transférer' }));
 
@@ -185,6 +185,28 @@ describe('la page des équipes', () => {
     fireEvent.click(within(ark).getByRole('button', { name: 'Oui, archiver' }));
 
     expect(admin.archiveTeam).toHaveBeenCalledWith('t-ark');
+  });
+
+  it('après un archivage, ne propose plus de transférer vers l’équipe archivée', async () => {
+    const admin = serving();
+    admin.rosters
+      .mockResolvedValueOnce(ROSTERS)
+      .mockResolvedValue({ ...ROSTERS, teams: ROSTERS.teams.slice(1) });
+    openSite('/admin/teams', { auth: authAs(ADMIN), admin });
+
+    fireEvent.change(await screen.findByLabelText('Vers'), { target: { value: 't-ark' } });
+    const ark = screen.getByRole('region', { name: 'ARK · Arrakis' });
+    fireEvent.click(within(ark).getByRole('button', { name: 'Archiver' }));
+    fireEvent.click(within(ark).getByRole('button', { name: 'Oui, archiver' }));
+    await vi.waitFor(() => {
+      expect(screen.queryByRole('region', { name: 'ARK · Arrakis' })).toBeNull();
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Transférer' }));
+
+    expect(admin.transferPlayer).toHaveBeenCalledWith('p-sirocco', {
+      teamId: 't-vnt',
+      status: 'starter',
+    });
   });
 
   it('annule l’archivage sans rien envoyer', async () => {

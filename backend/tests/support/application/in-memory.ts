@@ -35,6 +35,8 @@ interface StoredOrganization {
   readonly teams: Map<string, TeamRecord>;
   /** Les passages, par joueur, du plus ancien au plus récent. */
   readonly stints: Map<string, StintRecord[]>;
+  /** Les profils fusionnés : absorbé → conservé. */
+  readonly mergedInto: Map<string, string>;
   readonly commandLog: CommandLogEntry[];
   readonly publications: Publication[];
   projections?: Projections;
@@ -72,6 +74,8 @@ export interface InMemoryStore extends RecomputePorts {
   seasonOf(organizationId: string, seasonId: string): SeasonRecord | undefined;
   /** Une équipe de l'organisation. */
   teamOf(organizationId: string, teamId: string): TeamRecord | undefined;
+  /** Marque un profil comme fusionné dans un autre. */
+  markMerged(organizationId: string, absorbedId: string, keptId: string): void;
   /** Les passages d'un joueur de l'organisation. */
   stintsOf(organizationId: string, playerId: string): readonly StintRecord[];
   /** La version et la clôture d'une édition de l'organisation. */
@@ -245,14 +249,17 @@ export function inMemoryStore(): InMemoryStore {
           }
         });
       },
-      player(organizationId, playerId) {
+      playerPlace(organizationId, playerId) {
         const organization = organizations.get(organizationId);
-        if (!organization?.facts.players.some((p) => p.id === playerId)) {
+        if (
+          !organization?.facts.players.some((p) => p.id === playerId) ||
+          organization.mergedInto.has(playerId)
+        ) {
           return Promise.resolve(undefined);
         }
         const current = organization.stints.get(playerId)?.find((s) => s.leftOn === null);
         return Promise.resolve({
-          current: current ? { teamId: current.teamId, status: current.status } : null,
+          place: current ? { teamId: current.teamId, status: current.status } : null,
         });
       },
       transfer(organizationId, playerId, to, on) {
@@ -292,6 +299,7 @@ export function inMemoryStore(): InMemoryStore {
         ),
         teams: new Map(),
         stints: new Map(),
+        mergedInto: new Map(),
         commandLog: [],
         publications: [],
       });
@@ -313,6 +321,9 @@ export function inMemoryStore(): InMemoryStore {
     seasonOf: (organizationId, seasonId) =>
       organizations.get(organizationId)?.seasons.get(seasonId),
     teamOf: (organizationId, teamId) => organizations.get(organizationId)?.teams.get(teamId),
+    markMerged(organizationId, absorbedId, keptId) {
+      find(organizationId).mergedInto.set(absorbedId, keptId);
+    },
     stintsOf: (organizationId, playerId) =>
       organizations.get(organizationId)?.stints.get(playerId) ?? [],
     editionOf: (organizationId, editionId) =>

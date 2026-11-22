@@ -10,6 +10,7 @@ import {
   ROSTER_STATUSES,
   rosterOf,
   type AdminTeam,
+  type RosterMember,
   type RosterPlayer,
   type Rosters,
   type RosterStatus,
@@ -166,7 +167,7 @@ function CreateTeamPanel({ onChanged }: { readonly onChanged: () => void }) {
 }
 
 /** Choisir « sans équipe » dans la liste des destinations. */
-const NO_TEAM = '';
+const NO_TEAM_CHOSEN = 'none';
 
 function TransferPanel({
   rosters,
@@ -177,15 +178,26 @@ function TransferPanel({
 }) {
   const { t } = useI18n();
   const admin = useAdminSource();
-  const [playerId, setPlayerId] = useState(rosters.players[0]?.id ?? '');
-  const [teamId, setTeamId] = useState(rosters.teams[0]?.id ?? NO_TEAM);
+  const [chosenPlayer, setPlayerId] = useState('');
+  const [chosenTeam, setTeamId] = useState('');
   const [status, setStatus] = useState<RosterStatus>('starter');
   const { busy, failure, send } = useCommand(onChanged);
   const tags = new Map(rosters.teams.map((team) => [team.id, team.tag]));
+  // Un choix qui n'est plus dans la liste (équipe archivée, profil fusionné)
+  // retombe sur la première option : on n'envoie que ce qui est affiché.
+  const playerId = rosters.players.some((p) => p.id === chosenPlayer)
+    ? chosenPlayer
+    : (rosters.players[0]?.id ?? '');
+  const teamId =
+    chosenTeam === NO_TEAM_CHOSEN || tags.has(chosenTeam)
+      ? chosenTeam
+      : (rosters.teams[0]?.id ?? NO_TEAM_CHOSEN);
 
   const transfer = (event: SyntheticEvent) => {
     event.preventDefault();
-    send(() => admin.transferPlayer(playerId, teamId === NO_TEAM ? null : { teamId, status }));
+    send(() =>
+      admin.transferPlayer(playerId, teamId === NO_TEAM_CHOSEN ? null : { teamId, status }),
+    );
   };
 
   const label = (player: RosterPlayer) =>
@@ -229,14 +241,14 @@ function TransferPanel({
                   {`${team.tag} · ${team.name}`}
                 </option>
               ))}
-              <option value={NO_TEAM}>{t('admin.teams.noTeam')}</option>
+              <option value={NO_TEAM_CHOSEN}>{t('admin.teams.noTeam')}</option>
             </select>
           </label>
           <label>
             {t('admin.teams.status')}
             <select
               value={status}
-              disabled={teamId === NO_TEAM}
+              disabled={teamId === NO_TEAM_CHOSEN}
               onChange={(e) => {
                 setStatus(e.target.value as RosterStatus);
               }}
@@ -264,7 +276,7 @@ function TeamCard({
   onChanged,
 }: {
   readonly team: AdminTeam;
-  readonly players: readonly RosterPlayer[];
+  readonly players: readonly RosterMember[];
   readonly onChanged: () => void;
 }) {
   const { t } = useI18n();
@@ -291,9 +303,7 @@ function TeamCard({
             {players.map((player) => (
               <li key={player.id}>
                 <span>{player.nickname}</span>
-                <span className="admin-roster-status">
-                  {t(`roster.${player.place?.status ?? 'starter'}`)}
-                </span>
+                <span className="admin-roster-status">{t(`roster.${player.place.status}`)}</span>
               </li>
             ))}
           </ul>

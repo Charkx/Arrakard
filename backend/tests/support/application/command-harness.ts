@@ -40,6 +40,12 @@ export interface CommandHarness {
   readonly hasProjections: (organizationId: string) => Promise<boolean>;
   /** Ajoute à l'édition un match en brouillon, Zéphyr contre Sirocco, et rend son identifiant. */
   readonly addDraftMatch: (organizationId: string, editionId: string) => Promise<string>;
+  /** Marque le profil `absorbedId` comme fusionné dans `keptId`, sans rien déplacer. */
+  readonly markMerged: (
+    organizationId: string,
+    absorbedId: string,
+    keptId: string,
+  ) => Promise<void>;
   /** Les matchs que lit le recalcul : les publiés seulement. */
   readonly publishedMatchIds: (organizationId: string) => Promise<readonly string[]>;
   /** Les publications de l'organisation. */

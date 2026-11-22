@@ -29,7 +29,7 @@ export { archiveTeam } from './commands/archive-team.ts';
 export type { ArchiveTeamInput, ArchiveTeamOutcome } from './commands/archive-team.ts';
 export type {
   NewTeam,
-  PlayerRoster,
+  PlayerPlace,
   RosterPlace,
   RosterStatus,
   TeamRepository,

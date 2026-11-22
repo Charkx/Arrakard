@@ -32,14 +32,17 @@ export interface Rosters {
   readonly players: readonly RosterPlayer[];
 }
 
+/** Un joueur d'une équipe : il y a forcément une place. */
+export type RosterMember = RosterPlayer & { readonly place: RosterPlace };
+
 /** Les joueurs d'une équipe : titulaires, remplaçants puis coachs, chacun par pseudo. */
-export function rosterOf(teamId: string, players: readonly RosterPlayer[]): RosterPlayer[] {
+export function rosterOf(teamId: string, players: readonly RosterPlayer[]): RosterMember[] {
   return players
-    .filter((p) => p.place?.teamId === teamId)
+    .filter((p): p is RosterMember => p.place?.teamId === teamId)
     .sort(
       (a, b) =>
         rank(a) - rank(b) || a.nickname.localeCompare(b.nickname, 'fr', { sensitivity: 'base' }),
     );
 }
 
-const rank = (p: RosterPlayer) => ROSTER_STATUSES.indexOf(p.place?.status ?? 'coach');
+const rank = (p: RosterMember) => ROSTER_STATUSES.indexOf(p.place.status);

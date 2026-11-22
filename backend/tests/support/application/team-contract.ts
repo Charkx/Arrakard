@@ -206,6 +206,22 @@ export function describeTeamContract(name: string, harness: () => CommandHarness
       expect(await stints(organizationId, ZEPHYR_ID)).toEqual([]);
     });
 
+    it('un profil fusionné n’est pas transféré : il n’est plus qu’un renvoi', async () => {
+      const { services, seed, markMerged, stints } = harness();
+      const { organizationId, adminId } = await seed();
+      const actor = { userId: adminId, organizationId };
+      const ark = await create(services, actor, ARK);
+      await markMerged(organizationId, SIROCCO_ID, ZEPHYR_ID);
+
+      await expect(
+        executeCommand(services, actor, transferPlayer, {
+          playerId: SIROCCO_ID,
+          to: { teamId: ark, status: 'starter' },
+        }),
+      ).rejects.toMatchObject({ reason: 'not_found' });
+      expect(await stints(organizationId, SIROCCO_ID)).toEqual([]);
+    });
+
     it('une équipe archivée ne recrute plus', async () => {
       const { services, seed } = harness();
       const { organizationId, adminId } = await seed();

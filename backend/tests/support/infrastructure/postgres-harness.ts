@@ -115,6 +115,11 @@ export function postgresCommandHarness(sql: Sql, names: PostgresHarnessNames): C
         where organization_id = ${organizationId} and id = ${seasonId}`;
       return season && { status: season.status, endDate: season.end_date };
     },
+    async markMerged(organizationId, absorbedId, keptId) {
+      await sql`
+        update players set merged_into = ${keptId}
+        where organization_id = ${organizationId} and id = ${absorbedId}`;
+    },
     async team(organizationId, teamId) {
       const [team] = await sql<
         { tag: string; name: string; divisions: Division[]; archived_at: Date | null }[]
