@@ -286,7 +286,8 @@ export function describeTeamContract(name: string, harness: () => CommandHarness
         to: { teamId: ark, status: 'starter' },
       });
 
-      expect((await commandLog(organizationId)).map((entry) => entry.command)).toEqual([
+      // L'horloge des tests est arrêtée : les deux lignes ont la même heure, dans un ordre quelconque.
+      expect((await commandLog(organizationId)).map((entry) => entry.command).sort()).toEqual([
         'createTeam',
         'transferPlayer',
       ]);
