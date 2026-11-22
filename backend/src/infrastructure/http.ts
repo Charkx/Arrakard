@@ -23,6 +23,7 @@ const STATUS: Readonly<Record<RejectionReason, number>> = {
   conflict: 409,
   already_done: 409,
   nothing_to_publish: 409,
+  season_closed: 409,
 };
 
 /** Le site appelle les fonctions depuis un autre domaine : il faut l'y autoriser. */

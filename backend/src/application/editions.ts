@@ -5,6 +5,8 @@ export interface EditionState {
   readonly closedAt: string | null;
   /** Les matchs de l'édition encore en brouillon (ADR 0012). */
   readonly draftMatchIds: readonly string[];
+  /** Sa saison est clôturée : elle ne reçoit plus de match (ADR 0014). */
+  readonly seasonClosed: boolean;
 }
 
 /** Une publication : quelle édition, quels matchs, quand, par qui (ADR 0012). */

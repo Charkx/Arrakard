@@ -37,6 +37,23 @@ export interface CommandHarness {
   readonly publishedMatchIds: (organizationId: string) => Promise<readonly string[]>;
   /** Les publications de l'organisation. */
   readonly publications: (organizationId: string) => Promise<readonly Publication[]>;
+  /** L'état d'une saison : ouverte ou clôturée, et sa date de fin. */
+  readonly season: (
+    organizationId: string,
+    seasonId: string,
+  ) => Promise<SeasonSnapshot | undefined>;
+  /** Les notes de la saison, par joueur, telles que le recalcul les a écrites. */
+  readonly seasonRatings: (
+    organizationId: string,
+    seasonId: string,
+  ) => Promise<ReadonlyMap<string, number>>;
+}
+
+/** Une saison telle qu'une commande la laisse. */
+export interface SeasonSnapshot {
+  readonly status: 'open' | 'closed';
+  /** Date ISO (AAAA-MM-JJ) de la clôture, ou null. */
+  readonly endDate: string | null;
 }
 
 /** Une édition telle qu'une commande la laisse : sa version et sa clôture. */

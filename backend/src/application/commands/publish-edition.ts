@@ -32,6 +32,12 @@ export const publishEdition: Command<PublishEditionInput, PublishEditionOutcome>
         `L’édition a changé depuis votre lecture (version ${edition.version}, et non ${version}).`,
       );
     }
+    if (edition.seasonClosed) {
+      throw new CommandRejected(
+        'season_closed',
+        'La saison de cette édition est clôturée : ses notes sont figées.',
+      );
+    }
     if (edition.draftMatchIds.length === 0) {
       throw new CommandRejected(
         'nothing_to_publish',

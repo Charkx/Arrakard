@@ -17,6 +17,11 @@ export type { EditionRepository, EditionState, Publication } from './editions.ts
 export { closeEdition } from './commands/close-edition.ts';
 export type { CloseEditionInput, CloseEditionOutcome } from './commands/close-edition.ts';
 export { publishEdition } from './commands/publish-edition.ts';
+export { openSeason } from './commands/open-season.ts';
+export type { OpenSeasonInput, OpenSeasonOutcome } from './commands/open-season.ts';
+export { closeSeason } from './commands/close-season.ts';
+export type { CloseSeasonInput, CloseSeasonOutcome } from './commands/close-season.ts';
+export type { NewSeason, SeasonRepository, SeasonState, SeasonStatus } from './seasons.ts';
 export type { PublishEditionInput, PublishEditionOutcome } from './commands/publish-edition.ts';
 export { toFacts } from './facts.ts';
 export type {

@@ -1,5 +1,6 @@
 import type { EditionRepository } from './editions.ts';
 import type { IdentityRepository, MembershipRepository } from './memberships.ts';
+import type { SeasonRepository } from './seasons.ts';
 import { recomputeProjections, type RecomputePorts } from './recompute.ts';
 
 /** L'utilisateur qui exécute une commande, et l'organisation où il agit. */
@@ -31,6 +32,7 @@ export interface CommandLog {
 /** Les entrepôts des faits qu'une commande modifie. Pas les projections : seul le recalcul les écrit. */
 export interface Repositories {
   readonly editions: EditionRepository;
+  readonly seasons: SeasonRepository;
 }
 
 /** Tout ce qu'une transaction donne : les entrepôts, les adhésions, le journal et le recalcul. */
@@ -75,10 +77,11 @@ export interface Command<Input, Outcome> {
 /**
  * Pourquoi une commande est refusée. L'adaptateur HTTP en tire son code (403,
  * 404, 409). `already_done` : ce que la commande demande est déjà fait ;
- * `nothing_to_publish` : l'édition n'a aucun brouillon.
+ * `nothing_to_publish` : l'édition n'a aucun brouillon ; `season_closed` : la
+ * saison de l'édition est clôturée, elle ne reçoit plus de match (ADR 0014).
  */
 export type RejectionReason =
-  'forbidden' | 'not_found' | 'conflict' | 'already_done' | 'nothing_to_publish';
+  'forbidden' | 'not_found' | 'conflict' | 'already_done' | 'nothing_to_publish' | 'season_closed';
 
 /** Une commande refusée pour une raison métier. Rien n'est écrit. */
 export class CommandRejected extends Error {

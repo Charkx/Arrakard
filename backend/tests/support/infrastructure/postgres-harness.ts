@@ -108,6 +108,18 @@ export function postgresCommandHarness(sql: Sql, names: PostgresHarnessNames): C
     },
     publishedMatchIds: async (organizationId) =>
       (await readFacts(sql, organizationId)).matches.map((m) => m.id),
+    async season(organizationId, seasonId) {
+      const [season] = await sql<{ status: 'open' | 'closed'; end_date: string | null }[]>`
+        select status, end_date::text from seasons
+        where organization_id = ${organizationId} and id = ${seasonId}`;
+      return season && { status: season.status, endDate: season.end_date };
+    },
+    async seasonRatings(organizationId, seasonId) {
+      const rows = await sql<{ player_id: string; rating: number }[]>`
+        select player_id, rating from player_season_ratings
+        where organization_id = ${organizationId} and season_id = ${seasonId}`;
+      return new Map(rows.map((r) => [r.player_id, r.rating]));
+    },
     async publications(organizationId) {
       const rows = await sql<
         { edition_id: string; match_ids: string[]; published_at: Date; published_by: string }[]
