@@ -244,12 +244,15 @@ dépôt, ni dans une conversation.
    Secret, **Save**. Puis **Authentication** → **URL Configuration** : **Site
    URL** = l'adresse du site sur Vercel ; dans **Redirect URLs**, ajoute cette
    adresse suivie de `/**`.
-3. **La fonction en ligne.** Depuis la racine du dépôt :
+3. **Les fonctions en ligne.** Depuis la racine du dépôt :
 
    ```sh
    supabase db push --remote
-   supabase functions deploy sync-discord-role
+   supabase functions deploy sync-discord-role open-season close-season close-edition publish-edition create-team transfer-player archive-team
    ```
+
+   Chaque commande ajoutée plus tard a sa fonction : la liste est celle des
+   dossiers de `supabase/functions/`.
 
 4. **En local**, crée `supabase/.env`, que git ignore :
 
