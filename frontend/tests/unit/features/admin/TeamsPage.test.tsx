@@ -49,6 +49,9 @@ function serving(rosters: Rosters = ROSTERS) {
     createTeam: vi.fn(() => Promise.resolve()),
     transferPlayer: vi.fn(() => Promise.resolve()),
     archiveTeam: vi.fn(() => Promise.resolve()),
+    profiles: refused,
+    mergePlayers: refused,
+    linkDiscordAccount: refused,
   } satisfies AdminSource;
 }
 

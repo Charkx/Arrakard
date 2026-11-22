@@ -1,11 +1,10 @@
-import { useEffect, useState, type SyntheticEvent } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import type { Division } from '@arrakis/backend/domain';
-import { useAdminSource, useAuthSource } from '../../data/DataContext.tsx';
+import { useAdminSource } from '../../data/DataContext.tsx';
 import type { AdminSource } from '../../data/admin-source.ts';
-import type { AuthSource } from '../../data/auth-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
-import { isFreshAdmin } from './admin.ts';
+import { listedOr } from './listed.ts';
 import {
   ROSTER_STATUSES,
   rosterOf,
@@ -15,45 +14,15 @@ import {
   type Rosters,
   type RosterStatus,
 } from './teams.ts';
+import { useAdminData } from './useAdminData.ts';
 import { useCommand } from './useCommand.ts';
 
-type State =
-  | { readonly status: 'loading' }
-  | { readonly status: 'refused' }
-  | { readonly status: 'error' }
-  | { readonly status: 'ready'; readonly rosters: Rosters };
-
-async function loadTeams(auth: AuthSource, admin: AdminSource): Promise<State> {
-  if (!isFreshAdmin(await auth.currentUser())) return { status: 'refused' };
-  return { status: 'ready', rosters: await admin.rosters() };
-}
+const readRosters = (admin: AdminSource) => admin.rosters();
 
 /** Les équipes et leurs rosters : créer, transférer, archiver (cas d'usage A4, ADR 0033). */
 export function TeamsPage() {
   const { t } = useI18n();
-  const auth = useAuthSource();
-  const admin = useAdminSource();
-  const [state, setState] = useState<State>({ status: 'loading' });
-  // Une commande réussie recharge la page : le serveur dit ce qui a changé.
-  const [version, setVersion] = useState(0);
-  const reload = () => {
-    setVersion((v) => v + 1);
-  };
-
-  useEffect(() => {
-    let current = true;
-    loadTeams(auth, admin).then(
-      (loaded) => {
-        if (current) setState(loaded);
-      },
-      () => {
-        if (current) setState({ status: 'error' });
-      },
-    );
-    return () => {
-      current = false;
-    };
-  }, [auth, admin, version]);
+  const { state, reload } = useAdminData(readRosters);
 
   if (state.status === 'refused') return <Navigate to="/login" replace />;
 
@@ -68,16 +37,16 @@ export function TeamsPage() {
       {state.status === 'ready' && (
         <>
           <CreateTeamPanel onChanged={reload} />
-          <TransferPanel rosters={state.rosters} onChanged={reload} />
-          {state.rosters.teams.length === 0 ? (
+          <TransferPanel rosters={state.data} onChanged={reload} />
+          {state.data.teams.length === 0 ? (
             <p>{t('admin.teams.empty')}</p>
           ) : (
             <div className="admin-teams">
-              {state.rosters.teams.map((team) => (
+              {state.data.teams.map((team) => (
                 <TeamCard
                   key={team.id}
                   team={team}
-                  players={rosterOf(team.id, state.rosters.players)}
+                  players={rosterOf(team.id, state.data.players)}
                   onChanged={reload}
                 />
               ))}
@@ -183,15 +152,11 @@ function TransferPanel({
   const [status, setStatus] = useState<RosterStatus>('starter');
   const { busy, failure, send } = useCommand(onChanged);
   const tags = new Map(rosters.teams.map((team) => [team.id, team.tag]));
-  // Un choix qui n'est plus dans la liste (équipe archivée, profil fusionné)
-  // retombe sur la première option : on n'envoie que ce qui est affiché.
-  const playerId = rosters.players.some((p) => p.id === chosenPlayer)
-    ? chosenPlayer
-    : (rosters.players[0]?.id ?? '');
-  const teamId =
-    chosenTeam === NO_TEAM_CHOSEN || tags.has(chosenTeam)
-      ? chosenTeam
-      : (rosters.teams[0]?.id ?? NO_TEAM_CHOSEN);
+  const playerId = listedOr(
+    chosenPlayer,
+    rosters.players.map((p) => p.id),
+  );
+  const teamId = listedOr(chosenTeam, [...rosters.teams.map((team) => team.id), NO_TEAM_CHOSEN]);
 
   const transfer = (event: SyntheticEvent) => {
     event.preventDefault();

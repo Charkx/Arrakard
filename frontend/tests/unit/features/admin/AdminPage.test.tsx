@@ -56,6 +56,9 @@ function serving(
     createTeam: () => Promise.resolve(),
     transferPlayer: () => Promise.resolve(),
     archiveTeam: () => Promise.resolve(),
+    profiles: () => Promise.resolve([]),
+    mergePlayers: () => Promise.resolve(),
+    linkDiscordAccount: () => Promise.resolve(),
   } satisfies AdminSource;
 }
 

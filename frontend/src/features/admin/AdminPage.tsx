@@ -61,9 +61,14 @@ export function AdminPage() {
       {state.status === 'ready' && (
         <>
           <p className="admin-who">{t('admin.signedInAs', { name: state.name })}</p>
-          <Link className="admin-back" to="/admin/teams">
-            {t('admin.teams.link')}
-          </Link>
+          <nav className="admin-links">
+            <Link className="admin-back" to="/admin/teams">
+              {t('admin.teams.link')}
+            </Link>
+            <Link className="admin-back" to="/admin/profiles">
+              {t('admin.profiles.link.nav')}
+            </Link>
+          </nav>
           <SeasonPanel
             activeSeason={state.activeSeason}
             onChanged={() => {

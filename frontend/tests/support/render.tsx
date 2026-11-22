@@ -124,6 +124,9 @@ const REFUSED: AdminSource = {
   createTeam: refused,
   transferPlayer: refused,
   archiveTeam: refused,
+  profiles: refused,
+  mergePlayers: refused,
+  linkDiscordAccount: refused,
 };
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */
