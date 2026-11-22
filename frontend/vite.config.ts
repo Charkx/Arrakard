@@ -12,9 +12,9 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
-      // main.tsx branche le site sur la page ; supabase-source.ts parle à l'API,
+      // main.tsx branche le site sur la page ; supabase-source.ts et supabase-auth.ts parlent à l'API,
       // et se vérifie sur la base locale (README).
-      exclude: ['src/main.tsx', 'src/data/supabase-source.ts'],
+      exclude: ['src/main.tsx', 'src/data/supabase-source.ts', 'src/data/supabase-auth.ts'],
     },
   },
 });

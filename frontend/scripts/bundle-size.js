@@ -1,27 +1,36 @@
-// Poids du JavaScript du site, une fois compressé (gzip, 1 kB = 1000 octets).
-// Lancé par la CI après la construction : elle échoue au-delà de la limite.
+// Poids du JavaScript chargé à l'ouverture du site, une fois compressé (gzip,
+// 1 kB = 1000 octets). Lancé par la CI après la construction : elle échoue
+// au-delà de la limite.
 //
-// Le site tient aujourd'hui dans un seul fichier, chargé à l'ouverture. Le jour
-// où des pages seront chargées à la demande, ce script comptera aussi leurs
-// fichiers : il faudra alors ne mesurer que ceux que cite index.html.
-import { readdirSync, readFileSync } from 'node:fs';
+// Seuls comptent les fichiers que cite index.html. Les autres sont chargés à la
+// demande, comme la connexion (ADR 0024) : ce script vérifie aussi qu'elle
+// n'est pas dans les fichiers de l'ouverture.
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
 const LIMIT_KB = 250;
-const assets = join(import.meta.dirname, '../dist/assets');
+/** Une méthode de `@supabase/auth-js` : sa présence trahit la bibliothèque de connexion. */
+const AUTH_LIBRARY_MARK = 'signInWithOAuth';
+const dist = join(import.meta.dirname, '../dist');
 
-const files = readdirSync(assets).filter((name) => name.endsWith('.js'));
+const html = readFileSync(join(dist, 'index.html'), 'utf8');
+const files = [...html.matchAll(/(?:src|href)="\/(assets\/[^"]+\.js)"/g)].map(([, path]) => path);
 if (files.length === 0) {
-  console.error('Aucun fichier JavaScript dans dist/assets : lancer `pnpm build` avant.');
+  console.error('Aucun JavaScript cité par dist/index.html : lancer `pnpm build` avant.');
   process.exit(1);
 }
 
 let total = 0;
-for (const name of files) {
-  const size = gzipSync(readFileSync(join(assets, name))).length;
+for (const path of files) {
+  const code = readFileSync(join(dist, path));
+  if (code.includes(AUTH_LIBRARY_MARK)) {
+    console.error(`${path} contient la bibliothèque de connexion : elle doit être chargée à part.`);
+    process.exit(1);
+  }
+  const size = gzipSync(code).length;
   total += size;
-  console.log(`${(size / 1000).toFixed(1).padStart(7)} kB  ${name}`);
+  console.log(`${(size / 1000).toFixed(1).padStart(7)} kB  ${path}`);
 }
 
 const totalKb = total / 1000;

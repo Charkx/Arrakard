@@ -49,3 +49,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0027](0027-statut-calcule-a-l-affichage.md)            | Le statut d'une édition se calcule à l'affichage     | Accepté |
 | [0028](0028-brouillons-caches-par-les-droits.md)        | Les brouillons, cachés par les droits d'accès        | Accepté |
 | [0029](0029-le-site-par-fonctionnalite.md)              | Le site rangé par fonctionnalité                     | Accepté |
+| [0030](0030-le-role-admin-vient-de-discord.md)          | Le rôle admin vient de Discord, à chaque connexion   | Accepté |

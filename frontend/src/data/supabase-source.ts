@@ -9,6 +9,7 @@ import {
 } from '../features/edition/edition.ts';
 import type { LeaderboardData, LeaderboardEntry } from '../features/leaderboard/leaderboard.ts';
 import type { DataSource } from './data-source.ts';
+import { supabaseConfig } from './supabase-config.ts';
 import type { MergedPlayer, PlayedMatch, PlayerPageData } from '../features/player/player.ts';
 
 /** Une ligne de la vue `leaderboard_view` (migration 20261113000000_leaderboard.sql). */
@@ -32,23 +33,11 @@ interface LeaderboardViewRow {
   readonly editions_played: number;
 }
 
-/**
- * Clé publique de l'API locale, envoyée comme en ligne : une clé au format
- * « publishable » est acceptée par l'API locale comme celle d'un visiteur ;
- * une clé quelconque, elle, est refusée comme jeton de connexion invalide.
- */
-const LOCAL_KEY = 'sb_publishable_local';
-
 /** Lit la base par l'API de Supabase : en local par défaut, sinon celle des variables. */
-export function supabaseSource(
-  url = import.meta.env.VITE_SUPABASE_URL ?? 'http://127.0.0.1:54321',
-  key = import.meta.env.VITE_SUPABASE_ANON_KEY ?? LOCAL_KEY,
-  organizationSlug = import.meta.env.VITE_ORGANIZATION_SLUG ?? 'arrakis',
-): DataSource {
+export function supabaseSource({ api, key, organizationSlug } = supabaseConfig()): DataSource {
   // Le site ne fait que lire des vues : l'API REST suffit, sans la bibliothèque
   // complète de Supabase (connexion, stockage, temps réel), trop lourde sur mobile.
-  // Sans barre oblique finale : `…supabase.co/` donnerait `…co//rest/v1`.
-  const client = new PostgrestClient(`${url.replace(/\/+$/, '')}/rest/v1`, {
+  const client = new PostgrestClient(`${api}/rest/v1`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   });
   return {
@@ -59,7 +48,7 @@ export function supabaseSource(
 }
 
 /** L'organisation que le site affiche (ADR 0008). Toute lecture se limite à elle. */
-async function organizationId(client: PostgrestClient, slug: string): Promise<string> {
+export async function organizationId(client: PostgrestClient, slug: string): Promise<string> {
   const organization = await client
     .from('organizations')
     .select('id')

@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { App } from '#src/App.tsx';
 import { DataProvider } from '#src/data/DataContext.tsx';
+import type { AuthSource } from '#src/data/auth-source.ts';
 import type { DataSource } from '#src/data/data-source.ts';
 import type { LeaderboardData, LeaderboardEntry } from '#src/features/leaderboard/leaderboard.ts';
 import type { EditionPageData } from '#src/features/edition/edition.ts';
@@ -100,7 +101,15 @@ export interface SiteData {
   readonly merged?: Readonly<Record<string, string>>;
   /** Les éditions, par identifiant. */
   readonly editions?: Readonly<Record<string, EditionPageData>> | 'fails';
+  /** La connexion ; par défaut, personne n'est connecté. */
+  readonly auth?: AuthSource;
 }
+
+const NOBODY: AuthSource = {
+  currentUser: () => Promise.resolve(null),
+  signIn: () => Promise.resolve(),
+  signOut: () => Promise.resolve(),
+};
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */
 export function inMemorySource({
@@ -133,7 +142,7 @@ export function openSite(address: string, data: LeaderboardData | 'fails' | Site
   return render(
     <MemoryRouter initialEntries={[address]}>
       <I18nProvider>
-        <DataProvider source={inMemorySource(site)}>
+        <DataProvider source={inMemorySource(site)} auth={site.auth ?? NOBODY}>
           <App />
           <Address />
         </DataProvider>

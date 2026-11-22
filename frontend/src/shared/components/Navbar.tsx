@@ -17,6 +17,12 @@ export function Navbar() {
         >
           {t('nav.leaderboard')}
         </NavLink>
+        <NavLink
+          to="/login"
+          className={({ isActive }) => `navbar-link${isActive ? ' active' : ''}`}
+        >
+          {t('nav.login')}
+        </NavLink>
         <button
           type="button"
           className="lang-toggle"

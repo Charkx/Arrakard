@@ -36,15 +36,15 @@ const json = (status: number, body: unknown): Response =>
   Response.json(body, { status, headers: CORS });
 
 /**
- * Le point d'entrée HTTP d'une commande (ADR 0023) : il identifie
- * l'utilisateur, valide l'entrée par son contrat, appelle `executeCommand`,
- * et traduit le résultat en HTTP. Il ne décide de rien d'autre.
+ * Le point d'entrée HTTP d'une action du serveur (ADR 0026) : il identifie
+ * l'utilisateur, valide l'entrée par son contrat, appelle `run`, et traduit
+ * le résultat en HTTP. Il ne décide de rien d'autre.
  */
-export function commandHandler<Input, Outcome>(
-  command: Command<Input, Outcome>,
-  contract: CommandContract<Input>,
-  services: CommandServices,
+export function requestHandler<Body, Outcome>(
+  name: string,
+  contract: z.ZodType<Body>,
   authenticator: Authenticator,
+  run: (userId: string, body: Body) => Promise<Outcome>,
 ): (request: Request) => Promise<Response> {
   return async (request) => {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
@@ -57,22 +57,28 @@ export function commandHandler<Input, Outcome>(
     if (!parsed.success) {
       return json(400, { error: 'invalid_input', issues: parsed.error.issues });
     }
-    const { organizationId, ...input } = parsed.data;
 
     try {
-      const outcome = await executeCommand(
-        services,
-        { userId, organizationId },
-        command,
-        input as Input,
-      );
-      return json(200, outcome);
+      return json(200, await run(userId, parsed.data));
     } catch (error) {
       if (error instanceof CommandRejected) {
         return json(STATUS[error.reason], { error: error.reason, message: error.message });
       }
-      console.error(command.name, error);
+      console.error(name, error);
       return json(500, { error: 'internal' });
     }
   };
+}
+
+/** Le point d'entrée HTTP d'une commande (ADR 0023), par `executeCommand`, qui exige un admin. */
+export function commandHandler<Input, Outcome>(
+  command: Command<Input, Outcome>,
+  contract: CommandContract<Input>,
+  services: CommandServices,
+  authenticator: Authenticator,
+): (request: Request) => Promise<Response> {
+  return requestHandler(command.name, contract, authenticator, (userId, body) => {
+    const { organizationId, ...input } = body;
+    return executeCommand(services, { userId, organizationId }, command, input as Input);
+  });
 }

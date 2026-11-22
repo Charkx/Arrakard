@@ -1,4 +1,5 @@
 import type { EditionRepository } from './editions.ts';
+import type { IdentityRepository, MembershipRepository } from './memberships.ts';
 import { recomputeProjections, type RecomputePorts } from './recompute.ts';
 
 /** L'utilisateur qui exécute une commande, et l'organisation où il agit. */
@@ -10,11 +11,6 @@ export interface Actor {
 /** Donne l'heure : date d'une clôture (ADR 0013), date du journal. */
 export interface Clock {
   now(): Date;
-}
-
-/** Dit si un utilisateur est admin d'une organisation (ADR 0008). */
-export interface MembershipRepository {
-  isAdmin(organizationId: string, userId: string): Promise<boolean>;
 }
 
 /** Une ligne du journal des commandes (ADR 0009). */
@@ -40,6 +36,7 @@ export interface Repositories {
 /** Tout ce qu'une transaction donne : les entrepôts, les adhésions, le journal et le recalcul. */
 export interface TransactionPorts extends Repositories, RecomputePorts {
   readonly memberships: MembershipRepository;
+  readonly identities: IdentityRepository;
   readonly commandLog: CommandLog;
 }
 

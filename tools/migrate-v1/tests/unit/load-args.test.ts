@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { parseLoadArgs } from '#src/load-args.ts';
+import { ARRAKIS_DISCORD, parseLoadArgs } from '#src/load-args.ts';
 
 describe('parseLoadArgs', () => {
   it('sans option, charge l’organisation du site public, sans rien remplacer', () => {
     expect(parseLoadArgs(['sauvegarde'])).toEqual({
       dir: 'sauvegarde',
-      organization: { slug: 'arrakis', name: 'Arrakis' },
+      organization: { slug: 'arrakis', name: 'Arrakis', discord: ARRAKIS_DISCORD },
       replace: false,
       confirmHosted: false,
     });
@@ -21,9 +21,16 @@ describe('parseLoadArgs', () => {
       ]),
     ).toEqual({
       dir: 'sauvegarde',
-      organization: { slug: 'arrakis-essai', name: 'Arrakis (essai)' },
+      organization: { slug: 'arrakis-essai', name: 'Arrakis (essai)', discord: ARRAKIS_DISCORD },
       replace: true,
       confirmHosted: true,
+    });
+  });
+
+  it('donne aux deux organisations le serveur Discord d’Arrakis et son rôle admin', () => {
+    expect(ARRAKIS_DISCORD).toEqual({
+      guildId: '1031291061936595015',
+      adminRoleId: '1514024774131519638',
     });
   });
 

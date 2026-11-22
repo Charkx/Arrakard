@@ -8,7 +8,6 @@ export type {
   CommandLog,
   CommandLogEntry,
   CommandServices,
-  MembershipRepository,
   RejectionReason,
   Repositories,
   TransactionPorts,
@@ -28,6 +27,20 @@ export type {
   PlayerRow,
   SeasonRow,
 } from './facts.ts';
+export { syncDiscordRole } from './sync-discord-role.ts';
+export type {
+  DiscordConfig,
+  IdentityRepository,
+  MemberRole,
+  MembershipRepository,
+} from './memberships.ts';
+export type {
+  DiscordGateway,
+  GuildMember,
+  SyncDiscordRoleInput,
+  SyncDiscordRoleOutcome,
+  SyncDiscordRoleServices,
+} from './sync-discord-role.ts';
 export { recomputeProjections } from './recompute.ts';
 export type {
   FactsReader,

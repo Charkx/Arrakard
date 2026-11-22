@@ -1,4 +1,5 @@
 import { project, type Facts, type Projections, type RatingRules } from '../domain/index.ts';
+import type { DiscordConfig } from './memberships.ts';
 
 /** Lit tous les faits d'une organisation. */
 export interface FactsReader {
@@ -9,6 +10,8 @@ export interface FactsReader {
 export interface OrganizationRepository {
   /** Ses règles de note. Refuse une organisation inconnue. */
   ratingRules(organizationId: string): Promise<RatingRules>;
+  /** Son serveur Discord et son rôle admin, ou `undefined` s'ils ne sont pas configurés. */
+  discordConfig(organizationId: string): Promise<DiscordConfig | undefined>;
 }
 
 /** Remplace toutes les projections d'une organisation. Seul le recalcul s'en sert (ADR 0003). */

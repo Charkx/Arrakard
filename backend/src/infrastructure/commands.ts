@@ -3,6 +3,7 @@ import {
   type Clock,
   type CommandLog,
   type EditionRepository,
+  type IdentityRepository,
   type MembershipRepository,
   type UnitOfWork,
 } from '../application/index.ts';
@@ -26,6 +27,7 @@ export function postgresUnitOfWork(sql: Sql): UnitOfWork {
         return work({
           ...postgresRecomputePorts(tx),
           memberships: postgresMemberships(tx),
+          identities: postgresIdentities(tx),
           editions: postgresEditions(tx),
           commandLog: postgresCommandLog(tx),
         });
@@ -37,10 +39,35 @@ export function postgresUnitOfWork(sql: Sql): UnitOfWork {
 function postgresMemberships(tx: TransactionSql): MembershipRepository {
   return {
     async isAdmin(organizationId, userId) {
-      const [member] = await tx`
-        select 1 from organization_members
-        where organization_id = ${organizationId} and user_id = ${userId} and role = 'admin'`;
-      return member !== undefined;
+      // La même règle que les droits de la base, fraîcheur comprise (ADR 0030).
+      const [result] = await tx<{ admin: boolean }[]>`
+        select public.is_admin_of(${organizationId}, ${userId}) as admin`;
+      return result?.admin === true;
+    },
+    async setRole(organizationId, userId, role, syncedAt) {
+      if (role === null) {
+        await tx`
+          delete from organization_members
+          where organization_id = ${organizationId} and user_id = ${userId}`;
+        return;
+      }
+      await tx`
+        insert into organization_members (organization_id, user_id, role, synced_at)
+        values (${organizationId}, ${userId}, ${role}, ${syncedAt})
+        on conflict (organization_id, user_id)
+        do update set role = excluded.role, synced_at = excluded.synced_at`;
+    },
+  };
+}
+
+function postgresIdentities(tx: TransactionSql): IdentityRepository {
+  return {
+    async discordUserId(userId) {
+      // L'identité Discord vient de Supabase Auth, jamais du site (ADR 0002).
+      const [identity] = await tx<{ provider_id: string }[]>`
+        select provider_id from auth.identities
+        where user_id = ${userId} and provider = 'discord'`;
+      return identity?.provider_id;
     },
   };
 }

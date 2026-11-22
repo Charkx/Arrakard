@@ -220,8 +220,51 @@ même commande : `--replace` vide l'organisation d'essai, et elle seule. Écris
 bien `--organization=arrakis-essai`, avec le `=` : sans lui, la commande
 s'arrête sans rien charger.
 
-Les admins y seront ajoutés avec la connexion Discord (ticket #41) : charger la
-sauvegarde ne crée aucun admin.
+Charger la sauvegarde ne crée aucun admin : chacun le devient en se connectant
+avec Discord (section suivante).
+
+## Brancher la connexion Discord
+
+Un joueur devient admin en se connectant avec Discord, s'il a le rôle admin sur
+le serveur d'Arrakis ([ADR 0030](../adr/0030-le-role-admin-vient-de-discord.md)).
+Le serveur et le rôle sont déjà dans la base. **Le secret Discord ne se colle
+nulle part ailleurs que dans Supabase et dans `supabase/.env`** : ni dans le
+dépôt, ni dans une conversation.
+
+1. **L'application Discord.** Sur
+   [discord.com/developers/applications](https://discord.com/developers/applications),
+   **New Application**, nommée `Arrakard`. Dans **OAuth2**, copie le **Client
+   ID**, puis **Reset Secret** et copie le **Client Secret** (il ne s'affiche
+   qu'une fois). Sous **Redirects**, ajoute
+   `https://rziflsgnzcbjpyilsmcd.supabase.co/auth/v1/callback` et
+   `http://127.0.0.1:54321/auth/v1/callback`, puis **Save Changes**. Aucun bot
+   n'est nécessaire.
+2. **Supabase en ligne.** Projet `arrakard`, **Authentication** → **Sign In /
+   Providers** → **Discord** : active-le, colle le Client ID et le Client
+   Secret, **Save**. Puis **Authentication** → **URL Configuration** : **Site
+   URL** = l'adresse du site sur Vercel ; dans **Redirect URLs**, ajoute cette
+   adresse suivie de `/**`.
+3. **La fonction en ligne.** Depuis la racine du dépôt :
+
+   ```sh
+   supabase db push --remote
+   supabase functions deploy sync-discord-role
+   ```
+
+4. **En local**, crée `supabase/.env`, que git ignore :
+
+   ```sh
+   read -r "CID?Client ID Discord : " && read -rs "SECRET?Client Secret Discord : " && echo
+   printf 'SUPABASE_AUTH_EXTERNAL_DISCORD_CLIENT_ID=%s\nSUPABASE_AUTH_EXTERNAL_DISCORD_SECRET=%s\n' "$CID" "$SECRET" > supabase/.env
+   unset CID SECRET
+   ```
+
+   puis relance `supabase stop && corepack pnpm db:start`. Sans ce fichier, tout
+   démarre, mais la connexion Discord ne marche pas en local.
+
+5. **Vérifier.** Sur le site, **Connexion** → **Se connecter avec Discord** :
+   la page dit « Tu es admin d'Arrakis. » pour un admin, « Tu es membre… » pour
+   un joueur du serveur sans le rôle.
 
 **Base en pause.** Un projet gratuit sans activité pendant 7 jours se met en
 pause, et le site n'affiche plus rien. Tableau de bord Supabase, projet

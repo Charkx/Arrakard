@@ -6,7 +6,7 @@ import {
   type TransactionPorts,
   type UnitOfWork,
 } from '#application/index.ts';
-import type { Publication } from '#application/index.ts';
+import type { DiscordConfig, MemberRole, Publication } from '#application/index.ts';
 import type { EditionSnapshot } from './command-harness.ts';
 
 /** Un match en brouillon : enregistré, mais pas encore dans les faits que lit le recalcul. */
@@ -18,9 +18,10 @@ interface DraftMatch {
 /** Une organisation telle que la mémoire la garde. */
 interface StoredOrganization {
   readonly rules: RatingRules;
+  readonly discord: DiscordConfig | undefined;
   /** Les faits publiés : ce que lit le recalcul. */
   facts: Facts;
-  readonly members: Map<string, 'admin' | 'member'>;
+  readonly members: Map<string, MemberRole>;
   readonly editions: Map<string, EditionSnapshot>;
   readonly drafts: Map<string, DraftMatch>;
   readonly commandLog: CommandLogEntry[];
@@ -30,10 +31,24 @@ interface StoredOrganization {
 
 /** Les ports en mémoire, pour tester un cas d'usage sans base. */
 export interface InMemoryStore extends RecomputePorts {
-  /** Crée une organisation avec ses règles et ses faits ; ses éditions sont à la version 1. */
-  addOrganization(organizationId: string, rules: RatingRules, facts: Facts): void;
+  /**
+   * Crée une organisation avec ses règles, ses faits et peut-être son serveur
+   * Discord ; ses éditions sont à la version 1.
+   */
+  addOrganization(
+    organizationId: string,
+    rules: RatingRules,
+    facts: Facts,
+    discord?: DiscordConfig,
+  ): void;
   /** Ajoute un utilisateur à l'organisation, avec ce rôle. */
-  addMember(organizationId: string, userId: string, role: 'admin' | 'member'): void;
+  addMember(organizationId: string, userId: string, role: MemberRole): void;
+  /** Le rôle de l'utilisateur dans l'organisation, ou `undefined` s'il n'en est pas membre. */
+  roleOf(organizationId: string, userId: string): MemberRole | undefined;
+  /** L'utilisateur s'est connecté avec ce compte Discord. */
+  addDiscordIdentity(userId: string, discordUserId: string): void;
+  /** L'utilisateur n'a plus de compte Discord lié. */
+  removeDiscordIdentity(userId: string): void;
   /** Ajoute un match en brouillon, avec ses performances. */
   addDraftMatch(
     organizationId: string,
@@ -50,13 +65,15 @@ export interface InMemoryStore extends RecomputePorts {
   publicationsOf(organizationId: string): readonly Publication[];
   /**
    * L'unité de travail, sans verrou ni annulation : les commandes refusent
-   * avant d'écrire, et le verrou se teste sur Postgres.
+   * avant d'écrire, et le verrou se teste sur Postgres. La fraîcheur du rôle
+   * admin (ADR 0030) aussi : ici, un admin le reste.
    */
   readonly unitOfWork: UnitOfWork;
 }
 
 export function inMemoryStore(): InMemoryStore {
   const organizations = new Map<string, StoredOrganization>();
+  const discordIdentities = new Map<string, string>();
   const find = (organizationId: string): StoredOrganization => {
     const found = organizations.get(organizationId);
     if (!found) throw new Error(`Organisation ${organizationId} introuvable.`);
@@ -84,6 +101,8 @@ export function inMemoryStore(): InMemoryStore {
     },
     organizations: {
       ratingRules: (organizationId) => Promise.resolve().then(() => find(organizationId).rules),
+      discordConfig: (organizationId) =>
+        Promise.resolve(organizations.get(organizationId)?.discord),
     },
     projections: {
       replaceAll(organizationId, projections) {
@@ -99,6 +118,13 @@ export function inMemoryStore(): InMemoryStore {
     memberships: {
       isAdmin: (organizationId, userId) =>
         Promise.resolve(organizations.get(organizationId)?.members.get(userId) === 'admin'),
+      setRole(organizationId, userId, role) {
+        return Promise.resolve().then(() => {
+          const { members } = find(organizationId);
+          if (role === null) members.delete(userId);
+          else members.set(userId, role);
+        });
+      },
     },
     editions: {
       find(organizationId, editionId) {
@@ -141,6 +167,9 @@ export function inMemoryStore(): InMemoryStore {
         });
       },
     },
+    identities: {
+      discordUserId: (userId) => Promise.resolve(discordIdentities.get(userId)),
+    },
     commandLog: {
       append(entry) {
         return Promise.resolve().then(() => {
@@ -152,9 +181,10 @@ export function inMemoryStore(): InMemoryStore {
 
   return {
     ...recomputePorts,
-    addOrganization(organizationId, rules, facts) {
+    addOrganization(organizationId, rules, facts, discord) {
       organizations.set(organizationId, {
         rules,
+        discord,
         facts,
         members: new Map(),
         editions: new Map(facts.editions.map((e) => [e.id, { version: 1, closedAt: null }])),
@@ -165,6 +195,13 @@ export function inMemoryStore(): InMemoryStore {
     },
     addMember(organizationId, userId, role) {
       find(organizationId).members.set(userId, role);
+    },
+    roleOf: (organizationId, userId) => organizations.get(organizationId)?.members.get(userId),
+    addDiscordIdentity(userId, discordUserId) {
+      discordIdentities.set(userId, discordUserId);
+    },
+    removeDiscordIdentity(userId) {
+      discordIdentities.delete(userId);
     },
     addDraftMatch(organizationId, match, performances) {
       find(organizationId).drafts.set(match.id, { match, performances });
