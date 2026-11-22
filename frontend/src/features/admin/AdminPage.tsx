@@ -68,6 +68,9 @@ export function AdminPage() {
             <Link className="admin-back" to="/admin/profiles">
               {t('admin.profiles.nav')}
             </Link>
+            <Link className="admin-back" to="/admin/editions/new">
+              {t('admin.edition.newLink')}
+            </Link>
           </nav>
           <SeasonPanel
             activeSeason={state.activeSeason}
@@ -121,6 +124,9 @@ function SeasonSection({ section }: { readonly section: AdminSeasonSection }) {
             <tr key={edition.editionId}>
               <td className="admin-edition-name">
                 <Link to={`/event/${edition.editionId}`}>{edition.name}</Link>
+                <Link className="admin-edit" to={`/admin/editions/${edition.editionId}`}>
+                  {t('admin.edition.editLink')}
+                </Link>
                 {/* Sur téléphone, la colonne Type disparaît : le type passe ici, sous le nom. */}
                 <span className="admin-type-under" aria-hidden="true">
                   {t(`edition.type.${edition.type}`)}

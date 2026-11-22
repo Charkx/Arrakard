@@ -45,6 +45,10 @@ function serving(profiles: AdminProfile[] = PROFILES) {
     profiles: vi.fn(() => Promise.resolve(profiles)),
     mergePlayers: vi.fn(() => Promise.resolve()),
     linkDiscordAccount: vi.fn(() => Promise.resolve()),
+    editionForm: () => Promise.reject(new Error('Hors sujet.')),
+    createEdition: () => Promise.reject(new Error('Hors sujet.')),
+    updateEdition: () => Promise.reject(new Error('Hors sujet.')),
+    archiveEdition: () => Promise.reject(new Error('Hors sujet.')),
   } satisfies AdminSource;
 }
 

@@ -16,6 +16,10 @@ describe('lazyAdminSource', () => {
         profiles: () => Promise.resolve([]),
         mergePlayers: () => Promise.resolve(),
         linkDiscordAccount: () => Promise.resolve(),
+        editionForm: () => Promise.resolve({ edition: null, seasons: [], players: [] }),
+        createEdition: () => Promise.resolve('e-new'),
+        updateEdition: () => Promise.resolve(),
+        archiveEdition: () => Promise.resolve(),
       }),
     );
     const admin = lazyAdminSource(load);
@@ -32,6 +36,34 @@ describe('lazyAdminSource', () => {
     expect(await admin.profiles()).toEqual([]);
     await admin.mergePlayers('p-1', 'p-2');
     await admin.linkDiscordAccount('p-1', null);
+    expect((await admin.editionForm(null)).edition).toBeNull();
+    expect(
+      await admin.createEdition({
+        name: 'IH',
+        type: 'inhouse',
+        date: '2026-11-23',
+        seasonId: null,
+        prestige: 'normal',
+        location: null,
+        url: null,
+        description: null,
+        arrakisWon: null,
+        participantIds: [],
+      }),
+    ).toBe('e-new');
+    await admin.updateEdition('e-1', 1, {
+      name: 'IH',
+      type: 'inhouse',
+      date: '2026-11-23',
+      seasonId: null,
+      prestige: 'normal',
+      location: null,
+      url: null,
+      description: null,
+      arrakisWon: null,
+      participantIds: [],
+    });
+    await admin.archiveEdition('e-1', 2);
     expect(load).toHaveBeenCalledOnce();
   });
 });

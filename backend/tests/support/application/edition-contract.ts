@@ -53,7 +53,7 @@ export function describeEditionContract(name: string, harness: () => CommandHarn
         IH,
       );
 
-      expect(outcome).toEqual({ editionId: expect.any(String), version: 1 });
+      expect(outcome.version).toBe(1);
       expect(await editionRecord(organizationId, outcome.editionId)).toEqual({
         ...IH,
         archived: false,

@@ -1,5 +1,6 @@
 import type { Division } from '@arrakis/backend/domain';
 import type { AdminEdition } from '../features/admin/admin.ts';
+import type { EditionDetails, EditionForm } from '../features/admin/edition-form.ts';
 import type { AdminProfile } from '../features/admin/profiles.ts';
 import type { RosterPlace, Rosters } from '../features/admin/teams.ts';
 
@@ -44,6 +45,14 @@ export interface AdminSource {
   mergePlayers(absorbedId: string, keptId: string): Promise<void>;
   /** Lie la carte à ce compte Discord, ou la délie (null). */
   linkDiscordAccount(playerId: string, discordUserId: string | null): Promise<void>;
+  /** Le formulaire d'une édition : elle (ou null pour en créer une), les saisons, les joueurs. */
+  editionForm(editionId: string | null): Promise<EditionForm>;
+  /** Crée une édition et rend son identifiant. */
+  createEdition(details: EditionDetails): Promise<string>;
+  /** Modifie une édition, à la version que l'admin a sous les yeux. */
+  updateEdition(editionId: string, version: number, details: EditionDetails): Promise<void>;
+  /** Archive une édition sans match. */
+  archiveEdition(editionId: string, version: number): Promise<void>;
 }
 
 /** Une source chargée au premier usage, avec la connexion (ADR 0024). */
@@ -63,5 +72,11 @@ export function lazyAdminSource(load: () => Promise<AdminSource>): AdminSource {
     mergePlayers: async (absorbedId, keptId) => (await source()).mergePlayers(absorbedId, keptId),
     linkDiscordAccount: async (playerId, discordUserId) =>
       (await source()).linkDiscordAccount(playerId, discordUserId),
+    editionForm: async (editionId) => (await source()).editionForm(editionId),
+    createEdition: async (details) => (await source()).createEdition(details),
+    updateEdition: async (editionId, version, details) =>
+      (await source()).updateEdition(editionId, version, details),
+    archiveEdition: async (editionId, version) =>
+      (await source()).archiveEdition(editionId, version),
   };
 }

@@ -127,6 +127,10 @@ const REFUSED: AdminSource = {
   profiles: refused,
   mergePlayers: refused,
   linkDiscordAccount: refused,
+  editionForm: refused,
+  createEdition: refused,
+  updateEdition: refused,
+  archiveEdition: refused,
 };
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */

@@ -24,7 +24,11 @@ const IH = {
 
 describe('createEditionRequest', () => {
   it('accepte une édition ; retire les espaces et rend null un texte vide', () => {
-    expect(createEditionRequest.parse(IH)).toMatchObject({ name: 'IH #10', location: null });
+    expect(createEditionRequest.parse({ ...IH, description: ' Finale ' })).toMatchObject({
+      name: 'IH #10',
+      location: null,
+      description: 'Finale',
+    });
   });
 
   it.each([
