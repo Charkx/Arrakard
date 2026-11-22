@@ -91,7 +91,7 @@ export function SeasonPanel({
                   setConfirming(false);
                 }}
               >
-                {t('admin.active.cancel')}
+                {t('admin.cancel')}
               </button>
             </div>
           </>

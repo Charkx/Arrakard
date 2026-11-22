@@ -175,7 +175,7 @@ export function describePlayerContract(name: string, harness: () => CommandHarne
       expect((await profile(organizationId, BRISE_ID))?.discordUserId).toBeNull();
     });
 
-    it('le passage en cours du profil absorbé se termine le jour de la fusion', async () => {
+    it('le passage en cours de l’absorbé se termine ; le conservé sans équipe prend sa place', async () => {
       const { services, seed, stints } = harness();
       const { organizationId, adminId } = await seed();
       const actor = { userId: adminId, organizationId };
@@ -196,6 +196,42 @@ export function describePlayerContract(name: string, harness: () => CommandHarne
 
       expect(await stints(organizationId, BRISE_ID)).toEqual([
         { teamId, status: 'sub', joinedOn: '2026-11-22', leftOn: '2026-11-22' },
+      ]);
+      expect(await stints(organizationId, ZEPHYR_ID)).toEqual([
+        { teamId, status: 'sub', joinedOn: '2026-11-22', leftOn: null },
+      ]);
+    });
+
+    it('le conservé déjà dans une équipe y reste', async () => {
+      const { services, seed, stints } = harness();
+      const { organizationId, adminId } = await seed();
+      const actor = { userId: adminId, organizationId };
+      const ark = await executeCommand(services, actor, createTeam, {
+        tag: 'ARK',
+        name: 'Arrakis',
+        divisions: [],
+      });
+      const vnt = await executeCommand(services, actor, createTeam, {
+        tag: 'VNT',
+        name: 'Vent du Sud',
+        divisions: [],
+      });
+      await executeCommand(services, actor, transferPlayer, {
+        playerId: BRISE_ID,
+        to: { teamId: ark.teamId, status: 'sub' },
+      });
+      await executeCommand(services, actor, transferPlayer, {
+        playerId: ZEPHYR_ID,
+        to: { teamId: vnt.teamId, status: 'starter' },
+      });
+
+      await executeCommand(services, actor, mergePlayers, {
+        absorbedId: BRISE_ID,
+        keptId: ZEPHYR_ID,
+      });
+
+      expect(await stints(organizationId, ZEPHYR_ID)).toEqual([
+        { teamId: vnt.teamId, status: 'starter', joinedOn: '2026-11-22', leftOn: null },
       ]);
     });
 

@@ -276,9 +276,20 @@ function postgresPlayers(tx: TransactionSql): PlayerRepository {
       await tx`
         delete from player_aliases
         where organization_id = ${organizationId} and player_id = ${absorbedId}`;
-      await tx`
+      const ended = await tx<{ team_id: string; status: RosterStatus }[]>`
         update team_memberships set left_on = ${on}
-        where organization_id = ${organizationId} and player_id = ${absorbedId} and left_on is null`;
+        where organization_id = ${organizationId} and player_id = ${absorbedId} and left_on is null
+        returning team_id, status`;
+      const [place] = ended;
+      if (place) {
+        // Le vrai joueur garde sa place, si le conservé n'en a pas (ADR 0034).
+        await tx`
+          insert into team_memberships (organization_id, player_id, team_id, status, joined_on)
+          select ${organizationId}, ${keptId}, ${place.team_id}, ${place.status}, ${on}
+          where not exists (
+            select 1 from team_memberships
+            where player_id = ${keptId} and left_on is null)`;
+      }
       const [absorbed] = await tx<{ discord_user_id: string | null }[]>`
         update players p set discord_user_id = null, merged_into = ${keptId}
         from players old

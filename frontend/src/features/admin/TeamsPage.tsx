@@ -29,7 +29,7 @@ export function TeamsPage() {
   return (
     <section className="admin-page">
       <Link className="admin-back" to="/admin">
-        {t('admin.teams.back')}
+        {t('admin.back')}
       </Link>
       <h1 className="page-title">{t('admin.teams.title')}</h1>
       {state.status === 'loading' && <p role="status">{t('common.loading')}</p>}
@@ -300,7 +300,7 @@ function TeamCard({
                   setConfirming(false);
                 }}
               >
-                {t('admin.active.cancel')}
+                {t('admin.cancel')}
               </button>
             </div>
           </>

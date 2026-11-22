@@ -140,7 +140,7 @@ describe('la page des profils', () => {
     openSite('/admin/profiles', { auth: authAs(ADMIN), admin });
 
     const discord = await screen.findByRole('region', { name: 'Lier une carte à Discord' });
-    fireEvent.change(within(discord).getByLabelText('Carte'), { target: { value: 'p-zephyr' } });
+    fireEvent.change(within(discord).getByLabelText('Joueur'), { target: { value: 'p-zephyr' } });
     expect(
       within(discord).getByText('Cette carte est liée au compte Discord 123456789012345678.'),
     ).toBeTruthy();

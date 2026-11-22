@@ -19,8 +19,9 @@ l'ADR 0032 : une saison clôturée ne reçoit plus de match.
 fait** : ses performances (brouillons compris), ses MVP de match et de soirée,
 ses participations. Son pseudo et ses alias deviennent des alias du conservé,
 pour que les prochains imports le reconnaissent. Son compte Discord le suit.
-Son passage en cours se termine le jour de la fusion ; ses passages terminés
-restent sur l'ancien profil. L'ancien profil renvoie vers le conservé, comme
+Son passage en cours se termine le jour de la fusion, et le conservé prend
+sa place s'il n'est dans aucune équipe ; ses passages terminés restent sur
+l'ancien profil. L'ancien profil renvoie vers le conservé, comme
 ceux qui renvoyaient déjà vers lui : un renvoi n'a jamais qu'un pas.
 
 Elle refuse :

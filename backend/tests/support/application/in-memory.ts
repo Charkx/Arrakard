@@ -324,6 +324,9 @@ export function inMemoryStore(): InMemoryStore {
           organization.facts = {
             ...organization.facts,
             performances: organization.facts.performances.map(follow),
+            matches: organization.facts.matches.map((m) =>
+              m.mvpPlayerId === absorbedId ? { ...m, mvpPlayerId: keptId } : m,
+            ),
             editions: organization.facts.editions.map((e) =>
               e.eventMvpPlayerId === absorbedId ? { ...e, eventMvpPlayerId: keptId } : e,
             ),
@@ -342,12 +345,18 @@ export function inMemoryStore(): InMemoryStore {
             organization.discordLinks.delete(absorbedId);
             organization.discordLinks.set(keptId, discord);
           }
-          const stints = organization.stints.get(absorbedId);
-          if (stints) {
-            organization.stints.set(
-              absorbedId,
-              stints.map((st) => (st.leftOn === null ? { ...st, leftOn: on } : st)),
-            );
+          const stints = organization.stints.get(absorbedId) ?? [];
+          const current = stints.find((st) => st.leftOn === null);
+          organization.stints.set(
+            absorbedId,
+            stints.map((st) => (st.leftOn === null ? { ...st, leftOn: on } : st)),
+          );
+          const kept = organization.stints.get(keptId) ?? [];
+          if (current && !kept.some((st) => st.leftOn === null)) {
+            organization.stints.set(keptId, [
+              ...kept,
+              { teamId: current.teamId, status: current.status, joinedOn: on, leftOn: null },
+            ]);
           }
           for (const [id, into] of organization.mergedInto) {
             if (into === absorbedId) organization.mergedInto.set(id, keptId);

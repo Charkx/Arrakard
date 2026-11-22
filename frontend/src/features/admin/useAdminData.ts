@@ -12,8 +12,8 @@ export type AdminData<T> =
 /**
  * Ce qu'une page admin lit, pour un admin à jour seulement (ADR 0030) ;
  * `reload` relit après une commande réussie : le serveur dit ce qui a changé.
+ * `load` doit être stable (une fonction du module) : sa nouvelle valeur relit tout.
  */
-/** `load` doit être stable (une fonction du module) : sa nouvelle valeur relit tout. */
 export function useAdminData<T>(load: (admin: AdminSource) => Promise<T>) {
   const auth = useAuthSource();
   const admin = useAdminSource();

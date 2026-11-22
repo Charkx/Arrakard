@@ -66,7 +66,7 @@ export function AdminPage() {
               {t('admin.teams.link')}
             </Link>
             <Link className="admin-back" to="/admin/profiles">
-              {t('admin.profiles.link.nav')}
+              {t('admin.profiles.nav')}
             </Link>
           </nav>
           <SeasonPanel
