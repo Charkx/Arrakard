@@ -57,8 +57,7 @@ export function inMemoryCommandHarness(): CommandHarness {
       return Promise.resolve(season && { status: season.status, endDate: season.endDate });
     },
     team: (organizationId, teamId) => Promise.resolve(store.teamOf(organizationId, teamId)),
-    stints: (organizationId, playerId) =>
-      Promise.resolve(store.stintsOf(organizationId, playerId)),
+    stints: (organizationId, playerId) => Promise.resolve(store.stintsOf(organizationId, playerId)),
     seasonRatings: (organizationId, seasonId) =>
       Promise.resolve(
         new Map(

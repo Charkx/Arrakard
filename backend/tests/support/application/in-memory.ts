@@ -224,9 +224,7 @@ export function inMemoryStore(): InMemoryStore {
         return Promise.resolve(team && { archived: team.archivedAt !== null });
       },
       tagTaken(organizationId, tag) {
-        return Promise.resolve(
-          [...find(organizationId).teams.values()].some((t) => t.tag === tag),
-        );
+        return Promise.resolve([...find(organizationId).teams.values()].some((t) => t.tag === tag));
       },
       create(organizationId, { tag, name, divisions }) {
         const teamId = crypto.randomUUID();

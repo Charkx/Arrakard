@@ -5,7 +5,7 @@ export type RosterStatus = 'starter' | 'sub' | 'coach';
 
 /** Une nouvelle équipe. */
 export interface NewTeam {
-  /** Son tag d'équipe, 2 à 4 majuscules ou chiffres (« ARK »). */
+  /** Son tag d'équipe, 2 à 4 majuscules (« ARK »). */
   readonly tag: string;
   readonly name: string;
   /** Ses divisions de ligue, peut-être aucune. */
