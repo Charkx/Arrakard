@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { AuthClient } from '@supabase/auth-js';
 import { afterEach, describe, expect, it } from 'vitest';
-import { supabaseAuth } from '#src/data/supabase-auth.ts';
+import { supabaseSession } from '#src/data/supabase-auth.ts';
 import { supabaseConfig } from '#src/data/supabase-config.ts';
 
 /**
@@ -19,12 +19,12 @@ describe('la connexion par Supabase Auth', () => {
   it('dit que la connexion a échoué quand Discord l’a refusée', async () => {
     window.history.replaceState(null, '', '/login?error=access_denied');
 
-    await expect(supabaseAuth().currentUser()).rejects.toThrow('access_denied');
+    await expect(supabaseSession().auth.currentUser()).rejects.toThrow('access_denied');
     window.history.replaceState(null, '', '/');
   });
 
   it('ne trouve personne de connecté sur un navigateur neuf', async () => {
-    expect(await supabaseAuth().currentUser()).toBeNull();
+    expect(await supabaseSession().auth.currentUser()).toBeNull();
   });
 
   it('lit le rôle enregistré de l’utilisateur connecté : aucun, pour un nouveau compte', async () => {
@@ -41,10 +41,9 @@ describe('la connexion par Supabase Auth', () => {
     });
     expect(error).toBeNull();
 
-    expect(await supabaseAuth().currentUser()).toEqual({
-      name: '',
-      role: null,
-      adminExpired: false,
-    });
+    const { auth, admin } = supabaseSession();
+    expect(await auth.currentUser()).toEqual({ name: '', role: null, adminExpired: false });
+    // La base refuse la liste de l'espace admin à qui n'est pas admin (ADR 0031).
+    await expect(admin.editions()).rejects.toMatchObject({ code: '42501' });
   });
 });

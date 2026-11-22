@@ -3,6 +3,8 @@
 @import './features/leaderboard/leaderboard.css';
 @import './features/player/profile.css';
 @import './features/edition/edition.css';
+@import './features/auth/auth.css';
+@import './features/admin/admin.css';
 
 /*
  * Design de la v1, repris tel quel (index.css et design-system.css de la v1) :

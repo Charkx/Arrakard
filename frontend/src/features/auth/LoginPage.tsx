@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthSource } from '../../data/DataContext.tsx';
 import type { SignedInUser } from '../../data/auth-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
 import type { TextKey } from '../../shared/i18n/dictionary.ts';
-import './auth.css';
 
 type State =
   | { readonly status: 'loading' }
@@ -85,7 +85,14 @@ export function LoginPage() {
               {signOut}
             </div>
           ) : (
-            signOut
+            <div className="auth-actions">
+              {state.user.role === 'admin' && (
+                <Link to="/admin" className="auth-button">
+                  {t('auth.openAdmin')}
+                </Link>
+              )}
+              {signOut}
+            </div>
           )}
         </>
       )}

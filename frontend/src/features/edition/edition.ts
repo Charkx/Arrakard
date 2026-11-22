@@ -140,8 +140,3 @@ export function byMatchday(
 export function formatDuration(seconds: number): string {
   return `${String(Math.floor(seconds / 60))}:${String(seconds % 60).padStart(2, '0')}`;
 }
-
-/** Le jour qu'il est à Arrakis (AAAA-MM-JJ), pour déduire le statut d'une édition. */
-export function todayInParis(now: Date = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(now);
-}

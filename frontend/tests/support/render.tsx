@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { App } from '#src/App.tsx';
 import { DataProvider } from '#src/data/DataContext.tsx';
+import type { AdminSource } from '#src/data/admin-source.ts';
 import type { AuthSource } from '#src/data/auth-source.ts';
 import type { DataSource } from '#src/data/data-source.ts';
 import type { LeaderboardData, LeaderboardEntry } from '#src/features/leaderboard/leaderboard.ts';
@@ -103,12 +104,18 @@ export interface SiteData {
   readonly editions?: Readonly<Record<string, EditionPageData>> | 'fails';
   /** La connexion ; par défaut, personne n'est connecté. */
   readonly auth?: AuthSource;
+  /** Les lectures d'admin ; par défaut, refusées. */
+  readonly admin?: AdminSource;
 }
 
 const NOBODY: AuthSource = {
   currentUser: () => Promise.resolve(null),
   signIn: () => Promise.resolve(),
   signOut: () => Promise.resolve(),
+};
+
+const REFUSED: AdminSource = {
+  editions: () => Promise.reject(new Error('Réservé aux admins.')),
 };
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */
@@ -142,7 +149,11 @@ export function openSite(address: string, data: LeaderboardData | 'fails' | Site
   return render(
     <MemoryRouter initialEntries={[address]}>
       <I18nProvider>
-        <DataProvider source={inMemorySource(site)} auth={site.auth ?? NOBODY}>
+        <DataProvider
+          source={inMemorySource(site)}
+          auth={site.auth ?? NOBODY}
+          admin={site.admin ?? REFUSED}
+        >
           <App />
           <Address />
         </DataProvider>

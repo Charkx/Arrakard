@@ -179,6 +179,21 @@ const fr = {
   'auth.role.expired':
     'Tes droits d’admin n’ont pas été revérifiés depuis 7 jours : reconnecte-toi avec Discord.',
   'auth.error': 'La connexion a échoué.',
+  'auth.openAdmin': 'Ouvrir l’espace admin',
+
+  'admin.title': 'Espace admin',
+  'admin.signedInAs': 'Connecté : {name} · admin d’Arrakis',
+  'admin.season.open': '{season} · en cours',
+  'admin.season.closed': '{season} · clôturée',
+  'admin.season.none': 'Hors saison',
+  'admin.col.edition': 'Édition',
+  'admin.col.type': 'Type',
+  'admin.col.date': 'Date',
+  'admin.col.status': 'Statut',
+  'admin.drafts': '{n} brouillons',
+  'admin.drafts.one': '1 brouillon',
+  'admin.empty': 'Aucune édition pour l’instant.',
+  'admin.error': 'Impossible de charger les éditions.',
 } as const;
 
 /** Une clé de texte. Une clé inconnue ne compile pas. */
@@ -356,6 +371,21 @@ const en: Record<TextKey, string> = {
   'auth.role.expired':
     'Your admin rights have not been checked for 7 days: sign in with Discord again.',
   'auth.error': 'Sign-in failed.',
+  'auth.openAdmin': 'Open the admin area',
+
+  'admin.title': 'Admin area',
+  'admin.signedInAs': 'Signed in: {name} · Arrakis admin',
+  'admin.season.open': '{season} · ongoing',
+  'admin.season.closed': '{season} · closed',
+  'admin.season.none': 'Outside any season',
+  'admin.col.edition': 'Edition',
+  'admin.col.type': 'Type',
+  'admin.col.date': 'Date',
+  'admin.col.status': 'Status',
+  'admin.drafts': '{n} drafts',
+  'admin.drafts.one': '1 draft',
+  'admin.empty': 'No edition yet.',
+  'admin.error': 'Could not load the editions.',
 };
 
 export const DICTIONARY: Record<Language, Record<TextKey, string>> = { fr, en };

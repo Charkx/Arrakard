@@ -1,25 +1,37 @@
 import { createContext, use, useEffect, useState, type ReactNode } from 'react';
+import type { AdminSource } from './admin-source.ts';
 import type { AuthSource } from './auth-source.ts';
 import type { DataSource } from './data-source.ts';
 
 const DataContext = createContext<DataSource | null>(null);
 const AuthContext = createContext<AuthSource | null>(null);
+const AdminContext = createContext<AdminSource | null>(null);
 
-/** Donne aux pages la source des données, et la connexion. */
+/** Donne aux pages la source des données, la connexion et les lectures d'admin. */
 export function DataProvider({
   source,
   auth,
+  admin,
   children,
 }: {
   readonly source: DataSource;
   readonly auth: AuthSource;
+  readonly admin: AdminSource;
   readonly children: ReactNode;
 }) {
   return (
     <DataContext value={source}>
-      <AuthContext value={auth}>{children}</AuthContext>
+      <AuthContext value={auth}>
+        <AdminContext value={admin}>{children}</AdminContext>
+      </AuthContext>
     </DataContext>
   );
+}
+
+export function useAdminSource(): AdminSource {
+  const admin = use(AdminContext);
+  if (!admin) throw new Error('useAdminSource s’utilise sous <DataProvider>.');
+  return admin;
 }
 
 export function useAuthSource(): AuthSource {
