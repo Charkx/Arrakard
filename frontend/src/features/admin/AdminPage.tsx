@@ -1,23 +1,30 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAdminSource, useAuthSource } from '../../data/DataContext.tsx';
-import type { AdminSource } from '../../data/admin-source.ts';
+import type { ActiveSeason, AdminSource } from '../../data/admin-source.ts';
 import type { AuthSource } from '../../data/auth-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
 import { todayInParis } from '../../shared/today.ts';
 import { bySeason, type AdminEdition, type AdminSeasonSection } from './admin.ts';
+import { SeasonPanel } from './SeasonPanel.tsx';
 
 type State =
   | { readonly status: 'loading' }
   | { readonly status: 'refused' }
   | { readonly status: 'error' }
-  | { readonly status: 'ready'; readonly name: string; readonly editions: AdminEdition[] };
+  | {
+      readonly status: 'ready';
+      readonly name: string;
+      readonly editions: AdminEdition[];
+      readonly activeSeason: ActiveSeason | null;
+    };
 
 /** Un admin à jour, puis ses éditions ; sinon, un refus (ADR 0030). */
 async function loadAdmin(auth: AuthSource, admin: AdminSource): Promise<State> {
   const user = await auth.currentUser();
   if (user?.role !== 'admin' || user.adminExpired) return { status: 'refused' };
-  return { status: 'ready', name: user.name, editions: await admin.editions() };
+  const [editions, activeSeason] = await Promise.all([admin.editions(), admin.activeSeason()]);
+  return { status: 'ready', name: user.name, editions, activeSeason };
 }
 
 /** L'espace admin : les éditions de l'organisation, par saison (ticket #42). */
@@ -26,6 +33,8 @@ export function AdminPage() {
   const auth = useAuthSource();
   const admin = useAdminSource();
   const [state, setState] = useState<State>({ status: 'loading' });
+  // Une commande réussie recharge la page : le serveur dit ce qui a changé.
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     let current = true;
@@ -40,7 +49,7 @@ export function AdminPage() {
     return () => {
       current = false;
     };
-  }, [auth, admin]);
+  }, [auth, admin, version]);
 
   if (state.status === 'refused') return <Navigate to="/login" replace />;
 
@@ -52,6 +61,12 @@ export function AdminPage() {
       {state.status === 'ready' && (
         <>
           <p className="admin-who">{t('admin.signedInAs', { name: state.name })}</p>
+          <SeasonPanel
+            activeSeason={state.activeSeason}
+            onChanged={() => {
+              setVersion((v) => v + 1);
+            }}
+          />
           {state.editions.length === 0 ? (
             <p>{t('admin.empty')}</p>
           ) : (

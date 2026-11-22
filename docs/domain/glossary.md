@@ -8,13 +8,14 @@ donne l'identifiant à utiliser, et il n'y en a qu'un.
 
 ## Calendrier
 
-| Terme                    | Code             | Définition                                                                                                                                                                                                               |
-| ------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Saison**               | `Season`         | Période de compétition, ouverte puis clôturée par un admin. **La note live d'un joueur ne compte que les matchs de la saison active** : chaque saison remet le classement à zéro.                                        |
-| **Saison active**        | `activeSeason`   | La seule saison ouverte à un instant donné. Il en existe au plus une.                                                                                                                                                    |
-| **Clôture de saison**    | `closeSeason`    | Action admin qui fige la note de chaque joueur pour cette saison (instantané de saison) et ouvre la suivante.                                                                                                            |
-| **Instantané de saison** | `SeasonSnapshot` | Note et statistiques d'un joueur, figées à la clôture d'une saison. _Projection, recalculable._                                                                                                                          |
-| **Édition hors saison**  | `seasonId: null` | Édition rattachée à aucune saison. Elle ne compte dans aucune note de saison, mais reste dans l'historique du joueur. _À ne pas confondre avec une édition d'une saison clôturée, qui n'est plus dans la saison active._ |
+| Terme                    | Code             | Définition                                                                                                                                                                                                                     |
+| ------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Saison**               | `Season`         | Période de compétition, ouverte puis clôturée par un admin. **La note live d'un joueur ne compte que les matchs de la saison active** : chaque saison remet le classement à zéro.                                              |
+| **Saison active**        | `activeSeason`   | La seule saison ouverte à un instant donné. Il en existe au plus une.                                                                                                                                                          |
+| **Ouverture de saison**  | `openSeason`     | Action admin qui crée la saison active. Refusée tant qu'une autre saison est ouverte.                                                                                                                                          |
+| **Clôture de saison**    | `closeSeason`    | Action admin qui fige les notes d'une saison : elle ne reçoit plus de match, donc ses notes, toujours recalculées, ne changent plus (instantané de saison). Il n'y a plus de saison active jusqu'à l'ouverture de la suivante. |
+| **Instantané de saison** | `SeasonSnapshot` | Note et statistiques d'un joueur, figées à la clôture d'une saison. _Projection, recalculable._                                                                                                                                |
+| **Édition hors saison**  | `seasonId: null` | Édition rattachée à aucune saison. Elle ne compte dans aucune note de saison, mais reste dans l'historique du joueur. _À ne pas confondre avec une édition d'une saison clôturée, qui n'est plus dans la saison active._       |
 
 Il n'y a qu'un niveau de période
 ([ADR 0014](../adr/0014-une-seule-periode-la-saison.md)). Le calcul, la

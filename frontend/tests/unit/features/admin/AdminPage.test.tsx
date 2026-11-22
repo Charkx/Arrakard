@@ -1,6 +1,6 @@
-import { cleanup, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AdminSource } from '#src/data/admin-source.ts';
+import { CommandFailed, type ActiveSeason, type AdminSource } from '#src/data/admin-source.ts';
 import type { AuthSource, SignedInUser } from '#src/data/auth-source.ts';
 import type { AdminEdition } from '#src/features/admin/admin.ts';
 import { openSite } from '#support/render.tsx';
@@ -35,9 +35,25 @@ function authAs(user: SignedInUser | null): AuthSource {
   };
 }
 
-const serving = (editions: AdminEdition[] = [LIGUE]): AdminSource => ({
-  editions: () => Promise.resolve(editions),
-});
+/** Une source admin en mémoire : ses éditions, sa saison active, et les commandes reçues. */
+function serving(
+  editions: AdminEdition[] = [LIGUE],
+  active: ActiveSeason | null = { id: 's-3', name: 'Saison 3' },
+) {
+  let season = active;
+  return {
+    editions: vi.fn(() => Promise.resolve(editions)),
+    activeSeason: vi.fn(() => Promise.resolve(season)),
+    openSeason: vi.fn((name: string) => {
+      season = { id: 's-new', name };
+      return Promise.resolve();
+    }),
+    closeSeason: vi.fn(() => {
+      season = null;
+      return Promise.resolve();
+    }),
+  } satisfies AdminSource;
+}
 
 const ADMIN: SignedInUser = { name: 'Kinox', role: 'admin', adminExpired: false };
 
@@ -76,9 +92,65 @@ describe('l’espace admin', () => {
   it('dit que les éditions n’ont pas pu être chargées', async () => {
     openSite('/admin', {
       auth: authAs(ADMIN),
-      admin: { editions: () => Promise.reject(new Error('refusé')) },
+      admin: { ...serving(), editions: () => Promise.reject(new Error('refusé')) },
     });
 
     expect(await screen.findByText('Impossible de charger les éditions.')).toBeTruthy();
+  });
+
+  it('clôture la saison active après confirmation, puis propose d’ouvrir la suivante', async () => {
+    const admin = serving();
+    openSite('/admin', { auth: authAs(ADMIN), admin });
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Clôturer la saison' }));
+    expect(screen.getByText(/Clôturer Saison 3 \? Ses notes seront figées/)).toBeTruthy();
+    expect(admin.closeSeason).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Oui, clôturer' }));
+
+    expect(await screen.findByText(/Aucune saison n’est ouverte/)).toBeTruthy();
+    expect(admin.closeSeason).toHaveBeenCalledWith('s-3');
+  });
+
+  it('annule la clôture sans rien envoyer', async () => {
+    const admin = serving();
+    openSite('/admin', { auth: authAs(ADMIN), admin });
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Clôturer la saison' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Annuler' }));
+
+    expect(screen.getByText('Saison 3 est la saison active.')).toBeTruthy();
+    expect(admin.closeSeason).not.toHaveBeenCalled();
+  });
+
+  it('ouvre une saison quand aucune ne l’est', async () => {
+    const admin = serving([LIGUE], null);
+    openSite('/admin', { auth: authAs(ADMIN), admin });
+
+    fireEvent.change(await screen.findByLabelText('Nom de la saison'), {
+      target: { value: ' Saison 4 ' },
+    });
+    fireEvent.change(screen.getByLabelText('Année'), { target: { value: '2027' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir la saison' }));
+
+    expect(await screen.findByText('Saison 4 est la saison active.')).toBeTruthy();
+    expect(admin.openSeason).toHaveBeenCalledWith('Saison 4', 2027);
+  });
+
+  it('dit ce que le serveur a refusé', async () => {
+    const admin = {
+      ...serving([LIGUE], null),
+      openSeason: () =>
+        Promise.reject(new CommandFailed('conflict', 'Une saison s’appelle déjà « Saison 3 ».')),
+    };
+    openSite('/admin', { auth: authAs(ADMIN), admin });
+
+    fireEvent.change(await screen.findByLabelText('Nom de la saison'), {
+      target: { value: 'Saison 3' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir la saison' }));
+
+    expect(
+      await screen.findByText('Le serveur a refusé : Une saison s’appelle déjà « Saison 3 ».'),
+    ).toBeTruthy();
   });
 });
