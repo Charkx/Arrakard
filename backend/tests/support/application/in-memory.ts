@@ -346,24 +346,49 @@ export function inMemoryStore(): InMemoryStore {
         }
         return Promise.resolve({ discordUserId: organization.discordLinks.get(playerId) ?? null });
       },
-      playedTogether(organizationId, a, b) {
-        const { facts, drafts } = find(organizationId);
-        const all = [...facts.performances, ...[...drafts.values()].flatMap((d) => d.performances)];
-        const matchesOf = (id: string) =>
-          new Set(all.filter((p) => p.playerId === id).map((p) => p.matchId));
-        const ofB = matchesOf(b);
-        return Promise.resolve([...matchesOf(a)].some((m) => ofB.has(m)));
+      mergeFacts(organizationId, absorbedId, keptId) {
+        const organization = find(organizationId);
+        const ids = new Set([absorbedId, keptId]);
+        const performances = [
+          ...organization.facts.performances,
+          ...[...organization.drafts.values()].flatMap((d) => d.performances),
+        ];
+        return Promise.resolve({
+          players: organization.facts.players
+            .filter((p) => ids.has(p.id))
+            .map((p) => ({
+              id: p.id,
+              nickname: p.nickname,
+              aliases: [...(organization.aliases.get(p.id) ?? [])],
+              mergedInto: organization.mergedInto.get(p.id) ?? null,
+              discordUserId: organization.discordLinks.get(p.id) ?? null,
+            })),
+          performances: performances
+            .filter((p) => ids.has(p.playerId))
+            .map((p) => ({ matchId: p.matchId, playerId: p.playerId })),
+          eventMvps: organization.facts.editions
+            .filter((e) => e.eventMvpPlayerId !== undefined && ids.has(e.eventMvpPlayerId))
+            .map((e) => ({ editionId: e.id, playerId: e.eventMvpPlayerId ?? '' })),
+          matchMvps: organization.facts.matches
+            .filter((m) => m.mvpPlayerId !== undefined && ids.has(m.mvpPlayerId))
+            .map((m) => ({ matchId: m.id, playerId: m.mvpPlayerId ?? '' })),
+          participations: [],
+          memberships: [...ids].flatMap((playerId) =>
+            (organization.stints.get(playerId) ?? []).map((st, i) => ({
+              id: `${playerId}:${String(i)}`,
+              playerId,
+              current: st.leftOn === null,
+            })),
+          ),
+          customizedPlayerIds: [],
+        });
       },
-      merge(organizationId, absorbedId, keptId, on) {
+      applyMerge(organizationId, plan, on) {
         return Promise.resolve().then(() => {
+          const { keepId: keptId, absorbId: absorbedId } = plan;
           const organization = find(organizationId);
           const follow = <T extends { playerId: string }>(p: T): T =>
             p.playerId === absorbedId ? { ...p, playerId: keptId } : p;
-          const moved =
-            organization.facts.performances.filter((p) => p.playerId === absorbedId).length +
-            [...organization.drafts.values()]
-              .flatMap((d) => d.performances)
-              .filter((p) => p.playerId === absorbedId).length;
           organization.facts = {
             ...organization.facts,
             performances: organization.facts.performances.map(follow),
@@ -377,35 +402,26 @@ export function inMemoryStore(): InMemoryStore {
           for (const [id, draft] of organization.drafts) {
             organization.drafts.set(id, { ...draft, performances: draft.performances.map(follow) });
           }
-          const nickname = organization.facts.players.find((p) => p.id === absorbedId)?.nickname;
           const aliases = organization.aliases.get(keptId) ?? new Set<string>();
-          for (const alias of organization.aliases.get(absorbedId) ?? []) aliases.add(alias);
-          if (nickname !== undefined) aliases.add(nickname.toLowerCase());
+          for (const alias of plan.aliasesAdded) aliases.add(alias);
           organization.aliases.set(keptId, aliases);
           organization.aliases.delete(absorbedId);
-          const discord = organization.discordLinks.get(absorbedId);
-          if (discord !== undefined) {
-            organization.discordLinks.delete(absorbedId);
-            organization.discordLinks.set(keptId, discord);
-          }
-          const stints = organization.stints.get(absorbedId) ?? [];
-          const current = stints.find((st) => st.leftOn === null);
-          organization.stints.set(
-            absorbedId,
-            stints.map((st) => (st.leftOn === null ? { ...st, leftOn: on } : st)),
+          const absorbedStints = (organization.stints.get(absorbedId) ?? []).map((st, i) =>
+            `${absorbedId}:${String(i)}` === plan.membershipClosed ? { ...st, leftOn: on } : st,
           );
-          const kept = organization.stints.get(keptId) ?? [];
-          if (current && !kept.some((st) => st.leftOn === null)) {
-            organization.stints.set(keptId, [
-              ...kept,
-              { teamId: current.teamId, status: current.status, joinedOn: on, leftOn: null },
-            ]);
+          organization.stints.set(keptId, [
+            ...(organization.stints.get(keptId) ?? []),
+            ...absorbedStints,
+          ]);
+          organization.stints.delete(absorbedId);
+          organization.discordLinks.delete(absorbedId);
+          if (plan.discordUserIdTransferred !== null) {
+            organization.discordLinks.set(keptId, plan.discordUserIdTransferred);
           }
           for (const [id, into] of organization.mergedInto) {
             if (into === absorbedId) organization.mergedInto.set(id, keptId);
           }
           organization.mergedInto.set(absorbedId, keptId);
-          return { movedPerformances: moved };
         });
       },
       discordOwner(organizationId, discordUserId) {
@@ -524,8 +540,13 @@ export function inMemoryStore(): InMemoryStore {
     markMerged(organizationId, absorbedId, keptId) {
       find(organizationId).mergedInto.set(absorbedId, keptId);
     },
+    // Dans l'ordre de la base : par arrivée, le passage en cours en dernier.
     stintsOf: (organizationId, playerId) =>
-      organizations.get(organizationId)?.stints.get(playerId) ?? [],
+      [...(organizations.get(organizationId)?.stints.get(playerId) ?? [])].sort(
+        (a, b) =>
+          a.joinedOn.localeCompare(b.joinedOn) ||
+          (a.leftOn ?? '9999-12-31').localeCompare(b.leftOn ?? '9999-12-31'),
+      ),
     editionOf: (organizationId, editionId) =>
       organizations.get(organizationId)?.editions.get(editionId),
     commandLogOf: (organizationId) => organizations.get(organizationId)?.commandLog ?? [],

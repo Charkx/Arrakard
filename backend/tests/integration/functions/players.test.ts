@@ -62,7 +62,10 @@ describe('les fonctions des profils', () => {
     expect(response.status).toBe(400);
   });
 
-  it('laissent l’admin lier la carte du double, puis le fusionner : le compte suit', async () => {
+  it('laissent l’admin lier la carte du double, puis le fusionner : compte et personnalisation suivent', async () => {
+    await sql`
+      insert into card_customizations (organization_id, player_id, title)
+      values (${organizationId}, ${BRISE_ID}, 'Le Vent')`;
     const linked = await callFunction(
       'link-discord-account',
       { organizationId, playerId: BRISE_ID, discordUserId: '123456789012345678' },
@@ -88,6 +91,9 @@ describe('les fonctions des profils', () => {
     >`
       select id, merged_into, discord_user_id from players
       where organization_id = ${organizationId} and id in (${BRISE_ID}, ${ZEPHYR_ID}) order by nickname`;
+    const customizations = await sql<{ player_id: string; title: string }[]>`
+      select player_id, title from card_customizations where organization_id = ${organizationId}`;
+    expect(customizations).toEqual([{ player_id: ZEPHYR_ID, title: 'Le Vent' }]);
     expect(players).toEqual([
       { id: BRISE_ID, merged_into: ZEPHYR_ID, discord_user_id: null },
       { id: ZEPHYR_ID, merged_into: null, discord_user_id: '123456789012345678' },

@@ -1,6 +1,6 @@
 # 0034 — Fusionner deux profils, lier une carte à Discord
 
-- **Statut** : Accepté
+- **Statut** : Accepté, amendé par [0036](0036-la-fusion-suit-le-plan-du-domaine.md)
 - **Date** : 2026-11-22
 
 ## Contexte
@@ -14,6 +14,10 @@ ce que la fusion déplace, ce qu'elle refuse, et comment elle se concilie avec
 l'ADR 0032 : une saison clôturée ne reçoit plus de match.
 
 ## Décision
+
+> **Amendé par [0036](0036-la-fusion-suit-le-plan-du-domaine.md)** : la
+> fusion suit `planMerge`. Les passages et la personnalisation de l'absorbé
+> passent au conservé.
 
 **`mergePlayers` déplace vers le profil conservé tout ce que le joueur a
 fait** : ses performances (brouillons compris), ses MVP de match et de soirée,
