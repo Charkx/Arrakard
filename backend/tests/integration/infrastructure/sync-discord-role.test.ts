@@ -47,6 +47,9 @@ async function roleIn(organization: string): Promise<string | undefined> {
   return row?.role;
 }
 
+const isAdmin = (organization: string) =>
+  services.unitOfWork.run(organization, (ports) => ports.memberships.isAdmin(organization, userId));
+
 const sync = (organization = organizationId) =>
   syncDiscordRole(services, userId, { organizationId: organization, providerToken: 'jeton' });
 
@@ -81,6 +84,26 @@ describe('syncDiscordRole sur Postgres', () => {
     member = { discordUserId: DISCORD_USER, roles: [] };
     expect(await sync()).toEqual({ role: 'member' });
     expect(await roleIn(organizationId)).toBe('member');
+  });
+
+  it('fait admin de cette organisation seulement', async () => {
+    member = { discordUserId: DISCORD_USER, roles: [ADMIN_ROLE] };
+    await sync();
+
+    expect(await isAdmin(organizationId)).toBe(true);
+    expect(await isAdmin(otherOrganizationId)).toBe(false);
+  });
+
+  it('ne compte plus un rôle admin qui n’a pas été revérifié depuis 7 jours', async () => {
+    member = { discordUserId: DISCORD_USER, roles: [ADMIN_ROLE] };
+    await sync();
+    await sql`
+      update organization_members set synced_at = now() - interval '8 days'
+      where user_id = ${userId}`;
+
+    expect(await isAdmin(organizationId)).toBe(false);
+    await sync();
+    expect(await isAdmin(organizationId)).toBe(true);
   });
 
   it('retire l’adhésion du joueur qui a quitté le serveur', async () => {

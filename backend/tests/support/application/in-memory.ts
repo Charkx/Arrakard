@@ -65,7 +65,8 @@ export interface InMemoryStore extends RecomputePorts {
   publicationsOf(organizationId: string): readonly Publication[];
   /**
    * L'unité de travail, sans verrou ni annulation : les commandes refusent
-   * avant d'écrire, et le verrou se teste sur Postgres.
+   * avant d'écrire, et le verrou se teste sur Postgres. La fraîcheur du rôle
+   * admin (ADR 0030) aussi : ici, un admin le reste.
    */
   readonly unitOfWork: UnitOfWork;
 }
@@ -117,7 +118,6 @@ export function inMemoryStore(): InMemoryStore {
     memberships: {
       isAdmin: (organizationId, userId) =>
         Promise.resolve(organizations.get(organizationId)?.members.get(userId) === 'admin'),
-      discordUserId: (userId) => Promise.resolve(discordIdentities.get(userId)),
       setRole(organizationId, userId, role) {
         return Promise.resolve().then(() => {
           const { members } = find(organizationId);
@@ -166,6 +166,9 @@ export function inMemoryStore(): InMemoryStore {
           };
         });
       },
+    },
+    identities: {
+      discordUserId: (userId) => Promise.resolve(discordIdentities.get(userId)),
     },
     commandLog: {
       append(entry) {

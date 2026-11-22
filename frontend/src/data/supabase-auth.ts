@@ -1,9 +1,8 @@
 import { AuthClient, type Session } from '@supabase/auth-js';
 import { PostgrestClient } from '@supabase/postgrest-js';
 import type { AuthSource, MemberRole, SignedInUser } from './auth-source.ts';
-
-/** La clé publique de l'API locale (voir `supabase-source.ts`). */
-const LOCAL_KEY = 'sb_publishable_local';
+import { supabaseConfig } from './supabase-config.ts';
+import { organizationId } from './supabase-source.ts';
 
 /**
  * Ce que Discord permet au site de lire : le compte (`identify`), et ses rôles
@@ -15,14 +14,14 @@ const DISCORD_SCOPES = 'identify guilds.members.read';
  * La connexion par Supabase Auth et Discord. Ce module n'est chargé qu'au
  * premier usage (`lazyAuthSource`), avec `@supabase/auth-js`.
  */
-export function supabaseAuth(
-  url = import.meta.env.VITE_SUPABASE_URL ?? 'http://127.0.0.1:54321',
-  key = import.meta.env.VITE_SUPABASE_ANON_KEY ?? LOCAL_KEY,
-  organizationSlug = import.meta.env.VITE_ORGANIZATION_SLUG ?? 'arrakis',
-): AuthSource {
-  const api = url.replace(/\/+$/, '');
+export function supabaseAuth({ api, key, organizationSlug } = supabaseConfig()): AuthSource {
   // À lire avant que la bibliothèque ne nettoie l'adresse : revient-on de Discord ?
-  let returningFromDiscord = new URLSearchParams(window.location.search).has('code');
+  const params = new URLSearchParams(window.location.search);
+  const refusal = params.get('error_description') ?? params.get('error');
+  let returningFromDiscord = params.has('code');
+  /** La synchronisation du retour de Discord, partagée par les appels qui l'attendent. */
+  let synced: Promise<SignedInUser | null> | undefined;
+
   const client = new AuthClient({
     url: `${api}/auth/v1`,
     headers: { apikey: key },
@@ -37,16 +36,6 @@ export function supabaseAuth(
       headers: { apikey: key, Authorization: `Bearer ${token}` },
     });
 
-  async function organizationId(): Promise<string> {
-    const { data, error } = await rest(key)
-      .from('organizations')
-      .select('id')
-      .eq('slug', organizationSlug)
-      .single<{ id: string }>();
-    if (error) throw new Error(error.message);
-    return data.id;
-  }
-
   /** Le serveur revérifie le rôle Discord et met l'adhésion à jour (ADR 0030). */
   async function syncRole(session: Session, providerToken: string): Promise<MemberRole | null> {
     const response = await fetch(`${api}/functions/v1/sync-discord-role`, {
@@ -56,35 +45,56 @@ export function supabaseAuth(
         Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ organizationId: await organizationId(), providerToken }),
+      body: JSON.stringify({
+        organizationId: await organizationId(rest(key), organizationSlug),
+        providerToken,
+      }),
     });
     if (!response.ok) throw new Error(`Synchronisation du rôle : ${String(response.status)}.`);
     return ((await response.json()) as { role: MemberRole | null }).role;
   }
 
-  /** Le rôle déjà enregistré, lu avec les droits de l'utilisateur (« ses propres adhésions »). */
-  async function savedRole(session: Session): Promise<MemberRole | null> {
-    const { data, error } = await rest(session.access_token)
+  /**
+   * Le rôle enregistré, lu avec les droits de l'utilisateur. Pour un admin,
+   * la base dit aussi si son rôle compte encore (`is_org_admin`, ADR 0030).
+   */
+  async function savedRole(session: Session): Promise<Omit<SignedInUser, 'name'>> {
+    const db = rest(session.access_token);
+    const organization = await organizationId(db, organizationSlug);
+    const { data, error } = await db
       .from('organization_members')
       .select('role')
-      .eq('organization_id', await organizationId())
+      .eq('organization_id', organization)
       .eq('user_id', session.user.id)
       .maybeSingle<{ role: MemberRole }>();
-    if (error) throw new Error(error.message);
-    return data?.role ?? null;
+    if (error) throw error;
+    const role = data?.role ?? null;
+    if (role !== 'admin') return { role, adminExpired: false };
+    const admin = await db.rpc('is_org_admin', { org: organization });
+    if (admin.error) throw admin.error;
+    return { role, adminExpired: admin.data !== true };
+  }
+
+  async function load(sync: boolean): Promise<SignedInUser | null> {
+    const { data, error } = await client.getSession();
+    if (error) throw error;
+    const { session } = data;
+    if (!session) return null;
+    const providerToken = session.provider_token;
+    const role =
+      sync && typeof providerToken === 'string'
+        ? { role: await syncRole(session, providerToken), adminExpired: false }
+        : await savedRole(session);
+    return { name: displayName(session), ...role };
   }
 
   return {
-    async currentUser(): Promise<SignedInUser | null> {
-      const { data, error } = await client.getSession();
-      if (error) throw error;
-      const { session } = data;
-      if (!session) return null;
-      const providerToken = session.provider_token;
-      const syncNow = returningFromDiscord && typeof providerToken === 'string';
-      returningFromDiscord = false;
-      const role = syncNow ? await syncRole(session, providerToken) : await savedRole(session);
-      return { name: displayName(session), role };
+    currentUser() {
+      if (refusal !== null) return Promise.reject(new Error(refusal));
+      // En développement, React lance deux fois l'affichage : les deux attendent
+      // la même synchronisation.
+      if (returningFromDiscord) return (synced ??= load(true));
+      return load(false);
     },
     async signIn() {
       const { error } = await client.signInWithOAuth({
@@ -94,6 +104,8 @@ export function supabaseAuth(
       if (error) throw error;
     },
     async signOut() {
+      returningFromDiscord = false;
+      synced = undefined;
       const { error } = await client.signOut();
       if (error) throw error;
     },

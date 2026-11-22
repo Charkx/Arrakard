@@ -1,5 +1,5 @@
 import { project, type Facts, type Projections, type RatingRules } from '../domain/index.ts';
-import type { DiscordConfig } from './sync-discord-role.ts';
+import type { DiscordConfig } from './memberships.ts';
 
 /** Lit tous les faits d'une organisation. */
 export interface FactsReader {

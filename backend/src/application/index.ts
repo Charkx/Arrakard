@@ -8,7 +8,6 @@ export type {
   CommandLog,
   CommandLogEntry,
   CommandServices,
-  MembershipRepository,
   RejectionReason,
   Repositories,
   TransactionPorts,
@@ -31,9 +30,13 @@ export type {
 export { syncDiscordRole } from './sync-discord-role.ts';
 export type {
   DiscordConfig,
+  IdentityRepository,
+  MemberRole,
+  MembershipRepository,
+} from './memberships.ts';
+export type {
   DiscordGateway,
   GuildMember,
-  MemberRole,
   SyncDiscordRoleInput,
   SyncDiscordRoleOutcome,
   SyncDiscordRoleServices,

@@ -1,13 +1,5 @@
 import { CommandRejected, type Clock, type UnitOfWork } from './command.ts';
-
-/** Le rôle d'un utilisateur dans une organisation (ADR 0008). */
-export type MemberRole = 'admin' | 'member';
-
-/** Le serveur Discord d'une organisation, et le rôle qui y fait un admin (ADR 0008). */
-export interface DiscordConfig {
-  readonly guildId: string;
-  readonly adminRoleId: string;
-}
+import type { MemberRole } from './memberships.ts';
 
 /** Un membre d'un serveur Discord, tel que Discord le décrit. */
 export interface GuildMember {
@@ -50,36 +42,40 @@ function roleFrom(member: GuildMember | undefined, adminRoleId: string): MemberR
 /**
  * Accorde ou retire l'adhésion d'un utilisateur d'après ses rôles sur le
  * serveur Discord de l'organisation, à chaque connexion (ADR 0002, ADR 0030).
- * Ce n'est pas une commande d'admin : n'importe quel utilisateur connecté la
- * lance pour lui-même.
+ * Ce n'est pas une commande : elle n'exige pas d'être admin, puisqu'elle sert à
+ * le devenir. Chaque utilisateur connecté la lance pour lui-même.
  */
 export function syncDiscordRole(
   { unitOfWork, clock, discord }: SyncDiscordRoleServices,
   userId: string,
   { organizationId, providerToken }: SyncDiscordRoleInput,
 ): Promise<SyncDiscordRoleOutcome> {
-  return unitOfWork.run(organizationId, async ({ organizations, memberships, commandLog }) => {
+  return unitOfWork.run(organizationId, async (ports) => {
+    const { organizations, memberships, identities, commandLog } = ports;
     const config = await organizations.discordConfig(organizationId);
     if (!config) {
       throw new CommandRejected('not_found', 'Cette organisation n’a pas de serveur Discord.');
     }
-    const discordUserId = await memberships.discordUserId(userId);
+    const discordUserId = await identities.discordUserId(userId);
     if (discordUserId === undefined) {
       throw new CommandRejected('forbidden', 'Ce compte ne s’est pas connecté avec Discord.');
     }
     const member = await discord.guildMember(providerToken, config.guildId);
+    // Sans membre (404), Discord ne dit pas à qui est le jeton : le seul effet
+    // possible est alors de retirer sa propre adhésion.
     if (member && member.discordUserId !== discordUserId) {
       throw new CommandRejected('forbidden', 'Ce jeton Discord est celui d’un autre compte.');
     }
     const role = roleFrom(member, config.adminRoleId);
-    await memberships.setRole(organizationId, userId, role);
+    const now = clock.now().toISOString();
+    await memberships.setRole(organizationId, userId, role, now);
     await commandLog.append({
       organizationId,
       command: 'syncDiscordRole',
       actorUserId: userId,
       input: { discordUserId },
       outcome: { role },
-      createdAt: clock.now().toISOString(),
+      createdAt: now,
     });
     return { role };
   });

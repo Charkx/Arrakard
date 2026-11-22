@@ -2,7 +2,7 @@ import { syncDiscordRole, type Command } from '../application/index.ts';
 import { syncDiscordRoleRequest } from '../contracts/index.ts';
 import postgres from 'postgres';
 import { postgresUnitOfWork, systemClock } from './commands.ts';
-import { DISCORD_API_URL, discordGateway } from './discord.ts';
+import { discordGateway } from './discord.ts';
 import { commandHandler, requestHandler, type CommandContract } from './http.ts';
 import { supabaseAuthenticator } from './supabase-auth.ts';
 
@@ -42,15 +42,12 @@ export function edgeCommandHandler<Input, Outcome>(
   );
 }
 
-/**
- * Le gestionnaire HTTP de la synchronisation du rôle Discord (ADR 0030).
- * `DISCORD_API_URL` remplace l'API de Discord, pour les essais.
- */
+/** Le gestionnaire HTTP de la synchronisation du rôle Discord (ADR 0030). */
 export function edgeSyncDiscordRoleHandler(env: Env): (request: Request) => Promise<Response> {
   const services = {
     unitOfWork: postgresUnitOfWork(database(env)),
     clock: systemClock,
-    discord: discordGateway(env.DISCORD_API_URL ?? DISCORD_API_URL),
+    discord: discordGateway(),
   };
   return requestHandler(
     'syncDiscordRole',

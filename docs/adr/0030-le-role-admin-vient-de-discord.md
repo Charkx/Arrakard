@@ -2,7 +2,7 @@
 
 - **Statut** : Accepté
 - **Date** : 2026-11-22
-- **Précise** : [0002](0002-supabase-source-de-verite.md), [0008](0008-multi-tenant-et-portabilite.md), [0024](0024-lire-avec-postgrest-js.md)
+- **Amende** : [0024](0024-lire-avec-postgrest-js.md) (`auth-js` au lieu de `supabase-js`)
 
 ## Contexte
 
@@ -29,13 +29,22 @@ Discord lui a remis à l'Edge Function `sync-discord-role`, qui :
    dans la requête, sinon répond 403 ;
 3. demande à Discord le membre du serveur à qui appartient le jeton, et
    refuse le jeton s'il appartient à un autre compte ;
-4. écrit l'adhésion : `admin` avec le rôle, `member` sans le rôle, aucune si
-   le joueur n'est plus sur le serveur ;
+4. écrit l'adhésion, datée (`synced_at`) : `admin` avec le rôle, `member`
+   sans le rôle (il servira à la carte du joueur), aucune si le joueur n'est
+   plus sur le serveur ;
 5. l'inscrit au journal des commandes, sans le jeton.
 
-Ce n'est pas une commande d'admin : `executeCommand` exige un admin, et la
+Ce n'est pas une commande : `executeCommand` exige un admin, et la
 synchronisation sert justement à le devenir. Elle passe par la même unité de
 travail, et par un `requestHandler` commun que `commandHandler` utilise aussi.
+
+**Un rôle admin ne vaut que 7 jours après sa dernière vérification**, la
+durée d'un jeton Discord. La règle est écrite une fois, dans la fonction SQL
+`is_admin_of`, qu'appellent les droits de la base (`is_org_admin`) et les
+commandes. Le serveur ne dépend donc pas du navigateur : un ancien admin qui
+ne repasse jamais par la synchronisation, ou dont la session reste ouverte
+des semaines, perd ses droits de lui-même. Un admin se reconnecte au moins une
+fois par semaine.
 
 **Le site charge `@supabase/auth-js` à la demande**, au premier usage de la
 connexion, et non `supabase-js` entier. Les pages publiques ne le
@@ -61,10 +70,21 @@ cite `index.html`, et échoue si la bibliothèque de connexion s'y trouve.
 
 - Aucun service à héberger : Supabase Auth, une Edge Function et l'API de
   Discord.
-- Un admin retiré sur Discord reste admin jusqu'à sa prochaine connexion. Pour
-  une coupure immédiate, il faut supprimer son adhésion à la main.
-- Le jeton Discord n'est jamais enregistré par le serveur ; il reste dans la
-  session du navigateur, comme le jeton de connexion.
+- Un admin retiré sur Discord le reste jusqu'à sa prochaine connexion, et au
+  plus 7 jours. Pour une coupure immédiate, il faut supprimer son adhésion à
+  la main.
+- L'organisation d'essai a le même serveur et le même rôle (ADR 0021) : un
+  admin d'Arrakis l'est aussi de l'essai, et chaque organisation a sa propre
+  adhésion, synchronisée à part.
+- Quand Discord répond que le joueur n'est pas sur le serveur, il ne dit pas
+  à qui est le jeton : le seul effet possible est de retirer sa propre
+  adhésion.
+- Le jeton Discord n'est jamais enregistré par le serveur. Il reste dans la
+  session du navigateur, comme le jeton de connexion : une faille XSS du site
+  laisserait lire les rôles Discord de l'utilisateur, rien de plus
+  (`guilds.members.read` ne permet aucune écriture).
+- L'outil de migration ne remplace pas une configuration Discord déjà en
+  base : la changer se fait à la main, en SQL, faute d'écran prévu.
 - Les tests ne joignent jamais Discord : la passerelle est testée avec un
   faux `fetch`, la synchronisation avec un Discord simulé sur la vraie base,
   et l'Edge Function sur ce qu'elle refuse avant d'appeler Discord. Seul

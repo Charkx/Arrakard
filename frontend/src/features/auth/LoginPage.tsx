@@ -10,11 +10,11 @@ type State =
   | { readonly status: 'error' }
   | { readonly status: 'ready'; readonly user: SignedInUser | null };
 
-const ROLE_TEXT: Readonly<Record<'admin' | 'member' | 'none', TextKey>> = {
-  admin: 'auth.role.admin',
-  member: 'auth.role.member',
-  none: 'auth.role.none',
-};
+/** Ce que la page dit du rôle de l'utilisateur connecté. */
+function roleText({ role, adminExpired }: SignedInUser): TextKey {
+  if (role === 'admin') return adminExpired ? 'auth.role.expired' : 'auth.role.admin';
+  return role === 'member' ? 'auth.role.member' : 'auth.role.none';
+}
 
 /** Se connecter avec Discord, voir son rôle, se déconnecter (ADR 0030). */
 export function LoginPage() {
@@ -42,6 +42,19 @@ export function LoginPage() {
       {t('auth.signIn')}
     </button>
   );
+  const signOut = (
+    <button
+      type="button"
+      className="auth-button auth-button-secondary"
+      onClick={() => {
+        void auth.signOut().then(() => {
+          setState({ status: 'ready', user: null });
+        });
+      }}
+    >
+      {t('auth.signOut')}
+    </button>
+  );
 
   return (
     <section className="auth-page">
@@ -50,7 +63,10 @@ export function LoginPage() {
       {state.status === 'error' && (
         <>
           <p role="alert">{t('auth.error')}</p>
-          {signIn}
+          <div className="auth-actions">
+            {signIn}
+            {signOut}
+          </div>
         </>
       )}
       {state.status === 'ready' && state.user === null && (
@@ -62,18 +78,15 @@ export function LoginPage() {
       {state.status === 'ready' && state.user !== null && (
         <>
           <p>{t('auth.signedInAs', { name: state.user.name })}</p>
-          <p>{t(ROLE_TEXT[state.user.role ?? 'none'])}</p>
-          <button
-            type="button"
-            className="auth-button auth-button-secondary"
-            onClick={() => {
-              void auth.signOut().then(() => {
-                setState({ status: 'ready', user: null });
-              });
-            }}
-          >
-            {t('auth.signOut')}
-          </button>
+          <p>{t(roleText(state.user))}</p>
+          {state.user.adminExpired ? (
+            <div className="auth-actions">
+              {signIn}
+              {signOut}
+            </div>
+          ) : (
+            signOut
+          )}
         </>
       )}
     </section>

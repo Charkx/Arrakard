@@ -176,6 +176,8 @@ const fr = {
   'auth.role.member': 'Tu es membre d’Arrakis, sans droits d’admin.',
   'auth.role.none':
     'Tu n’es pas sur le serveur Discord d’Arrakis : rejoins-le, puis reconnecte-toi.',
+  'auth.role.expired':
+    'Tes droits d’admin n’ont pas été revérifiés depuis 7 jours : reconnecte-toi avec Discord.',
   'auth.error': 'La connexion a échoué.',
 } as const;
 
@@ -351,6 +353,8 @@ const en: Record<TextKey, string> = {
   'auth.role.admin': 'You are an Arrakis admin.',
   'auth.role.member': 'You are an Arrakis member, without admin rights.',
   'auth.role.none': 'You are not on the Arrakis Discord server: join it, then sign in again.',
+  'auth.role.expired':
+    'Your admin rights have not been checked for 7 days: sign in with Discord again.',
   'auth.error': 'Sign-in failed.',
 };
 

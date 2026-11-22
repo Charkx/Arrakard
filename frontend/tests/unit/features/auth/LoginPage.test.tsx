@@ -36,26 +36,37 @@ describe('la page de connexion', () => {
   });
 
   it('dit à un admin qu’il est admin de l’organisation', async () => {
-    openSite('/login', { auth: fakeAuth({ name: 'Kinox', role: 'admin' }) });
+    openSite('/login', { auth: fakeAuth({ name: 'Kinox', role: 'admin', adminExpired: false }) });
 
     expect(await screen.findByText('Connecté en tant que Kinox.')).toBeTruthy();
     expect(screen.getByText('Tu es admin d’Arrakis.')).toBeTruthy();
   });
 
   it('dit à un joueur du serveur qu’il est membre, sans droits d’admin', async () => {
-    openSite('/login', { auth: fakeAuth({ name: 'Lanterne', role: 'member' }) });
+    openSite('/login', {
+      auth: fakeAuth({ name: 'Lanterne', role: 'member', adminExpired: false }),
+    });
 
     expect(await screen.findByText('Tu es membre d’Arrakis, sans droits d’admin.')).toBeTruthy();
   });
 
   it('dit à un compte hors du serveur Discord qu’il n’est pas membre', async () => {
-    openSite('/login', { auth: fakeAuth({ name: 'Visiteur', role: null }) });
+    openSite('/login', { auth: fakeAuth({ name: 'Visiteur', role: null, adminExpired: false }) });
 
     expect(await screen.findByText(/pas sur le serveur Discord d’Arrakis/)).toBeTruthy();
   });
 
+  it('demande à un admin non revérifié depuis 7 jours de se reconnecter', async () => {
+    const auth = fakeAuth({ name: 'Kinox', role: 'admin', adminExpired: true });
+    openSite('/login', { auth });
+
+    expect(await screen.findByText(/pas été revérifiés depuis 7 jours/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Se connecter avec Discord' }));
+    expect(auth.signIn).toHaveBeenCalledOnce();
+  });
+
   it('déconnecte, puis propose de se reconnecter', async () => {
-    const auth = fakeAuth({ name: 'Kinox', role: 'admin' });
+    const auth = fakeAuth({ name: 'Kinox', role: 'admin', adminExpired: false });
     openSite('/login', { auth });
 
     fireEvent.click(await screen.findByRole('button', { name: 'Se déconnecter' }));
@@ -64,13 +75,15 @@ describe('la page de connexion', () => {
     expect(auth.signOut).toHaveBeenCalledOnce();
   });
 
-  it('dit que la connexion a échoué, et propose de réessayer', async () => {
+  it('dit que la connexion a échoué, et propose de réessayer ou de se déconnecter', async () => {
     const auth = fakeAuth('fails');
     openSite('/login', { auth });
 
     expect(await screen.findByText('La connexion a échoué.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Se connecter avec Discord' }));
     expect(auth.signIn).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Se déconnecter' }));
+    expect(auth.signOut).toHaveBeenCalledOnce();
   });
 
   it('est accessible depuis la barre de navigation', async () => {

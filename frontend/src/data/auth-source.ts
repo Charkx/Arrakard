@@ -5,6 +5,8 @@ export type MemberRole = 'admin' | 'member';
 export interface SignedInUser {
   readonly name: string;
   readonly role: MemberRole | null;
+  /** Son rôle admin n'a pas été revérifié depuis 7 jours : il doit se reconnecter (ADR 0030). */
+  readonly adminExpired: boolean;
 }
 
 /** La connexion. Le site passe par Supabase Auth ; les tests, par une connexion simulée. */

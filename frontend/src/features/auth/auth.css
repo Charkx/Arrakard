@@ -32,3 +32,9 @@
 .auth-button-secondary:hover {
   background: var(--bg-hover);
 }
+
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}

@@ -4,6 +4,7 @@ import { planMigration } from '@arrakis/migrate-v1/src/plan.ts';
 import { demoBackup } from '@arrakis/migrate-v1/tests/support/demo-backup.ts';
 import { describe, expect, it } from 'vitest';
 import type { PlayerPageData } from '#src/features/player/player.ts';
+import { supabaseConfig } from '#src/data/supabase-config.ts';
 import { supabaseSource } from '#src/data/supabase-source.ts';
 
 /** Le profil chargé, ou une erreur claire s'il manque. */
@@ -40,7 +41,7 @@ describe('lire le classement dans la base locale', () => {
   });
 
   it('refuse une organisation inconnue au lieu de montrer un classement vide', async () => {
-    const source = supabaseSource(undefined, undefined, 'organisation-inconnue');
+    const source = supabaseSource(supabaseConfig({ organizationSlug: 'organisation-inconnue' }));
 
     await expect(source.loadLeaderboard()).rejects.toThrow(
       'Organisation « organisation-inconnue » introuvable.',

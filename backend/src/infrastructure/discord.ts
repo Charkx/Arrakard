@@ -2,7 +2,7 @@ import { CommandRejected, type DiscordGateway } from '../application/index.ts';
 import { z } from 'zod';
 
 /** L'API de Discord. */
-export const DISCORD_API_URL = 'https://discord.com/api/v10';
+const DISCORD_API_URL = 'https://discord.com/api/v10';
 
 /** Ce qu'on lit de la réponse de Discord ; le reste est ignoré. */
 const guildMemberResponse = z.object({

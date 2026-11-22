@@ -70,7 +70,7 @@ export function requestHandler<Body, Outcome>(
   };
 }
 
-/** Le point d'entrée HTTP d'une commande d'admin (ADR 0023), par `executeCommand`. */
+/** Le point d'entrée HTTP d'une commande (ADR 0023), par `executeCommand`, qui exige un admin. */
 export function commandHandler<Input, Outcome>(
   command: Command<Input, Outcome>,
   contract: CommandContract<Input>,

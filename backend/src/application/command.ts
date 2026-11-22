@@ -1,5 +1,5 @@
 import type { EditionRepository } from './editions.ts';
-import type { MemberRole } from './sync-discord-role.ts';
+import type { IdentityRepository, MembershipRepository } from './memberships.ts';
 import { recomputeProjections, type RecomputePorts } from './recompute.ts';
 
 /** L'utilisateur qui exécute une commande, et l'organisation où il agit. */
@@ -11,15 +11,6 @@ export interface Actor {
 /** Donne l'heure : date d'une clôture (ADR 0013), date du journal. */
 export interface Clock {
   now(): Date;
-}
-
-/** Les adhésions : qui est admin ou membre de quelle organisation (ADR 0008). */
-export interface MembershipRepository {
-  isAdmin(organizationId: string, userId: string): Promise<boolean>;
-  /** L'identifiant Discord de l'utilisateur, ou `undefined` s'il ne s'est pas connecté avec Discord. */
-  discordUserId(userId: string): Promise<string | undefined>;
-  /** Donne ce rôle à l'utilisateur dans l'organisation ; `null` retire son adhésion. */
-  setRole(organizationId: string, userId: string, role: MemberRole | null): Promise<void>;
 }
 
 /** Une ligne du journal des commandes (ADR 0009). */
@@ -45,6 +36,7 @@ export interface Repositories {
 /** Tout ce qu'une transaction donne : les entrepôts, les adhésions, le journal et le recalcul. */
 export interface TransactionPorts extends Repositories, RecomputePorts {
   readonly memberships: MembershipRepository;
+  readonly identities: IdentityRepository;
   readonly commandLog: CommandLog;
 }
 
