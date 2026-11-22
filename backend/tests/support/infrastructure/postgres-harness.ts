@@ -1,4 +1,5 @@
-import type { CommandLogEntry, SeasonStatus } from '#application/index.ts';
+import type { CommandLogEntry, RosterStatus, SeasonStatus } from '#application/index.ts';
+import type { Division } from '#domain/index.ts';
 import { V1_RATING_RULES } from '#domain/index.ts';
 import { postgresUnitOfWork } from '#infrastructure/commands.ts';
 import { readFacts } from '#infrastructure/read.ts';
@@ -113,6 +114,35 @@ export function postgresCommandHarness(sql: Sql, names: PostgresHarnessNames): C
         select status, end_date::text from seasons
         where organization_id = ${organizationId} and id = ${seasonId}`;
       return season && { status: season.status, endDate: season.end_date };
+    },
+    async team(organizationId, teamId) {
+      const [team] = await sql<
+        { tag: string; name: string; divisions: Division[]; archived_at: Date | null }[]
+      >`
+        select tag, name, divisions, archived_at from teams
+        where organization_id = ${organizationId} and id = ${teamId}`;
+      return (
+        team && {
+          tag: team.tag,
+          name: team.name,
+          divisions: team.divisions,
+          archivedAt: team.archived_at?.toISOString() ?? null,
+        }
+      );
+    },
+    async stints(organizationId, playerId) {
+      const rows = await sql<
+        { team_id: string; status: RosterStatus; joined_on: string; left_on: string | null }[]
+      >`
+        select team_id, status, joined_on::text, left_on::text from team_memberships
+        where organization_id = ${organizationId} and player_id = ${playerId}
+        order by joined_on, left_on nulls last, id`;
+      return rows.map((r) => ({
+        teamId: r.team_id,
+        status: r.status,
+        joinedOn: r.joined_on,
+        leftOn: r.left_on,
+      }));
     },
     async seasonRatings(organizationId, seasonId) {
       const rows = await sql<{ player_id: string; rating: number }[]>`

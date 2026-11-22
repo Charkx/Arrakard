@@ -21,6 +21,20 @@ export { openSeason } from './commands/open-season.ts';
 export type { OpenSeasonInput, OpenSeasonOutcome } from './commands/open-season.ts';
 export { closeSeason } from './commands/close-season.ts';
 export type { CloseSeasonInput, CloseSeasonOutcome } from './commands/close-season.ts';
+export { createTeam } from './commands/create-team.ts';
+export type { CreateTeamInput, CreateTeamOutcome } from './commands/create-team.ts';
+export { transferPlayer } from './commands/transfer-player.ts';
+export type { TransferPlayerInput, TransferPlayerOutcome } from './commands/transfer-player.ts';
+export { archiveTeam } from './commands/archive-team.ts';
+export type { ArchiveTeamInput, ArchiveTeamOutcome } from './commands/archive-team.ts';
+export type {
+  NewTeam,
+  PlayerRoster,
+  RosterPlace,
+  RosterStatus,
+  TeamRepository,
+  TeamState,
+} from './teams.ts';
 export type { NewSeason, SeasonRepository, SeasonState, SeasonStatus } from './seasons.ts';
 export type { PublishEditionInput, PublishEditionOutcome } from './commands/publish-edition.ts';
 export { toFacts } from './facts.ts';
