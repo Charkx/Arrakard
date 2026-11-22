@@ -14,12 +14,12 @@
     "test": "pnpm -r test",
     "coverage": "pnpm -r coverage",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm coverage",
-    "dev": "pnpm --filter @arrakis/web dev",
-    "build": "pnpm --filter @arrakis/web build",
-    "size": "pnpm --filter @arrakis/web size",
+    "dev": "pnpm --filter @arrakis/frontend dev",
+    "build": "pnpm --filter @arrakis/frontend build",
+    "size": "pnpm --filter @arrakis/frontend size",
     "golden-master:extract": "tsx tools/golden-master/extract-v1.ts",
     "db:start": "supabase start -x gotrue,realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor",
-    "test:db": "supabase test db && pnpm --filter @arrakis/postgres test:db && pnpm --filter @arrakis/migrate-v1 test:db && pnpm --filter @arrakis/migrate-v1 load demo-backup --replace && pnpm --filter @arrakis/web test:db"
+    "test:db": "supabase test db && pnpm --filter @arrakis/backend test:db && pnpm --filter @arrakis/migrate-v1 test:db && pnpm --filter @arrakis/migrate-v1 load demo-backup --replace && pnpm --filter @arrakis/frontend test:db"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

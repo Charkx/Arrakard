@@ -52,12 +52,23 @@ code : voir [Travailler avec un agent](#travailler-avec-un-agent).
 - **Branches** : `main` toujours déployable ; une branche courte par sujet,
   fusionnée par PR.
 - **Décisions** : un choix structurant = un [ADR](adr/README.md) dans la même PR.
-- **Rangement** : par sujet, pas par type. Le domaine se range par sujet
-  métier (`rating/`, `identity/`), les commandes une par fichier dans
-  `packages/application/src/commands/`. Un test vit à côté de son code
-  (`*.test.ts`, ou `*.db.test.ts` s'il lui faut la base locale), et les outils
-  de test dans le dossier `testing/` du paquet qu'ils servent. Le site suivra
-  au ticket #56.
+- **Rangement** : par sujet, pas par type. Le code vit dans `src/`, rangé par
+  couche puis par sujet métier (`backend/src/domain/rating/`), les commandes une
+  par fichier dans `backend/src/application/commands/`. Les tests vivent dans
+  `tests/`, qui reprend l'arborescence de `src/` :
+  - `tests/unit/` : le miroir de `src/` (`src/domain/rating/rating.ts` se teste
+    dans `tests/unit/domain/rating/rating.test.ts`), lancé par `pnpm check` ;
+    Deux exceptions, sans fichier source en face : le golden master
+    (`tests/unit/domain/golden-master/`, qui vérifie tout le domaine contre la
+    v1) et les tests des outils de test eux-mêmes (`tests/unit/support/`) ;
+  - `tests/integration/` : les tests qui ont besoin de la base locale, lancés par
+    `pnpm test:db` ;
+  - `tests/support/` : jeux d'essai, entrepôts en mémoire, suites de contrat, outils des tests.
+
+  Un test importe le code par les imports internes du paquet (`#domain/…`,
+  `#application/…`, `#src/…`) et ses outils par `#support/…`. Le code de `src/`
+  n'importe jamais `tests/`. Le site sera rangé par fonctionnalité au ticket #56.
+
 - **Base de données** : une migration fusionnée ne se modifie plus. Tout
   changement de schéma est une nouvelle migration, écrite après ses tests
   pgTAP. Une migration qui crée une table lui retire d'abord les droits que

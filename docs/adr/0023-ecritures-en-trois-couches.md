@@ -1,8 +1,15 @@
 # 0023 — Les écritures en trois couches
 
-- **Statut** : Accepté (2026-11-21)
+- **Statut** : Accepté (2026-11-21) ; chemins amendés par [0025](0025-un-front-un-back.md)
 - **Date** : 2026-11-19
 - **Amende** : [0005](0005-ecritures-par-commandes.md) (où vit la logique d'une commande), [0001](0001-monorepo-et-domaine-pur.md) (les paquets)
+
+> **Amendé par [0025](0025-un-front-un-back.md)**. Le dépôt n'a plus que trois paquets :
+> `packages/domain`, `packages/application` et `packages/postgres` sont
+> devenus `backend/src/domain`, `backend/src/application` et
+> `backend/src/infrastructure`, et les tests vivent dans `tests/` ;
+> `apps/web` est `frontend` ; `packages/migrate-v1` est `tools/migrate-v1`.
+> Le texte ci-dessous garde les chemins de sa date.
 
 ## Contexte
 

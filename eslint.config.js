@@ -10,11 +10,46 @@ const EXTENSION_REQUIRED = {
   message: 'Import relatif avec son extension (.ts) : requis par Deno.',
 };
 
-// L'adaptateur Postgres ne dépend d'aucun autre adaptateur ni du site (ADR 0023).
-const OTHER_ADAPTERS = {
-  group: ['@arrakis/migrate-v1', '@arrakis/migrate-v1/*', '@arrakis/web', '@arrakis/web/*'],
-  message: 'L’adaptateur Postgres ne dépend ni de la migration ni du site (ADR 0023).',
-};
+/** Une règle d'import : ce motif est refusé, avec ce message. */
+const refuse = (regex, message) => ({ regex, message });
+
+// La règle des dépendances (ADR 0023, ADR 0025) : chaque couche du back
+// n'importe que celles plus au centre. Domaine ← application ← infrastructure.
+const ONLY_RELATIVE = refuse(
+  '^(?!\\.{1,2}/)',
+  'Le domaine et l’application n’importent que des fichiers du back, en relatif (ADR 0025).',
+);
+const NOT_APPLICATION = refuse(
+  '/application/',
+  'Le domaine ne dépend de rien : ni de l’application, ni de l’infrastructure (ADR 0023).',
+);
+const NOT_INFRASTRUCTURE = refuse(
+  '/infrastructure/',
+  'Seule l’infrastructure parle à la base : le centre ne l’importe pas (ADR 0023).',
+);
+const NOT_TESTS = refuse(
+  '^#|(^|/)tests/',
+  'Le code de `src/` importe en relatif, et jamais les tests : les alias `#…` sont réservés aux tests (ADR 0025).',
+);
+const NOT_OUTSIDE = refuse(
+  '(^|/)(frontend|tools)/',
+  'Le back ne dépend ni du site ni des outils (ADR 0025).',
+);
+const NOT_BY_PACKAGE_NAME = refuse(
+  '^@arrakis/',
+  'Dans le back, on importe en relatif : ni le site, ni la migration, ni le back par son nom (ADR 0025).',
+);
+const DOMAIN_BY_ITS_ENTRY = refuse(
+  '/domain/(?!index\\.ts$)',
+  'Le domaine s’importe par son point d’entrée, `domain/index.ts` (ADR 0025).',
+);
+const APPLICATION_BY_ITS_ENTRY = refuse(
+  '/application/(?!index\\.ts$)',
+  'L’application s’importe par son point d’entrée, `application/index.ts` (ADR 0025).',
+);
+const imports = (...patterns) => ({
+  'no-restricted-imports': ['error', { patterns: [...patterns, EXTENSION_REQUIRED] }],
+});
 
 export default defineConfig([
   globalIgnores(['**/dist', '**/coverage', '**/node_modules']),
@@ -39,93 +74,55 @@ export default defineConfig([
     files: ['**/*.js'],
     extends: [tseslint.configs.disableTypeChecked],
   },
-  // ADR 0001 : le domaine n'importe que lui-même (imports relatifs).
-  // Seuls les tests ont droit à vitest.
+  // Les couches du back (ADR 0023, ADR 0025). Seul le code de `src/` est
+  // contraint : les tests, dans `tests/`, importent ce qu'ils testent.
+  // Le domaine : relatif seulement, rien d'une autre couche.
   {
-    files: ['packages/domain/src/**/*.ts'],
-    ignores: ['packages/domain/src/**/*.test.ts'],
+    files: ['backend/src/domain/**/*.ts'],
+    rules: imports(ONLY_RELATIVE, NOT_APPLICATION, NOT_INFRASTRUCTURE, NOT_TESTS, NOT_OUTSIDE),
+  },
+  // L'application : le domaine seulement, par son point d'entrée.
+  {
+    files: ['backend/src/application/**/*.ts'],
+    rules: imports(ONLY_RELATIVE, NOT_INFRASTRUCTURE, NOT_TESTS, NOT_OUTSIDE, DOMAIN_BY_ITS_ENTRY),
+  },
+  // L'infrastructure : la périphérie. Ses paquets npm (postgres), mais rien du
+  // dépôt par son nom, et le reste du back par ses points d'entrée.
+  {
+    files: ['backend/src/infrastructure/**/*.ts'],
+    rules: imports(
+      NOT_BY_PACKAGE_NAME,
+      NOT_TESTS,
+      NOT_OUTSIDE,
+      DOMAIN_BY_ITS_ENTRY,
+      APPLICATION_BY_ITS_ENTRY,
+    ),
+  },
+  // Les tests du domaine et leurs outils restent du côté du domaine.
+  {
+    files: ['backend/tests/unit/domain/**/*.ts', 'backend/tests/support/domain/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
-            {
-              regex: '^(?!\\.{1,2}/)',
-              message: 'Le domaine est pur : uniquement des imports relatifs (ADR 0001).',
-            },
-            EXTENSION_REQUIRED,
+            refuse(
+              '^#(application|infrastructure)/',
+              'Un test du domaine n’importe ni l’application ni l’infrastructure (ADR 0023).',
+            ),
           ],
         },
       ],
     },
   },
-  // ADR 0023 : la couche application ne dépend que du domaine. Ses tests et
-  // ses outils de test ont droit, en plus, à vitest.
+  // L'outil de migration n'importe pas ses tests.
   {
-    files: ['packages/application/src/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              regex: '^(?!\\.{1,2}/|@arrakis/domain$)',
-              message: 'La couche application ne dépend que du domaine (ADR 0023).',
-            },
-            EXTENSION_REQUIRED,
-          ],
-        },
-      ],
-    },
+    files: ['tools/migrate-v1/src/**/*.ts'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [NOT_TESTS] }] },
   },
+  // Le site lit par `DataSource` (ADR 0019) : du back, il n'utilise que le domaine.
   {
-    files: ['packages/application/src/**/*.test.ts', 'packages/application/src/testing/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              regex: '^(?!\\.{1,2}/|@arrakis/domain$|vitest$)',
-              message:
-                'Les tests de la couche application : le domaine et vitest seulement (ADR 0023).',
-            },
-            EXTENSION_REQUIRED,
-          ],
-        },
-      ],
-    },
-  },
-  // ADR 0023 : l'adaptateur Postgres est à la périphérie, il ne dépend
-  // d'aucun autre adaptateur ni du site.
-  {
-    files: ['packages/postgres/src/**/*.ts'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            OTHER_ADAPTERS,
-            {
-              group: ['@arrakis/application/testing'],
-              message: 'Les ports en mémoire servent aux tests, pas au code (ADR 0023).',
-            },
-            EXTENSION_REQUIRED,
-          ],
-        },
-      ],
-    },
-  },
-  {
-    files: ['packages/postgres/src/**/*.test.ts'],
-    rules: {
-      'no-restricted-imports': ['error', { patterns: [OTHER_ADAPTERS, EXTENSION_REQUIRED] }],
-    },
-  },
-  // Le site lit par `DataSource` (ADR 0019) : ni la base en direct, ni la migration.
-  {
-    files: ['apps/web/src/**/*.{ts,tsx}'],
-    ignores: ['apps/web/src/**/*.test.{ts,tsx}'],
+    files: ['frontend/src/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -133,15 +130,19 @@ export default defineConfig([
           patterns: [
             {
               group: [
-                '@arrakis/postgres',
-                '@arrakis/postgres/*',
+                '@arrakis/backend/application',
+                '@arrakis/backend/application/*',
+                '@arrakis/backend/infrastructure',
                 '@arrakis/migrate-v1',
                 '@arrakis/migrate-v1/*',
-                '@arrakis/application/testing',
               ],
-              message:
-                'Le site ne dépend ni de l’adaptateur Postgres, ni de la migration, ni des outils de test (ADR 0023).',
+              message: 'Le site n’utilise du back que le domaine (ADR 0019, ADR 0025).',
             },
+            refuse(
+              '^\\.{1,2}/.*/backend/',
+              'Le site importe le back par `@arrakis/backend/domain`.',
+            ),
+            NOT_TESTS,
           ],
         },
       ],
@@ -150,12 +151,12 @@ export default defineConfig([
   // Le site : les règles des hooks React. La v1 a connu un appel conditionnel
   // de hook qu'aucun outil ne signalait (ADR 0006).
   {
-    files: ['apps/web/src/**/*.{ts,tsx}'],
+    files: ['frontend/{src,tests}/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat.recommended],
   },
   // Scripts lancés par Node, hors du navigateur.
   {
-    files: ['apps/web/scripts/**/*.js'],
+    files: ['frontend/scripts/**/*.js'],
     languageOptions: { globals: { console: 'readonly', process: 'readonly' } },
   },
   prettier,

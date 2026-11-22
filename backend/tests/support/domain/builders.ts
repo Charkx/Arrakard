@@ -1,0 +1,88 @@
+/**
+ * Fabriques de données de test. Chaque test ne précise que ce qui compte
+ * pour lui ; le reste prend une valeur par défaut neutre.
+ */
+import type { LeaderboardPlayer } from '#domain/leaderboard/leaderboard.ts';
+import type { Performance } from '#domain/performance.ts';
+import type { EventMatch, MatchPerformance } from '#domain/standings/event-standings.ts';
+
+export function aPerformance(overrides: Partial<Performance> = {}): Performance {
+  return {
+    role: 'MID',
+    result: 'win',
+    kills: 0,
+    deaths: 0,
+    assists: 0,
+    gold: 0,
+    gpm: 0,
+    weight: 1,
+    ...overrides,
+  };
+}
+
+/** `count` performances identiques. */
+export function performances(count: number, overrides: Partial<Performance> = {}): Performance[] {
+  return Array.from({ length: count }, () => aPerformance(overrides));
+}
+
+/**
+ * Performances reconstituées à partir de totaux (exemples de la spec).
+ * Les `wins` premières sont des victoires ; tous les K/D/A sont portés par
+ * la première performance. Sans effet sur la note, qui travaille sur les
+ * totaux.
+ */
+export function performancesFrom(totals: {
+  role: Performance['role'];
+  games: number;
+  wins: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+}): Performance[] {
+  return Array.from({ length: totals.games }, (_, i) =>
+    aPerformance({
+      role: totals.role,
+      result: i < totals.wins ? 'win' : 'loss',
+      kills: i === 0 ? totals.kills : 0,
+      deaths: i === 0 ? totals.deaths : 0,
+      assists: i === 0 ? totals.assists : 0,
+    }),
+  );
+}
+
+export function aLeaderboardPlayer(overrides: Partial<LeaderboardPlayer> = {}): LeaderboardPlayer {
+  return {
+    playerId: 'player',
+    nickname: 'Joueur',
+    role: 'MID',
+    divisions: [],
+    rating: 60,
+    winrate: 50,
+    kda: 3,
+    games: 10,
+    archived: false,
+    ...overrides,
+  };
+}
+
+export function aMatchPerformance(overrides: Partial<MatchPerformance> = {}): MatchPerformance {
+  return {
+    playerId: 'player',
+    team: 'Demacia',
+    role: 'MID',
+    champion: 'Ahri',
+    result: 'win',
+    kills: 0,
+    deaths: 0,
+    assists: 0,
+    gpm: 0,
+    ...overrides,
+  };
+}
+
+export function anEventMatch(
+  performances: MatchPerformance[],
+  overrides: Partial<Omit<EventMatch, 'performances'>> = {},
+): EventMatch {
+  return { winnerTeam: 'Demacia', durationMinutes: 30, ...overrides, performances };
+}

@@ -86,5 +86,5 @@ Du code seulement si Charly dit « montre-moi ». L'agent note alors que ce tour
 
 ## Commandes
 
-- Domaine : `pnpm --filter @arrakis/domain test:watch`
+- Back (domaine, application) : `pnpm --filter @arrakis/backend test:watch`
 - Base : `supabase test db`

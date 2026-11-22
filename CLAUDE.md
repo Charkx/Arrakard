@@ -22,7 +22,7 @@ listé dans le [README](README.md#documentation).
 1. **Les faits sont la vérité, tout le reste se recalcule** (ADR 0003).
 2. **Le serveur décide** : le navigateur affiche et envoie des commandes, il ne
    calcule jamais une valeur qu'il enregistre ensuite.
-3. **Le domaine est pur** : `packages/domain`, sans dépendance, écrit en TDD.
+3. **Le domaine est pur** : `backend/src/domain`, sans dépendance, écrit en TDD.
 4. **Chaque décision structurante est écrite** dans un ADR, avec son pourquoi.
 5. **Simple tant que les chiffres le permettent** : ~400 matchs, 260 joueurs.
 
@@ -31,7 +31,7 @@ listé dans le [README](README.md#documentation).
 ```bash
 pnpm check                              # lint, format, types, tests et couverture (= CI)
 pnpm db:start && pnpm test:db          # base et API locales : droits, écriture, lecture (= CI)
-pnpm --filter @arrakis/domain test:watch
+pnpm --filter @arrakis/backend test:watch
 ```
 
 **Lancer `pnpm check` et `pnpm test:db` avant de dire que c'est fini**, et

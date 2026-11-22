@@ -1,7 +1,14 @@
 # 0001 — Monorepo TypeScript avec un domaine pur
 
-- **Statut** : Accepté, amendé par [0023](0023-ecritures-en-trois-couches.md) (deux paquets de plus)
+- **Statut** : Accepté, amendé par [0023](0023-ecritures-en-trois-couches.md) (deux paquets de plus) ; chemins amendés par [0025](0025-un-front-un-back.md)
 - **Date** : 2026-10-03
+
+> **Amendé par [0025](0025-un-front-un-back.md)**. Le dépôt n'a plus que trois paquets :
+> `packages/domain`, `packages/application` et `packages/postgres` sont
+> devenus `backend/src/domain`, `backend/src/application` et
+> `backend/src/infrastructure`, et les tests vivent dans `tests/` ;
+> `apps/web` est `frontend` ; `packages/migrate-v1` est `tools/migrate-v1`.
+> Le texte ci-dessous garde les chemins de sa date.
 
 ## Contexte
 

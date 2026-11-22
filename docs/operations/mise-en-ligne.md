@@ -110,8 +110,8 @@ Le rapport s'affiche d'abord, puis « Chargement terminé dans … ».
 
 1. Sur [vercel.com/new](https://vercel.com/new), importe le dépôt
    `Charkx/Arrakard`. Nom du projet : `arrakard`.
-2. **Root Directory** : `apps/web`. Le préréglage **Vite** est reconnu ; le
-   reste vient de `apps/web/vercel.json`.
+2. **Root Directory** : `frontend`. Le préréglage **Vite** est reconnu ; le
+   reste vient de `frontend/vercel.json`.
 3. **Environment Variables**, avant le premier déploiement :
 
    | Nom                            | Valeur                                                                 |
