@@ -17,7 +17,11 @@ import { loadPlan } from '#src/load.ts';
  * dans une organisation à eux, supprimée à la fin : ils ne touchent pas aux
  * données qu'un chargement manuel aurait mises dans l'organisation « arrakis ».
  */
-const ORGANIZATION = { slug: 'essai-chargement', name: 'Essai de chargement' };
+const ORGANIZATION = {
+  slug: 'essai-chargement',
+  name: 'Essai de chargement',
+  discord: { guildId: '1', adminRoleId: '2' },
+};
 
 const sql = postgres(LOCAL_DATABASE_URL, { onnotice: () => undefined });
 // Une copie : la base locale peut déjà contenir la démonstration d'origine.
@@ -37,6 +41,24 @@ afterAll(async () => {
 });
 
 describe('charger une sauvegarde dans la base locale', () => {
+  it('donne à l’organisation son serveur Discord, sans écraser celui déjà configuré', async () => {
+    const discordOf = async () =>
+      (
+        await sql<{ discord_guild_id: string; discord_admin_role_id: string }[]>`
+          select discord_guild_id, discord_admin_role_id from organizations
+          where slug = ${ORGANIZATION.slug}`
+      )[0];
+
+    await load();
+    expect(await discordOf()).toEqual({ discord_guild_id: '1', discord_admin_role_id: '2' });
+
+    await sql`
+      update organizations set discord_guild_id = '3', discord_admin_role_id = '4'
+      where slug = ${ORGANIZATION.slug}`;
+    await load();
+    expect(await discordOf()).toEqual({ discord_guild_id: '3', discord_admin_role_id: '4' });
+  });
+
   it('un visiteur lit le classement de la saison active, dans l’ordre attendu', async () => {
     const { organizationId } = await load();
 

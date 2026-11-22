@@ -7,6 +7,7 @@ export type { Authenticator, CommandContract } from './http.ts';
 export { supabaseAuthenticator } from './supabase-auth.ts';
 export { LOCAL_DATABASE_URL } from './local.ts';
 export { RATING_RULES, upsertOrganization } from './organizations.ts';
+export type { OrganizationSettings } from './organizations.ts';
 export { postgresRecomputePorts } from './ports.ts';
 export { toProjectionRows } from './projections.ts';
 export type { ProjectionRows } from './projections.ts';

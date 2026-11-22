@@ -6,6 +6,7 @@ import {
   postgresRecomputePorts,
   upsertOrganization,
   writeFacts,
+  type OrganizationSettings,
 } from '@arrakis/backend/infrastructure';
 import type { Sql } from 'postgres';
 import type { MigrationPlan } from './plan.ts';
@@ -37,7 +38,7 @@ export interface LoadOptions {
 export async function loadPlan(
   sql: Sql,
   plan: MigrationPlan,
-  organization: { readonly slug: string; readonly name: string },
+  organization: OrganizationSettings,
   { replace }: LoadOptions,
 ): Promise<LoadedOrganization> {
   return sql.begin(async (tx) => {

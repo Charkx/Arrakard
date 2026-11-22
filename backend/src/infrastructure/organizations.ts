@@ -1,4 +1,4 @@
-import type { OrganizationRepository } from '../application/index.ts';
+import type { DiscordConfig, OrganizationRepository } from '../application/index.ts';
 import { E1_E2_RATING_RULES, V1_RATING_RULES, type RatingRules } from '../domain/index.ts';
 import type { TransactionSql } from 'postgres';
 import type { Db } from './tables.ts';
@@ -9,14 +9,31 @@ export const RATING_RULES: Readonly<Record<string, RatingRules>> = {
   e1_e2: E1_E2_RATING_RULES,
 };
 
-/** Crée l'organisation, ou renomme celle qui porte déjà ce slug, et rend son identifiant. */
+/** Ce qu'un outil sait d'une organisation avant de la créer (ADR 0008). */
+export interface OrganizationSettings {
+  readonly slug: string;
+  readonly name: string;
+  readonly discord?: DiscordConfig;
+}
+
+/**
+ * Crée l'organisation, ou renomme celle qui porte déjà ce slug, et rend son
+ * identifiant. Un serveur Discord déjà configuré est gardé.
+ */
 export async function upsertOrganization(
   tx: TransactionSql,
-  { slug, name }: { readonly slug: string; readonly name: string },
+  { slug, name, discord }: OrganizationSettings,
 ): Promise<string> {
+  const guildId = discord?.guildId ?? null;
+  const adminRoleId = discord?.adminRoleId ?? null;
   const [organization] = await tx<{ id: string }[]>`
-    insert into organizations (slug, name) values (${slug}, ${name})
-    on conflict (slug) do update set name = excluded.name
+    insert into organizations (slug, name, discord_guild_id, discord_admin_role_id)
+    values (${slug}, ${name}, ${guildId}, ${adminRoleId})
+    on conflict (slug) do update set
+      name = excluded.name,
+      discord_guild_id = coalesce(organizations.discord_guild_id, excluded.discord_guild_id),
+      discord_admin_role_id =
+        coalesce(organizations.discord_admin_role_id, excluded.discord_admin_role_id)
     returning id`;
   if (!organization) throw new Error(`Organisation ${slug} : création impossible.`);
   return organization.id;
