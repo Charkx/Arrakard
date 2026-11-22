@@ -12,6 +12,7 @@ import { LEAGUE_ID } from '#support/application/fixture.ts';
 import { describePublishEditionContract } from '#support/application/publish-edition-contract.ts';
 import { describeSeasonContract } from '#support/application/season-contract.ts';
 import { describeTeamContract } from '#support/application/team-contract.ts';
+import { describePlayerContract } from '#support/application/player-contract.ts';
 import {
   postgresCommandHarness,
   resetPostgresHarness,
@@ -42,6 +43,7 @@ describeCloseEditionContract('Postgres', () => harness);
 describePublishEditionContract('Postgres', () => harness);
 describeSeasonContract('Postgres', () => harness);
 describeTeamContract('Postgres', () => harness);
+describePlayerContract('Postgres', () => harness);
 
 describe('deux commandes en même temps (ADR 0009)', () => {
   it('la seconde attend la première, lit la nouvelle version, et répond par un conflit', async () => {

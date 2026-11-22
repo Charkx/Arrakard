@@ -7,7 +7,13 @@ import {
   type UnitOfWork,
 } from '#application/index.ts';
 import type { DiscordConfig, MemberRole, Publication, SeasonStatus } from '#application/index.ts';
-import type { EditionSnapshot, SeasonRecord, StintRecord, TeamRecord } from './command-harness.ts';
+import type {
+  EditionSnapshot,
+  ProfileRecord,
+  SeasonRecord,
+  StintRecord,
+  TeamRecord,
+} from './command-harness.ts';
 
 /** Un match en brouillon : enregistré, mais pas encore dans les faits que lit le recalcul. */
 interface DraftMatch {
@@ -37,6 +43,10 @@ interface StoredOrganization {
   readonly stints: Map<string, StintRecord[]>;
   /** Les profils fusionnés : absorbé → conservé. */
   readonly mergedInto: Map<string, string>;
+  /** Les comptes Discord liés : joueur → compte. */
+  readonly discordLinks: Map<string, string>;
+  /** Les alias, par joueur. */
+  readonly aliases: Map<string, Set<string>>;
   readonly commandLog: CommandLogEntry[];
   readonly publications: Publication[];
   projections?: Projections;
@@ -74,6 +84,16 @@ export interface InMemoryStore extends RecomputePorts {
   seasonOf(organizationId: string, seasonId: string): SeasonRecord | undefined;
   /** Une équipe de l'organisation. */
   teamOf(organizationId: string, teamId: string): TeamRecord | undefined;
+  /** Ajoute un match publié, avec ses performances : le recalcul le lira. */
+  addPublishedMatch(
+    organizationId: string,
+    match: MatchFact,
+    performances: readonly PerformanceFact[],
+  ): void;
+  /** Un profil de l'organisation, ou `undefined`. */
+  profileOf(organizationId: string, playerId: string): ProfileRecord | undefined;
+  /** Les matchs où le joueur a une performance, publiée ou en brouillon. */
+  performanceMatchIdsOf(organizationId: string, playerId: string): readonly string[];
   /** Marque un profil comme fusionné dans un autre. */
   markMerged(organizationId: string, absorbedId: string, keptId: string): void;
   /** Les passages d'un joueur de l'organisation. */
@@ -272,6 +292,82 @@ export function inMemoryStore(): InMemoryStore {
         });
       },
     },
+    players: {
+      find(organizationId, playerId) {
+        const organization = organizations.get(organizationId);
+        if (
+          !organization?.facts.players.some((p) => p.id === playerId) ||
+          organization.mergedInto.has(playerId)
+        ) {
+          return Promise.resolve(undefined);
+        }
+        return Promise.resolve({ discordUserId: organization.discordLinks.get(playerId) ?? null });
+      },
+      playedTogether(organizationId, a, b) {
+        const { facts, drafts } = find(organizationId);
+        const all = [...facts.performances, ...[...drafts.values()].flatMap((d) => d.performances)];
+        const matchesOf = (id: string) =>
+          new Set(all.filter((p) => p.playerId === id).map((p) => p.matchId));
+        const ofB = matchesOf(b);
+        return Promise.resolve([...matchesOf(a)].some((m) => ofB.has(m)));
+      },
+      merge(organizationId, absorbedId, keptId, on) {
+        return Promise.resolve().then(() => {
+          const organization = find(organizationId);
+          const follow = <T extends { playerId: string }>(p: T): T =>
+            p.playerId === absorbedId ? { ...p, playerId: keptId } : p;
+          const moved =
+            organization.facts.performances.filter((p) => p.playerId === absorbedId).length +
+            [...organization.drafts.values()]
+              .flatMap((d) => d.performances)
+              .filter((p) => p.playerId === absorbedId).length;
+          organization.facts = {
+            ...organization.facts,
+            performances: organization.facts.performances.map(follow),
+            editions: organization.facts.editions.map((e) =>
+              e.eventMvpPlayerId === absorbedId ? { ...e, eventMvpPlayerId: keptId } : e,
+            ),
+          };
+          for (const [id, draft] of organization.drafts) {
+            organization.drafts.set(id, { ...draft, performances: draft.performances.map(follow) });
+          }
+          const nickname = organization.facts.players.find((p) => p.id === absorbedId)?.nickname;
+          const aliases = organization.aliases.get(keptId) ?? new Set<string>();
+          for (const alias of organization.aliases.get(absorbedId) ?? []) aliases.add(alias);
+          if (nickname !== undefined) aliases.add(nickname.toLowerCase());
+          organization.aliases.set(keptId, aliases);
+          organization.aliases.delete(absorbedId);
+          const discord = organization.discordLinks.get(absorbedId);
+          if (discord !== undefined) {
+            organization.discordLinks.delete(absorbedId);
+            organization.discordLinks.set(keptId, discord);
+          }
+          const stints = organization.stints.get(absorbedId);
+          if (stints) {
+            organization.stints.set(
+              absorbedId,
+              stints.map((st) => (st.leftOn === null ? { ...st, leftOn: on } : st)),
+            );
+          }
+          for (const [id, into] of organization.mergedInto) {
+            if (into === absorbedId) organization.mergedInto.set(id, keptId);
+          }
+          organization.mergedInto.set(absorbedId, keptId);
+          return { movedPerformances: moved };
+        });
+      },
+      discordOwner(organizationId, discordUserId) {
+        const owner = [...find(organizationId).discordLinks].find(([, d]) => d === discordUserId);
+        return Promise.resolve(owner?.[0]);
+      },
+      linkDiscord(organizationId, playerId, discordUserId) {
+        return Promise.resolve().then(() => {
+          const { discordLinks } = find(organizationId);
+          if (discordUserId === null) discordLinks.delete(playerId);
+          else discordLinks.set(playerId, discordUserId);
+        });
+      },
+    },
     commandLog: {
       append(entry) {
         return Promise.resolve().then(() => {
@@ -300,6 +396,8 @@ export function inMemoryStore(): InMemoryStore {
         teams: new Map(),
         stints: new Map(),
         mergedInto: new Map(),
+        discordLinks: new Map(),
+        aliases: new Map(),
         commandLog: [],
         publications: [],
       });
@@ -321,6 +419,34 @@ export function inMemoryStore(): InMemoryStore {
     seasonOf: (organizationId, seasonId) =>
       organizations.get(organizationId)?.seasons.get(seasonId),
     teamOf: (organizationId, teamId) => organizations.get(organizationId)?.teams.get(teamId),
+    addPublishedMatch(organizationId, match, performances) {
+      const organization = find(organizationId);
+      organization.facts = {
+        ...organization.facts,
+        matches: [...organization.facts.matches, match],
+        performances: [...organization.facts.performances, ...performances],
+      };
+    },
+    profileOf(organizationId, playerId) {
+      const organization = organizations.get(organizationId);
+      if (!organization?.facts.players.some((p) => p.id === playerId)) return undefined;
+      return {
+        mergedInto: organization.mergedInto.get(playerId) ?? null,
+        discordUserId: organization.discordLinks.get(playerId) ?? null,
+        aliases: [...(organization.aliases.get(playerId) ?? [])].sort(),
+      };
+    },
+    performanceMatchIdsOf(organizationId, playerId) {
+      const organization = organizations.get(organizationId);
+      if (!organization) return [];
+      return [
+        ...organization.facts.performances,
+        ...[...organization.drafts.values()].flatMap((d) => d.performances),
+      ]
+        .filter((p) => p.playerId === playerId)
+        .map((p) => p.matchId)
+        .sort();
+    },
     markMerged(organizationId, absorbedId, keptId) {
       find(organizationId).mergedInto.set(absorbedId, keptId);
     },

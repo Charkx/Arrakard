@@ -1,6 +1,11 @@
 import { toFacts } from '#application/index.ts';
 import { V1_RATING_RULES } from '#domain/index.ts';
-import { DRAFT_MATCH_NUMBER, NOW, type CommandHarness } from './command-harness.ts';
+import {
+  DRAFT_MATCH_NUMBER,
+  NOW,
+  PUBLISHED_MATCH_NUMBER,
+  type CommandHarness,
+} from './command-harness.ts';
 import { FIXTURE_ROWS, SIROCCO_ID, ZEPHYR_ID } from './fixture.ts';
 import { inMemoryStore } from './in-memory.ts';
 
@@ -56,6 +61,40 @@ export function inMemoryCommandHarness(): CommandHarness {
       const season = store.seasonOf(organizationId, seasonId);
       return Promise.resolve(season && { status: season.status, endDate: season.endDate });
     },
+    addPublishedMatch(organizationId, editionId, playerId) {
+      const matchId = crypto.randomUUID();
+      store.addPublishedMatch(
+        organizationId,
+        {
+          id: matchId,
+          editionId,
+          matchNumber: PUBLISHED_MATCH_NUMBER,
+          winnerTeam: 'ARK',
+          durationSeconds: 1600,
+        },
+        [
+          {
+            matchId,
+            line: 2,
+            side: 'A',
+            playerId,
+            team: 'ARK',
+            role: 'MID',
+            champion: 'Ahri',
+            result: 'win',
+            kills: 5,
+            deaths: 2,
+            assists: 6,
+            gold: 11000,
+          },
+        ],
+      );
+      return Promise.resolve(matchId);
+    },
+    profile: (organizationId, playerId) =>
+      Promise.resolve(store.profileOf(organizationId, playerId)),
+    performanceMatchIds: (organizationId, playerId) =>
+      Promise.resolve(store.performanceMatchIdsOf(organizationId, playerId)),
     markMerged(organizationId, absorbedId, keptId) {
       store.markMerged(organizationId, absorbedId, keptId);
       return Promise.resolve();

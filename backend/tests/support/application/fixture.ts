@@ -11,6 +11,8 @@ export const OFF_SEASON_ID = '00000000-0000-4000-8000-00000000b002';
 export const MATCH_ID = '00000000-0000-4000-8000-00000000c001';
 export const ZEPHYR_ID = '00000000-0000-4000-8000-00000000d001';
 export const SIROCCO_ID = '00000000-0000-4000-8000-00000000d002';
+/** Un profil sans match : le double possible d'un autre. */
+export const BRISE_ID = '00000000-0000-4000-8000-00000000d003';
 
 export const FIXTURE_ROWS: FactRows = {
   seasons: [{ id: SEASON_ID }],
@@ -74,5 +76,6 @@ export const FIXTURE_ROWS: FactRows = {
   players: [
     { id: ZEPHYR_ID, nickname: 'Zéphyr' },
     { id: SIROCCO_ID, nickname: 'Sirocco' },
+    { id: BRISE_ID, nickname: 'Brise' },
   ],
 };
