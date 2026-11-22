@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   closeEdition,
   closeSeason,
+  createEdition,
   executeCommand,
   linkDiscordAccount,
   mergePlayers,
@@ -53,6 +54,44 @@ export function describePlayerContract(name: string, harness: () => CommandHarne
         aliases: [],
       });
       expect((await profile(organizationId, ZEPHYR_ID))?.aliases).toEqual(['brise']);
+    });
+
+    it('les participations de l’absorbé passent au conservé, sans doublon', async () => {
+      const { services, seed, editionRecord } = harness();
+      const { organizationId, adminId } = await seed();
+      const actor = { userId: adminId, organizationId };
+      const lan = {
+        name: 'Gamers Assembly',
+        type: 'external_lan',
+        date: '2026-11-28',
+        seasonId: null,
+        prestige: 'normal',
+        location: null,
+        url: null,
+        description: null,
+        arrakisWon: null,
+      } as const;
+      const both = await executeCommand(services, actor, createEdition, {
+        ...lan,
+        participantIds: [BRISE_ID, ZEPHYR_ID],
+      });
+      const alone = await executeCommand(services, actor, createEdition, {
+        ...lan,
+        name: 'DreamHack',
+        participantIds: [BRISE_ID],
+      });
+
+      await executeCommand(services, actor, mergePlayers, {
+        absorbedId: BRISE_ID,
+        keptId: ZEPHYR_ID,
+      });
+
+      expect((await editionRecord(organizationId, both.editionId))?.participantIds).toEqual([
+        ZEPHYR_ID,
+      ]);
+      expect((await editionRecord(organizationId, alone.editionId))?.participantIds).toEqual([
+        ZEPHYR_ID,
+      ]);
     });
 
     it('les notes sont recalculées après une fusion', async () => {
@@ -175,7 +214,7 @@ export function describePlayerContract(name: string, harness: () => CommandHarne
       expect((await profile(organizationId, BRISE_ID))?.discordUserId).toBeNull();
     });
 
-    it('le passage en cours de l’absorbé se termine ; le conservé sans équipe prend sa place', async () => {
+    it('les passages de l’absorbé passent au conservé', async () => {
       const { services, seed, stints } = harness();
       const { organizationId, adminId } = await seed();
       const actor = { userId: adminId, organizationId };
@@ -194,15 +233,13 @@ export function describePlayerContract(name: string, harness: () => CommandHarne
         keptId: ZEPHYR_ID,
       });
 
-      expect(await stints(organizationId, BRISE_ID)).toEqual([
-        { teamId, status: 'sub', joinedOn: '2026-11-22', leftOn: '2026-11-22' },
-      ]);
+      expect(await stints(organizationId, BRISE_ID)).toEqual([]);
       expect(await stints(organizationId, ZEPHYR_ID)).toEqual([
         { teamId, status: 'sub', joinedOn: '2026-11-22', leftOn: null },
       ]);
     });
 
-    it('le conservé déjà dans une équipe y reste', async () => {
+    it('si le conservé est déjà dans une équipe, le passage en cours de l’absorbé se clôt', async () => {
       const { services, seed, stints } = harness();
       const { organizationId, adminId } = await seed();
       const actor = { userId: adminId, organizationId };
@@ -231,6 +268,7 @@ export function describePlayerContract(name: string, harness: () => CommandHarne
       });
 
       expect(await stints(organizationId, ZEPHYR_ID)).toEqual([
+        { teamId: ark.teamId, status: 'sub', joinedOn: '2026-11-22', leftOn: '2026-11-22' },
         { teamId: vnt.teamId, status: 'starter', joinedOn: '2026-11-22', leftOn: null },
       ]);
     });

@@ -309,71 +309,126 @@ function postgresPlayers(tx: TransactionSql): PlayerRepository {
         where organization_id = ${organizationId} and id = ${playerId} and merged_into is null`;
       return player && { discordUserId: player.discord_user_id };
     },
-    async playedTogether(organizationId, a, b) {
-      const [shared] = await tx`
-        select 1 from performances x join performances y on y.match_id = x.match_id
-        where x.organization_id = ${organizationId} and x.player_id = ${a} and y.player_id = ${b}
-        limit 1`;
-      return shared !== undefined;
+    async mergeFacts(organizationId, absorbedId, keptId) {
+      const ids = [absorbedId, keptId];
+      const players = await tx<
+        {
+          id: string;
+          nickname: string;
+          aliases: string[];
+          merged_into: string | null;
+          discord_user_id: string | null;
+        }[]
+      >`
+        select p.id, p.nickname, p.merged_into, p.discord_user_id,
+               array(select alias from player_aliases a where a.player_id = p.id) as aliases
+        from players p
+        where p.organization_id = ${organizationId} and p.id = any(${ids}::uuid[])`;
+      const performances = await tx<{ match_id: string; player_id: string }[]>`
+        select match_id, player_id from performances
+        where organization_id = ${organizationId} and player_id = any(${ids}::uuid[])`;
+      const eventMvps = await tx<{ id: string; event_mvp_player_id: string }[]>`
+        select id, event_mvp_player_id from editions
+        where organization_id = ${organizationId} and event_mvp_player_id = any(${ids}::uuid[])`;
+      const matchMvps = await tx<{ id: string; mvp_player_id: string }[]>`
+        select id, mvp_player_id from matches
+        where organization_id = ${organizationId} and mvp_player_id = any(${ids}::uuid[])`;
+      const participations = await tx<{ edition_id: string; player_id: string }[]>`
+        select edition_id, player_id from edition_participants
+        where organization_id = ${organizationId} and player_id = any(${ids}::uuid[])`;
+      const memberships = await tx<{ id: string; player_id: string; current: boolean }[]>`
+        select id, player_id, left_on is null as current from team_memberships
+        where organization_id = ${organizationId} and player_id = any(${ids}::uuid[])`;
+      const customized = await tx<{ player_id: string }[]>`
+        select player_id from card_customizations
+        where organization_id = ${organizationId} and player_id = any(${ids}::uuid[])`;
+      return {
+        players: players.map((p) => ({
+          id: p.id,
+          nickname: p.nickname,
+          aliases: p.aliases,
+          mergedInto: p.merged_into,
+          discordUserId: p.discord_user_id,
+        })),
+        performances: performances.map((p) => ({ matchId: p.match_id, playerId: p.player_id })),
+        eventMvps: eventMvps.map((e) => ({ editionId: e.id, playerId: e.event_mvp_player_id })),
+        matchMvps: matchMvps.map((m) => ({ matchId: m.id, playerId: m.mvp_player_id })),
+        participations: participations.map((p) => ({
+          editionId: p.edition_id,
+          playerId: p.player_id,
+        })),
+        memberships: memberships.map((m) => ({
+          id: m.id,
+          playerId: m.player_id,
+          current: m.current,
+        })),
+        customizedPlayerIds: customized.map((c) => c.player_id),
+      };
     },
-    async merge(organizationId, absorbedId, keptId, on) {
-      const moved = await tx`
-        update performances set player_id = ${keptId}
-        where organization_id = ${organizationId} and player_id = ${absorbedId}`;
+    async applyMerge(organizationId, plan, on) {
+      const { keepId, absorbId } = plan;
       await tx`
-        update matches set mvp_player_id = ${keptId}
-        where organization_id = ${organizationId} and mvp_player_id = ${absorbedId}`;
+        update performances set player_id = ${keepId}
+        where organization_id = ${organizationId} and player_id = ${absorbId}`;
       await tx`
-        update editions set event_mvp_player_id = ${keptId}
-        where organization_id = ${organizationId} and event_mvp_player_id = ${absorbedId}`;
+        update matches set mvp_player_id = ${keepId}
+        where organization_id = ${organizationId} and mvp_player_id = ${absorbId}`;
+      await tx`
+        update editions set event_mvp_player_id = ${keepId}
+        where organization_id = ${organizationId} and event_mvp_player_id = ${absorbId}`;
+      // Une participation que le conservé avait déjà tombe (`participationsDropped`).
       await tx`
         insert into edition_participants (organization_id, edition_id, player_id)
-        select organization_id, edition_id, ${keptId}::uuid from edition_participants
-        where organization_id = ${organizationId} and player_id = ${absorbedId}
+        select organization_id, edition_id, ${keepId}::uuid from edition_participants
+        where organization_id = ${organizationId} and player_id = ${absorbId}
         on conflict do nothing`;
       await tx`
         delete from edition_participants
-        where organization_id = ${organizationId} and player_id = ${absorbedId}`;
-      // Le pseudo et les alias de l'absorbé rattachent les prochains imports au conservé (ADR 0004).
-      await tx`
-        insert into player_aliases (organization_id, player_id, alias)
-        select ${organizationId}::uuid, ${keptId}::uuid, alias from player_aliases
-        where organization_id = ${organizationId} and player_id = ${absorbedId}
-        union
-        select ${organizationId}::uuid, ${keptId}::uuid, lower(nickname) from players
-        where organization_id = ${organizationId} and id = ${absorbedId}
-        on conflict do nothing`;
+        where organization_id = ${organizationId} and player_id = ${absorbId}`;
+      if (plan.aliasesAdded.length > 0) {
+        await tx`
+          insert into player_aliases ${tx(
+            plan.aliasesAdded.map((alias) => ({
+              organization_id: organizationId,
+              player_id: keepId,
+              alias,
+            })),
+          )}
+          on conflict do nothing`;
+      }
+      // Ses graphies sont celles du conservé désormais : un import ne doit plus viser l'absorbé.
       await tx`
         delete from player_aliases
-        where organization_id = ${organizationId} and player_id = ${absorbedId}`;
-      const ended = await tx<{ team_id: string; status: RosterStatus }[]>`
-        update team_memberships set left_on = ${on}
-        where organization_id = ${organizationId} and player_id = ${absorbedId} and left_on is null
-        returning team_id, status`;
-      const [place] = ended;
-      if (place) {
-        // Le vrai joueur garde sa place, si le conservé n'en a pas (ADR 0034).
+        where organization_id = ${organizationId} and player_id = ${absorbId}`;
+      if (plan.membershipClosed !== null) {
         await tx`
-          insert into team_memberships (organization_id, player_id, team_id, status, joined_on)
-          select ${organizationId}, ${keptId}, ${place.team_id}, ${place.status}, ${on}
-          where not exists (
-            select 1 from team_memberships
-            where player_id = ${keptId} and left_on is null)`;
-      }
-      const [absorbed] = await tx<{ discord_user_id: string | null }[]>`
-        update players p set discord_user_id = null, merged_into = ${keptId}
-        from players old
-        where old.id = p.id and p.organization_id = ${organizationId} and p.id = ${absorbedId}
-        returning old.discord_user_id`;
-      if (absorbed?.discord_user_id != null) {
-        await tx`
-          update players set discord_user_id = ${absorbed.discord_user_id}
-          where organization_id = ${organizationId} and id = ${keptId}`;
+          update team_memberships set left_on = ${on}
+          where organization_id = ${organizationId} and id = ${plan.membershipClosed}`;
       }
       await tx`
-        update players set merged_into = ${keptId}
-        where organization_id = ${organizationId} and merged_into = ${absorbedId}`;
-      return { movedPerformances: moved.count };
+        update team_memberships set player_id = ${keepId}
+        where organization_id = ${organizationId} and player_id = ${absorbId}`;
+      if (plan.absorbedCustomization === 'transferred') {
+        await tx`
+          update card_customizations set player_id = ${keepId}
+          where organization_id = ${organizationId} and player_id = ${absorbId}`;
+      } else if (plan.absorbedCustomization === 'dropped') {
+        await tx`
+          delete from card_customizations
+          where organization_id = ${organizationId} and player_id = ${absorbId}`;
+      }
+      // Le compte Discord passe au conservé : il faut d'abord le retirer à l'absorbé (unicité).
+      await tx`
+        update players set merged_into = ${keepId}, discord_user_id = null
+        where organization_id = ${organizationId} and id = ${absorbId}`;
+      if (plan.discordUserIdTransferred !== null) {
+        await tx`
+          update players set discord_user_id = ${plan.discordUserIdTransferred}
+          where organization_id = ${organizationId} and id = ${keepId}`;
+      }
+      await tx`
+        update players set merged_into = ${keepId}
+        where organization_id = ${organizationId} and merged_into = ${absorbId}`;
     },
     async discordOwner(organizationId, discordUserId) {
       const [player] = await tx<{ id: string }[]>`

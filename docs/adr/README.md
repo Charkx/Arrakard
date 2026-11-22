@@ -55,3 +55,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0033](0033-transferts-dates-du-jour.md)                 | Les transferts sont datés du jour, l'archivage libère les joueurs | Accepté |
 | [0034](0034-fusionner-deux-profils.md)                   | Fusionner deux profils, lier une carte à Discord                  | Accepté |
 | [0035](0035-editions-saisies-par-l-admin.md)             | Les éditions saisies par l'admin, et leur archivage               | Accepté |
+| [0036](0036-la-fusion-suit-le-plan-du-domaine.md)        | La fusion suit le plan du domaine                                 | Accepté |

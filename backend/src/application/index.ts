@@ -34,7 +34,7 @@ export type {
   LinkDiscordAccountInput,
   LinkDiscordAccountOutcome,
 } from './commands/link-discord-account.ts';
-export type { MergeResult, PlayerRepository, PlayerState } from './players.ts';
+export type { PlayerRepository, PlayerState } from './players.ts';
 export { createTeam } from './commands/create-team.ts';
 export type { CreateTeamInput, CreateTeamOutcome } from './commands/create-team.ts';
 export { transferPlayer } from './commands/transfer-player.ts';
