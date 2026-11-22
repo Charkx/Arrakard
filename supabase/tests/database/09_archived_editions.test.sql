@@ -18,11 +18,11 @@ insert into edition_participants (organization_id, edition_id, player_id) values
   ('00000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001');
 
 set local role anon;
-select results_eq($$ select name from editions $$, $$ values ('IH #9'::text) $$,
+select results_eq($$ select name from editions where organization_id = '00000000-0000-0000-0000-00000000000a' $$, $$ values ('IH #9'::text) $$,
   'un visiteur ne lit pas l''édition archivée');
-select results_eq($$ select name from edition_page_view $$, $$ values ('IH #9'::text) $$,
+select results_eq($$ select name from edition_page_view where organization_id = '00000000-0000-0000-0000-00000000000a' $$, $$ values ('IH #9'::text) $$,
   'la page d''édition ne la montre pas non plus');
-select is_empty($$ select * from edition_participants_view $$,
+select is_empty($$ select * from edition_participants_view where organization_id = '00000000-0000-0000-0000-00000000000a' $$,
   'ni ses participants');
 
 set local role authenticated;
