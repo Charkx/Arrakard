@@ -73,7 +73,7 @@ Pendant le TDD : `pnpm --filter @arrakis/backend test:watch`.
 La base locale (Docker doit tourner) :
 
 ```bash
-pnpm db:start                                                  # démarre la base et son API, applique les migrations
+pnpm db:start                                                  # démarre la base, son API, la connexion et les Edge Functions, applique les migrations
 pnpm test:db                                                   # droits d'accès (pgTAP), ports Postgres, écriture, lecture par le site
 pnpm --filter @arrakis/migrate-v1 load demo-backup --replace   # la remplit avec une communauté inventée
 pnpm dev                                                       # le site, sur http://localhost:5173, lit cette base

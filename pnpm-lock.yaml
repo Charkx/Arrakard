@@ -197,8 +197,11 @@ importers:
   backend:
     dependencies:
       postgres:
-        specifier: ^4.1.0
-        version: 4.1.0
+        specifier: 3.4.7
+        version: 3.4.7
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       '@vitest/coverage-v8':
         specifier: ^5.0.3
@@ -268,8 +271,8 @@ importers:
         specifier: workspace:*
         version: link:../../backend
       postgres:
-        specifier: ^4.1.0
-        version: 4.1.0
+        specifier: 3.4.7
+        version: 3.4.7
     devDependencies:
       '@vitest/coverage-v8':
         specifier: ^5.0.3
@@ -1472,9 +1475,9 @@ packages:
     resolution: {integrity: sha512-LJlKCCAUFKOuZxipUdYw1NzIITEsPcgyOG9LkvRJvuKj/bRzbuRY0ARXvL0pWGpsZvn8jku+LMep2eU0seHp8g==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postgres@4.1.0:
-    resolution: {integrity: sha512-s+0WH67YAyLdBQUb6XczbziBhY+C9uiQsg9S8R5RHdZhk6sdyK6202E+T2tXpiInSEEjDLRSJ3OpYBe3PN6MsQ==}
-    engines: {node: '>=18'}
+  postgres@3.4.7:
+    resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
+    engines: {node: '>=12'}
 
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
@@ -2848,7 +2851,7 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
-  postgres@4.1.0: {}
+  postgres@3.4.7: {}
 
   prelude-ls@1.2.1: {}
 

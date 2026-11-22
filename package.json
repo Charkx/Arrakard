@@ -10,7 +10,7 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "pnpm -r typecheck && tsc -p tools/tsconfig.json",
+    "typecheck": "pnpm -r typecheck && tsc -p tools/tsconfig.json && tsc -p supabase/functions/tsconfig.json",
     "test": "pnpm -r test",
     "coverage": "pnpm -r coverage",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm coverage",
@@ -18,7 +18,7 @@
     "build": "pnpm --filter @arrakis/frontend build",
     "size": "pnpm --filter @arrakis/frontend size",
     "golden-master:extract": "tsx tools/golden-master/extract-v1.ts",
-    "db:start": "supabase start -x gotrue,realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor",
+    "db:start": "supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,logflare,vector,supavisor",
     "test:db": "supabase test db && pnpm --filter @arrakis/backend test:db && pnpm --filter @arrakis/migrate-v1 test:db && pnpm --filter @arrakis/migrate-v1 load demo-backup --replace && pnpm --filter @arrakis/frontend test:db"
   },
   "devDependencies": {

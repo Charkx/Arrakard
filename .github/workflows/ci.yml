@@ -41,8 +41,9 @@ jobs:
         with:
           version: 3.1.0
 
-      # Postgres et son API (le site la lit), sans les autres services.
-      - run: supabase start -x gotrue,realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      # Postgres et son API (le site la lit), la connexion et les Edge Functions
+      # (les commandes), sans les autres services.
+      - run: supabase start -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,logflare,vector,supavisor
 
       - uses: pnpm/action-setup@v4
 
