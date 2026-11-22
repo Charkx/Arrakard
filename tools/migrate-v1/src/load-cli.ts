@@ -23,42 +23,35 @@ import { loadPlan } from './load.ts';
 import { assertTargetAllowed } from './target.ts';
 import { readDump } from './dump.ts';
 import { planMigration } from './plan.ts';
+import { LOAD_USAGE, parseLoadArgs } from './load-args.ts';
 import { planForOrganization } from './rekey.ts';
 import { formatReport } from './report.ts';
 
-/** Les organisations qu'on peut charger, et leur nom. */
-const ORGANIZATIONS: Readonly<Record<string, string>> = {
-  arrakis: 'Arrakis',
-  'arrakis-essai': 'Arrakis (essai)',
-};
-
-const args = process.argv.slice(2);
-const dir = args.find((arg) => !arg.startsWith('--'));
-const slug = args.find((arg) => arg.startsWith('--organization='))?.split('=')[1] ?? 'arrakis';
-const name = ORGANIZATIONS[slug];
-if (!dir || !name) {
-  console.error(
-    'Usage : load <dossier de la sauvegarde v1> [--organization=arrakis-essai] [--replace] [--confirm-hosted]',
-  );
+const parsed = parseLoadArgs(process.argv.slice(2));
+if (!parsed) {
+  console.error(LOAD_USAGE);
   process.exit(1);
 }
+const { dir, organization, replace, confirmHosted } = parsed;
 
 const databaseUrl = process.env.DATABASE_URL ?? LOCAL_DATABASE_URL;
 try {
-  assertTargetAllowed(databaseUrl, args.includes('--confirm-hosted'));
+  assertTargetAllowed(databaseUrl, confirmHosted);
 } catch (refusal) {
   console.error(refusal instanceof Error ? refusal.message : refusal);
   process.exit(1);
 }
 
 // Le rapport d'abord : on voit ce qui va être écrit avant que ce soit écrit.
-const plan = planForOrganization(planMigration(readDump(dir)), slug);
+const plan = planForOrganization(planMigration(readDump(dir)), organization.slug);
 console.log(formatReport(plan));
 
 const sql = postgres(databaseUrl, { onnotice: () => undefined });
 try {
-  await loadPlan(sql, plan, { slug, name }, { replace: args.includes('--replace') });
-  console.log(`## Chargement terminé dans ${new URL(databaseUrl).hostname}, organisation ${slug}`);
+  await loadPlan(sql, plan, organization, { replace });
+  console.log(
+    `## Chargement terminé dans ${new URL(databaseUrl).hostname}, organisation ${organization.slug}`,
+  );
 } catch (failure) {
   console.error(failure instanceof Error ? failure.message : failure);
   process.exitCode = 1;

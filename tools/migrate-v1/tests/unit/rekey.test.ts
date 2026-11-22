@@ -49,3 +49,26 @@ describe('planForOrganization (ADR 0021)', () => {
     );
   });
 });
+
+describe('planForOrganization, hors des identifiants', () => {
+  it('garde une adresse qui contient un UUID', () => {
+    const logo = 'https://stockage.example/logos/0c9a5b1e-2f3d-4e5f-8a7b-1c2d3e4f5a6b.png';
+    const [team, ...others] = plan.rows.teams;
+    if (!team) throw new Error('La démonstration n’a pas d’équipe.');
+    const withLogo = {
+      ...plan,
+      rows: { ...plan.rows, teams: [{ ...team, logo_url: logo }, ...others] },
+    };
+
+    const { rows } = planForOrganization(withLogo, 'arrakis-essai');
+
+    expect(rows.teams[0]?.logo_url).toBe(logo);
+  });
+
+  it('réécrit aussi les correspondances du plan, pour qu’elles citent les nouvelles lignes', () => {
+    const rekeyed = planForOrganization(plan, 'arrakis-essai');
+
+    const players = new Set(rekeyed.rows.players.map((p) => p.id));
+    expect([...rekeyed.playerIdByKey.values()].every((id) => players.has(id))).toBe(true);
+  });
+});

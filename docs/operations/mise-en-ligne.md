@@ -216,7 +216,12 @@ corepack pnpm --filter @arrakis/migrate-v1 load "$BACKUP" --organization=arrakis
 
 Les identifiants y sont réécrits : charger l'une ne touche jamais l'autre. Pour
 effacer les essais des admins et repartir de la dernière sauvegarde, relance la
-même commande : `--replace` vide l'organisation d'essai, et elle seule.
+même commande : `--replace` vide l'organisation d'essai, et elle seule. Écris
+bien `--organization=arrakis-essai`, avec le `=` : sans lui, la commande
+s'arrête sans rien charger.
+
+Les admins y seront ajoutés avec la connexion Discord (ticket #41) : charger la
+sauvegarde ne crée aucun admin.
 
 **Base en pause.** Un projet gratuit sans activité pendant 7 jours se met en
 pause, et le site n'affiche plus rien. Tableau de bord Supabase, projet

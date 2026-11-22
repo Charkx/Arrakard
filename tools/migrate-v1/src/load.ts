@@ -9,7 +9,6 @@ import {
 } from '@arrakis/backend/infrastructure';
 import type { Sql } from 'postgres';
 import type { MigrationPlan } from './plan.ts';
-import { uuidFromHex } from './rekey.ts';
 
 export interface LoadedOrganization {
   readonly organizationId: string;
@@ -73,7 +72,8 @@ function membershipId(m: {
   readonly team_id: string;
   readonly joined_on: string;
 }): string {
-  return uuidFromHex(
-    createHash('sha256').update(`${m.player_id}|${m.team_id}|${m.joined_on}`).digest('hex'),
-  );
+  const hex = createHash('sha256')
+    .update(`${m.player_id}|${m.team_id}|${m.joined_on}`)
+    .digest('hex');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
 }
