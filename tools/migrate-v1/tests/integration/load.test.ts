@@ -71,6 +71,16 @@ describe('charger une sauvegarde dans la base locale', () => {
     expect(podium).toEqual(PODIUM);
   });
 
+  it('les matchs migrés de la v1 sont publiés : aucun n’est un brouillon (ADR 0012)', async () => {
+    const { organizationId } = await load();
+
+    const [counts] = await sql<{ total: number; drafts: number }[]>`
+      select count(*)::int as total, count(*) filter (where draft)::int as drafts
+      from matches where organization_id = ${organizationId}`;
+    expect(counts?.total).toBeGreaterThan(0);
+    expect(counts?.drafts).toBe(0);
+  });
+
   it('refuse d’écraser une organisation qui contient déjà des données, sauf demande explicite', async () => {
     await load();
     const before = await contentOfBase();

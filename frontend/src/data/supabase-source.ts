@@ -328,7 +328,7 @@ const toHeader = (r: EditionPageRow): EditionHeader => ({
   description: r.description,
   eventMvp: r.event_mvp_nickname,
   closedAt: r.closed_at ?? null,
-  // Tout match en base est publié, jusqu'aux brouillons (ticket #43).
+  // Le public ne voit que les matchs publiés : les droits cachent les brouillons (ADR 0028).
   hasPublishedResults: r.match_count > 0,
   hasPublishedFinal: r.has_final ?? false,
 });

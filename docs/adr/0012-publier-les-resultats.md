@@ -62,3 +62,7 @@ qui compte les brouillons, et seul l'admin la voit.
   ni les publications. Ils seront mis à jour par le ticket qui les crée.
 - Le statut d'une édition se déduirait en partie des publications
   ([ADR 0013](0013-statut-d-edition-deduit.md)).
+
+> **Complété par [0028](0028-brouillons-caches-par-les-droits.md).** Un match
+> porte `draft` ; les droits d'accès cachent les brouillons au public ; une
+> publication est une ligne de `publications`.

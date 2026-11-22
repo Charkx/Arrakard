@@ -2,3 +2,5 @@
 // le back, et validée par le back avant toute écriture (ADR 0001, ADR 0005).
 export { closeEditionRequest } from './close-edition.ts';
 export type { CloseEditionRequest } from './close-edition.ts';
+export { publishEditionRequest } from './publish-edition.ts';
+export type { PublishEditionRequest } from './publish-edition.ts';

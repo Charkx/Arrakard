@@ -48,25 +48,61 @@ function postgresMemberships(tx: TransactionSql): MembershipRepository {
 function postgresEditions(tx: TransactionSql): EditionRepository {
   return {
     async find(organizationId, editionId) {
-      const [edition] = await tx<{ version: number; closed_at: Date | null }[]>`
-        select version, closed_at from editions
-        where organization_id = ${organizationId} and id = ${editionId}`;
-      return edition && { version: edition.version, closedAt: toIso(edition.closed_at) };
+      const [edition] = await tx<
+        { version: number; closed_at: Date | null; draft_match_ids: string[] }[]
+      >`
+        select e.version, e.closed_at,
+               array(select m.id from matches m where m.edition_id = e.id and m.draft order by m.id)
+                 as draft_match_ids
+        from editions e
+        where e.organization_id = ${organizationId} and e.id = ${editionId}`;
+      return (
+        edition && {
+          version: edition.version,
+          closedAt: toIso(edition.closed_at),
+          draftMatchIds: edition.draft_match_ids,
+        }
+      );
     },
     async close(organizationId, editionId, closedAt, version) {
-      // La commande a déjà comparé les versions, sous le verrou de l'organisation.
-      // La condition `version = …` reste le garde de la base, si un jour une
-      // écriture passait sans ce verrou.
-      const [edition] = await tx<{ version: number }[]>`
-        update editions set closed_at = ${closedAt}, version = version + 1
-        where organization_id = ${organizationId} and id = ${editionId} and version = ${version}
-        returning version`;
-      if (!edition) {
-        throw new CommandRejected('conflict', `Édition ${editionId} : version périmée.`);
-      }
-      return edition.version;
+      const newVersion = await bumpVersion(tx, organizationId, editionId, version);
+      await tx`
+        update editions set closed_at = ${closedAt}
+        where organization_id = ${organizationId} and id = ${editionId}`;
+      return newVersion;
+    },
+    async publish(organizationId, { editionId, matchIds, publishedAt, publishedBy }, version) {
+      const newVersion = await bumpVersion(tx, organizationId, editionId, version);
+      await tx`
+        update matches set draft = false
+        where organization_id = ${organizationId} and id = any(${matchIds as string[]}::uuid[])`;
+      const [publication] = await tx<{ id: string }[]>`
+        insert into publications (organization_id, edition_id, published_by, published_at, match_ids)
+        values (${organizationId}, ${editionId}, ${publishedBy}, ${publishedAt}, ${matchIds as string[]}::uuid[])
+        returning id`;
+      if (!publication) throw new Error('Publication : écriture impossible.');
+      return { publicationId: publication.id, version: newVersion };
     },
   };
+}
+
+/**
+ * Augmente la version d'une édition encore à `version` ; sinon, un conflit
+ * (ADR 0005). La commande a déjà comparé les versions sous le verrou de
+ * l'organisation : la condition reste le garde de la base.
+ */
+async function bumpVersion(
+  tx: TransactionSql,
+  organizationId: string,
+  editionId: string,
+  version: number,
+): Promise<number> {
+  const [edition] = await tx<{ version: number }[]>`
+    update editions set version = version + 1
+    where organization_id = ${organizationId} and id = ${editionId} and version = ${version}
+    returning version`;
+  if (!edition) throw new CommandRejected('conflict', `Édition ${editionId} : version périmée.`);
+  return edition.version;
 }
 
 function postgresCommandLog(tx: TransactionSql): CommandLog {

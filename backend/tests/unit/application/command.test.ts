@@ -1,7 +1,7 @@
 import { V1_RATING_RULES } from '#domain/index.ts';
 import { describe, expect, it } from 'vitest';
 import { executeCommand, toFacts, type Command } from '#application/index.ts';
-import { NOW } from '#support/application/close-edition-contract.ts';
+import { NOW } from '#support/application/command-harness.ts';
 import { FIXTURE_ROWS } from '#support/application/fixture.ts';
 import { inMemoryStore } from '#support/application/in-memory.ts';
 
@@ -11,7 +11,7 @@ const MEMBER = '00000000-0000-4000-8000-0000000000a2';
 
 /** Une commande d'essai, qui note ce qu'elle reçoit et rend son entrée doublée. */
 function doubling() {
-  const calls: { organizationId: string; now: string }[] = [];
+  const calls: { organizationId: string; actorUserId: string; now: string }[] = [];
   const command: Command<number, number> = {
     name: 'double',
     run: (_repositories, context, input) => {
@@ -43,7 +43,9 @@ describe('executeCommand', () => {
     );
 
     expect(outcome).toBe(42);
-    expect(calls).toEqual([{ organizationId: ORGANIZATION, now: NOW.toISOString() }]);
+    expect(calls).toEqual([
+      { organizationId: ORGANIZATION, actorUserId: ADMIN, now: NOW.toISOString() },
+    ]);
   });
 
   it('n’exécute pas la commande d’un utilisateur qui n’est pas admin', async () => {
