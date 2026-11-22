@@ -6,6 +6,7 @@ import {
   type IdentityRepository,
   type MembershipRepository,
   type SeasonRepository,
+  type SeasonStatus,
   type UnitOfWork,
 } from '../application/index.ts';
 import type { Sql, TransactionSql } from 'postgres';
@@ -145,11 +146,11 @@ async function bumpVersion(
 function postgresSeasons(tx: TransactionSql): SeasonRepository {
   return {
     async find(organizationId, seasonId) {
-      const [season] = await tx<{ status: 'open' | 'closed' }[]>`
+      const [season] = await tx<{ status: SeasonStatus }[]>`
         select status from seasons where organization_id = ${organizationId} and id = ${seasonId}`;
       return season && { status: season.status };
     },
-    async openSeasonId(organizationId) {
+    async activeSeasonId(organizationId) {
       const [season] = await tx<{ id: string }[]>`
         select id from seasons where organization_id = ${organizationId} and status = 'open'`;
       return season?.id;

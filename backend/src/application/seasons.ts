@@ -18,8 +18,8 @@ export interface NewSeason {
 export interface SeasonRepository {
   /** La saison de cette organisation, ou `undefined` si elle n'y est pas. */
   find(organizationId: string, seasonId: string): Promise<SeasonState | undefined>;
-  /** La saison ouverte de l'organisation, s'il y en a une. */
-  openSeasonId(organizationId: string): Promise<string | undefined>;
+  /** La saison active (ouverte) de l'organisation, s'il y en a une. */
+  activeSeasonId(organizationId: string): Promise<string | undefined>;
   /** Une saison de ce nom existe-t-elle déjà dans l'organisation ? */
   nameTaken(organizationId: string, name: string): Promise<boolean>;
   /** Crée la saison, ouverte, et rend son identifiant. */

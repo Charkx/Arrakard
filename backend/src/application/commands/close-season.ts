@@ -12,7 +12,7 @@ export interface CloseSeasonOutcome {
 
 /**
  * Clôture une saison : elle ne reçoit plus de match, donc ses notes ne
- * bougent plus (ADR 0014, docs/architecture/overview.md). Il n'y a plus de
+ * bougent plus (ADR 0014, ADR 0032). Il n'y a plus de
  * saison active jusqu'à l'ouverture de la suivante.
  */
 export const closeSeason: Command<CloseSeasonInput, CloseSeasonOutcome> = {

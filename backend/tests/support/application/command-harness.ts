@@ -1,4 +1,9 @@
-import type { CommandLogEntry, CommandServices, Publication } from '#application/index.ts';
+import type {
+  CommandLogEntry,
+  CommandServices,
+  Publication,
+  SeasonStatus,
+} from '#application/index.ts';
 
 /** L'heure que donne l'horloge des tests. */
 export const NOW = new Date('2026-11-22T20:00:00.000Z');
@@ -38,10 +43,7 @@ export interface CommandHarness {
   /** Les publications de l'organisation. */
   readonly publications: (organizationId: string) => Promise<readonly Publication[]>;
   /** L'état d'une saison : ouverte ou clôturée, et sa date de fin. */
-  readonly season: (
-    organizationId: string,
-    seasonId: string,
-  ) => Promise<SeasonSnapshot | undefined>;
+  readonly season: (organizationId: string, seasonId: string) => Promise<SeasonRecord | undefined>;
   /** Les notes de la saison, par joueur, telles que le recalcul les a écrites. */
   readonly seasonRatings: (
     organizationId: string,
@@ -50,8 +52,8 @@ export interface CommandHarness {
 }
 
 /** Une saison telle qu'une commande la laisse. */
-export interface SeasonSnapshot {
-  readonly status: 'open' | 'closed';
+export interface SeasonRecord {
+  readonly status: SeasonStatus;
   /** Date ISO (AAAA-MM-JJ) de la clôture, ou null. */
   readonly endDate: string | null;
 }

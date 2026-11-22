@@ -1,4 +1,4 @@
-import type { CommandLogEntry } from '#application/index.ts';
+import type { CommandLogEntry, SeasonStatus } from '#application/index.ts';
 import { V1_RATING_RULES } from '#domain/index.ts';
 import { postgresUnitOfWork } from '#infrastructure/commands.ts';
 import { readFacts } from '#infrastructure/read.ts';
@@ -109,7 +109,7 @@ export function postgresCommandHarness(sql: Sql, names: PostgresHarnessNames): C
     publishedMatchIds: async (organizationId) =>
       (await readFacts(sql, organizationId)).matches.map((m) => m.id),
     async season(organizationId, seasonId) {
-      const [season] = await sql<{ status: 'open' | 'closed'; end_date: string | null }[]>`
+      const [season] = await sql<{ status: SeasonStatus; end_date: string | null }[]>`
         select status, end_date::text from seasons
         where organization_id = ${organizationId} and id = ${seasonId}`;
       return season && { status: season.status, endDate: season.end_date };

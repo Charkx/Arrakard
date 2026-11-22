@@ -18,36 +18,37 @@ demanderait « pourquoi c'est fait comme ça ? ».
 
 ## Index
 
-| #                                                       | Décision                                             | Statut  |
-| ------------------------------------------------------- | ---------------------------------------------------- | ------- |
-| [0001](0001-monorepo-et-domaine-pur.md)                 | Monorepo TypeScript avec un domaine pur              | Accepté |
-| [0002](0002-supabase-source-de-verite.md)               | Supabase comme backend et source de vérité           | Accepté |
-| [0003](0003-faits-et-projections.md)                    | Séparer les faits des projections                    | Accepté |
-| [0004](0004-identite-joueur-par-id.md)                  | Identifier les joueurs par un identifiant stable     | Accepté |
-| [0005](0005-ecritures-par-commandes.md)                 | Écritures par commandes transactionnelles            | Accepté |
-| [0006](0006-tdd-et-golden-master.md)                    | TDD et golden master avant toute réécriture          | Accepté |
-| [0007](0007-evolution-de-la-note.md)                    | Faire évoluer la note par étapes isolées             | Accepté |
-| [0008](0008-multi-tenant-et-portabilite.md)             | Préparer le multi-tenant et la portabilité           | Accepté |
-| [0009](0009-serialiser-et-journaliser-les-commandes.md) | Sérialiser et journaliser les commandes              | Accepté |
-| [0010](0010-travailler-avec-un-agent.md)                | Travailler avec un agent : trois portes, trois modes | Accepté |
-| [0011](0011-livrer-par-tranches.md)                     | Livrer par tranches, la lecture d'abord              | Accepté |
-| [0012](0012-publier-les-resultats.md)                   | Publier les résultats : brouillon, aperçu, récap     | Accepté |
-| [0013](0013-statut-d-edition-deduit.md)                 | Déduire le statut d'une édition                      | Accepté |
-| [0014](0014-une-seule-periode-la-saison.md)             | Une seule période de compétition : la saison         | Accepté |
-| [0015](0015-logos-hors-de-la-base.md)                   | Stocker les logos d'équipe hors de la base           | Accepté |
-| [0016](0016-perimetre-repris-de-la-v1.md)               | Ne reprendre de la v1 que ce qui sert                | Accepté |
-| [0017](0017-outils-du-site.md)                          | Les outils du site : React, Vite et Tailwind         | Accepté |
-| [0018](0018-deux-langues-dictionnaire-maison.md)        | Deux langues, un dictionnaire maison                 | Accepté |
-| [0019](0019-lire-la-base-depuis-le-site.md)             | Lire la base depuis le site                          | Accepté |
-| [0020](0020-heberger-le-site-en-lecture.md)             | Héberger le site en lecture                          | Accepté |
-| [0021](0021-staging-jusqu-a-la-bascule.md)              | Le projet v2 sert de staging jusqu'à la bascule      | Accepté |
-| [0022](0022-perimetre-de-la-tranche-2.md)               | Le périmètre de la tranche 2                         | Accepté |
-| [0023](0023-ecritures-en-trois-couches.md)              | Les écritures en trois couches                       | Accepté |
-| [0024](0024-lire-avec-postgrest-js.md)                  | Lire la base avec postgrest-js                       | Accepté |
-| [0025](0025-un-front-un-back.md)                        | Un front, un back                                    | Accepté |
-| [0026](0026-la-chaine-http-des-commandes.md)            | La chaîne HTTP des commandes                         | Accepté |
-| [0027](0027-statut-calcule-a-l-affichage.md)            | Le statut d'une édition se calcule à l'affichage     | Accepté |
-| [0028](0028-brouillons-caches-par-les-droits.md)        | Les brouillons, cachés par les droits d'accès        | Accepté |
-| [0029](0029-le-site-par-fonctionnalite.md)              | Le site rangé par fonctionnalité                     | Accepté |
-| [0030](0030-le-role-admin-vient-de-discord.md)          | Le rôle admin vient de Discord, à chaque connexion   | Accepté |
-| [0031](0031-lectures-admin-par-fonctions.md)            | L’espace admin lit par des fonctions réservées       | Accepté |
+| #                                                        | Décision                                             | Statut  |
+| -------------------------------------------------------- | ---------------------------------------------------- | ------- |
+| [0001](0001-monorepo-et-domaine-pur.md)                  | Monorepo TypeScript avec un domaine pur              | Accepté |
+| [0002](0002-supabase-source-de-verite.md)                | Supabase comme backend et source de vérité           | Accepté |
+| [0003](0003-faits-et-projections.md)                     | Séparer les faits des projections                    | Accepté |
+| [0004](0004-identite-joueur-par-id.md)                   | Identifier les joueurs par un identifiant stable     | Accepté |
+| [0005](0005-ecritures-par-commandes.md)                  | Écritures par commandes transactionnelles            | Accepté |
+| [0006](0006-tdd-et-golden-master.md)                     | TDD et golden master avant toute réécriture          | Accepté |
+| [0007](0007-evolution-de-la-note.md)                     | Faire évoluer la note par étapes isolées             | Accepté |
+| [0008](0008-multi-tenant-et-portabilite.md)              | Préparer le multi-tenant et la portabilité           | Accepté |
+| [0009](0009-serialiser-et-journaliser-les-commandes.md)  | Sérialiser et journaliser les commandes              | Accepté |
+| [0010](0010-travailler-avec-un-agent.md)                 | Travailler avec un agent : trois portes, trois modes | Accepté |
+| [0011](0011-livrer-par-tranches.md)                      | Livrer par tranches, la lecture d'abord              | Accepté |
+| [0012](0012-publier-les-resultats.md)                    | Publier les résultats : brouillon, aperçu, récap     | Accepté |
+| [0013](0013-statut-d-edition-deduit.md)                  | Déduire le statut d'une édition                      | Accepté |
+| [0014](0014-une-seule-periode-la-saison.md)              | Une seule période de compétition : la saison         | Accepté |
+| [0015](0015-logos-hors-de-la-base.md)                    | Stocker les logos d'équipe hors de la base           | Accepté |
+| [0016](0016-perimetre-repris-de-la-v1.md)                | Ne reprendre de la v1 que ce qui sert                | Accepté |
+| [0017](0017-outils-du-site.md)                           | Les outils du site : React, Vite et Tailwind         | Accepté |
+| [0018](0018-deux-langues-dictionnaire-maison.md)         | Deux langues, un dictionnaire maison                 | Accepté |
+| [0019](0019-lire-la-base-depuis-le-site.md)              | Lire la base depuis le site                          | Accepté |
+| [0020](0020-heberger-le-site-en-lecture.md)              | Héberger le site en lecture                          | Accepté |
+| [0021](0021-staging-jusqu-a-la-bascule.md)               | Le projet v2 sert de staging jusqu'à la bascule      | Accepté |
+| [0022](0022-perimetre-de-la-tranche-2.md)                | Le périmètre de la tranche 2                         | Accepté |
+| [0023](0023-ecritures-en-trois-couches.md)               | Les écritures en trois couches                       | Accepté |
+| [0024](0024-lire-avec-postgrest-js.md)                   | Lire la base avec postgrest-js                       | Accepté |
+| [0025](0025-un-front-un-back.md)                         | Un front, un back                                    | Accepté |
+| [0026](0026-la-chaine-http-des-commandes.md)             | La chaîne HTTP des commandes                         | Accepté |
+| [0027](0027-statut-calcule-a-l-affichage.md)             | Le statut d'une édition se calcule à l'affichage     | Accepté |
+| [0028](0028-brouillons-caches-par-les-droits.md)         | Les brouillons, cachés par les droits d'accès        | Accepté |
+| [0029](0029-le-site-par-fonctionnalite.md)               | Le site rangé par fonctionnalité                     | Accepté |
+| [0030](0030-le-role-admin-vient-de-discord.md)           | Le rôle admin vient de Discord, à chaque connexion   | Accepté |
+| [0031](0031-lectures-admin-par-fonctions.md)             | L’espace admin lit par des fonctions réservées       | Accepté |
+| [0032](0032-une-saison-close-ne-recoit-plus-de-match.md) | Une saison clôturée ne reçoit plus de match          | Accepté |

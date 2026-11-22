@@ -6,8 +6,8 @@ import {
   type TransactionPorts,
   type UnitOfWork,
 } from '#application/index.ts';
-import type { DiscordConfig, MemberRole, Publication } from '#application/index.ts';
-import type { EditionSnapshot } from './command-harness.ts';
+import type { DiscordConfig, MemberRole, Publication, SeasonStatus } from '#application/index.ts';
+import type { EditionSnapshot, SeasonRecord } from './command-harness.ts';
 
 /** Un match en brouillon : enregistré, mais pas encore dans les faits que lit le recalcul. */
 interface DraftMatch {
@@ -15,14 +15,14 @@ interface DraftMatch {
   readonly performances: readonly PerformanceFact[];
 }
 
-/** Une organisation telle que la mémoire la garde. */
 /** Une saison telle que la mémoire la garde. */
 interface StoredSeason {
   readonly name: string;
-  status: 'open' | 'closed';
+  status: SeasonStatus;
   endDate: string | null;
 }
 
+/** Une organisation telle que la mémoire la garde. */
 interface StoredOrganization {
   readonly rules: RatingRules;
   readonly discord: DiscordConfig | undefined;
@@ -66,10 +66,7 @@ export interface InMemoryStore extends RecomputePorts {
   /** Ses projections écrites, ou `undefined` si rien n'a été écrit. */
   projectionsOf(organizationId: string): Projections | undefined;
   /** L'état d'une saison de l'organisation. */
-  seasonOf(
-    organizationId: string,
-    seasonId: string,
-  ): { readonly status: 'open' | 'closed'; readonly endDate: string | null } | undefined;
+  seasonOf(organizationId: string, seasonId: string): SeasonRecord | undefined;
   /** La version et la clôture d'une édition de l'organisation. */
   editionOf(organizationId: string, editionId: string): EditionSnapshot | undefined;
   /** Les lignes du journal des commandes de l'organisation. */
@@ -191,7 +188,7 @@ export function inMemoryStore(): InMemoryStore {
         const season = organizations.get(organizationId)?.seasons.get(seasonId);
         return Promise.resolve(season && { status: season.status });
       },
-      openSeasonId(organizationId) {
+      activeSeasonId(organizationId) {
         const open = [...find(organizationId).seasons].find(([, s]) => s.status === 'open');
         return Promise.resolve(open?.[0]);
       },

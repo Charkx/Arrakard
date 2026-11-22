@@ -146,11 +146,8 @@ export function supabaseSession(
       }),
     });
     if (!response.ok) {
-      const body = (await response.json().catch(() => ({}))) as {
-        error?: string;
-        message?: string;
-      };
-      throw new CommandFailed(body.error ?? 'internal', body.message ?? String(response.status));
+      const body = (await response.json().catch(() => ({}))) as { message?: string };
+      throw new CommandFailed(body.message ?? String(response.status));
     }
   }
 

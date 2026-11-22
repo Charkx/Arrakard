@@ -45,7 +45,7 @@ function serving(
     editions: vi.fn(() => Promise.resolve(editions)),
     activeSeason: vi.fn(() => Promise.resolve(season)),
     openSeason: vi.fn((name: string) => {
-      season = { id: 's-new', name };
+      season = { id: 's-new', name: name.trim() };
       return Promise.resolve();
     }),
     closeSeason: vi.fn(() => {
@@ -133,14 +133,15 @@ describe('l’espace admin', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Ouvrir la saison' }));
 
     expect(await screen.findByText('Saison 4 est la saison active.')).toBeTruthy();
-    expect(admin.openSeason).toHaveBeenCalledWith('Saison 4', 2027);
+    // Le serveur retire les espaces autour du nom (contrat `openSeasonRequest`).
+    expect(admin.openSeason).toHaveBeenCalledWith(' Saison 4 ', 2027);
   });
 
   it('dit ce que le serveur a refusé', async () => {
     const admin = {
       ...serving([LIGUE], null),
       openSeason: () =>
-        Promise.reject(new CommandFailed('conflict', 'Une saison s’appelle déjà « Saison 3 ».')),
+        Promise.reject(new CommandFailed('Une saison s’appelle déjà « Saison 3 ».')),
     };
     openSite('/admin', { auth: authAs(ADMIN), admin });
 

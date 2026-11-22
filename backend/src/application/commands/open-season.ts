@@ -18,7 +18,7 @@ export interface OpenSeasonOutcome {
 export const openSeason: Command<OpenSeasonInput, OpenSeasonOutcome> = {
   name: 'openSeason',
   async run({ seasons }, { organizationId, now }, { name, year }) {
-    if ((await seasons.openSeasonId(organizationId)) !== undefined) {
+    if ((await seasons.activeSeasonId(organizationId)) !== undefined) {
       throw new CommandRejected(
         'conflict',
         'Une saison est déjà ouverte : clôturez-la avant d’en ouvrir une autre.',

@@ -6,12 +6,9 @@ export interface ActiveSeason {
   readonly name: string;
 }
 
-/** Une commande refusée par le serveur, avec la raison qu'il donne (ADR 0026). */
+/** Une commande refusée par le serveur, avec l'explication qu'il donne (ADR 0026). */
 export class CommandFailed extends Error {
-  constructor(
-    readonly reason: string,
-    message: string,
-  ) {
+  constructor(message: string) {
     super(message);
     this.name = 'CommandFailed';
   }

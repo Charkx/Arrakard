@@ -35,6 +35,18 @@ export function describeSeasonContract(name: string, harness: () => CommandHarne
       });
     });
 
+    it('un simple membre ne clôture pas la saison', async () => {
+      const { services, seed, season } = harness();
+      const { organizationId, memberId } = await seed();
+
+      await expect(
+        executeCommand(services, { userId: memberId, organizationId }, closeSeason, {
+          seasonId: SEASON_ID,
+        }),
+      ).rejects.toMatchObject({ reason: 'forbidden' });
+      expect((await season(organizationId, SEASON_ID))?.status).toBe('open');
+    });
+
     it('une saison déjà clôturée ne se clôture pas deux fois', async () => {
       const { services, seed } = harness();
       const { organizationId, adminId } = await seed();

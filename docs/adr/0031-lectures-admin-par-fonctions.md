@@ -23,6 +23,9 @@ et leurs brouillons comptés.
 Les tables et les vues gardent leurs droits : les brouillons y restent
 invisibles, pour tout le monde.
 
+Ce qui est déjà public, comme la saison active, se lit par l'API habituelle,
+sans fonction : seule une lecture de ce que le public ne voit pas en exige une.
+
 Côté site, ces lectures passent par une source à part, `AdminSource`, à côté
 de `DataSource` (les pages publiques) et d'`AuthSource` (la connexion). Elle
 est chargée à la demande avec la connexion, dont elle partage la session.

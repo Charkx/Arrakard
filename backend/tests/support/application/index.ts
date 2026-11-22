@@ -4,7 +4,7 @@ export { DRAFT_MATCH_NUMBER, NOW } from './command-harness.ts';
 export type {
   CommandHarness,
   EditionSnapshot,
-  SeasonSnapshot,
+  SeasonRecord,
   SeededOrganizations,
 } from './command-harness.ts';
 export { describeSeasonContract } from './season-contract.ts';

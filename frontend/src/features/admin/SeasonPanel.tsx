@@ -42,7 +42,7 @@ export function SeasonPanel({
 
   const open = (event: SyntheticEvent) => {
     event.preventDefault();
-    send(() => admin.openSeason(name.trim(), year));
+    send(() => admin.openSeason(name, year));
   };
 
   return (
