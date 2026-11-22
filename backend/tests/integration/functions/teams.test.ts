@@ -90,6 +90,7 @@ describe('les fonctions des équipes', () => {
     expect(team).toEqual({ tag: 'ARK', archived: true });
     const stints = await sql<{ left_on: string | null }[]>`
       select left_on::text from team_memberships where player_id = ${ZEPHYR_ID}`;
-    expect(stints).toEqual([{ left_on: expect.any(String) }]);
+    expect(stints).toHaveLength(1);
+    expect(stints[0]?.left_on).not.toBeNull();
   });
 });

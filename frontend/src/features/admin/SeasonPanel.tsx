@@ -3,6 +3,7 @@ import { useAdminSource } from '../../data/DataContext.tsx';
 import type { ActiveSeason } from '../../data/admin-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
 import { todayInParis } from '../../shared/today.ts';
+import { useCommand } from './useCommand.ts';
 
 /**
  * La saison active (ADR 0014) : la clôturer, après confirmation, ou ouvrir la
@@ -18,31 +19,17 @@ export function SeasonPanel({
   const { t } = useI18n();
   const admin = useAdminSource();
   const [confirming, setConfirming] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [year, setYear] = useState(Number(todayInParis().slice(0, 4)));
-
-  const send = (action: () => Promise<void>) => {
-    setBusy(true);
-    setFailure(null);
-    action().then(
-      () => {
-        setBusy(false);
-        setConfirming(false);
-        setName('');
-        onChanged();
-      },
-      (error: unknown) => {
-        setBusy(false);
-        setFailure(error instanceof Error ? error.message : String(error));
-      },
-    );
+  const { busy, failure, send } = useCommand(onChanged);
+  const reset = () => {
+    setConfirming(false);
+    setName('');
   };
 
   const open = (event: SyntheticEvent) => {
     event.preventDefault();
-    send(() => admin.openSeason(name, year));
+    send(() => admin.openSeason(name, year), reset);
   };
 
   return (
@@ -91,7 +78,7 @@ export function SeasonPanel({
                 className="auth-button"
                 disabled={busy}
                 onClick={() => {
-                  send(() => admin.closeSeason(activeSeason.id));
+                  send(() => admin.closeSeason(activeSeason.id), reset);
                 }}
               >
                 {t('admin.active.confirmYes')}
@@ -122,7 +109,7 @@ export function SeasonPanel({
             </button>
           </>
         )}
-        {failure !== null && <p role="alert">{t('admin.active.failed', { message: failure })}</p>}
+        {failure !== null && <p role="alert">{t('admin.failed', { message: failure })}</p>}
       </div>
     </section>
   );

@@ -1,7 +1,8 @@
 import { AuthClient, type Session } from '@supabase/auth-js';
 import { PostgrestClient } from '@supabase/postgrest-js';
-import type { EditionType } from '@arrakis/backend/domain';
+import type { Division, EditionType } from '@arrakis/backend/domain';
 import type { AdminEdition, SeasonStatus } from '../features/admin/admin.ts';
+import type { RosterStatus } from '../features/admin/teams.ts';
 import { CommandFailed, type AdminSource } from './admin-source.ts';
 import type { AuthSource, MemberRole, SignedInUser } from './auth-source.ts';
 import { supabaseConfig } from './supabase-config.ts';
@@ -173,6 +174,52 @@ export function supabaseSession(
     },
     openSeason: (name, year) => command('open-season', { name, year }),
     closeSeason: (seasonId) => command('close-season', { seasonId }),
+    async rosters() {
+      // Les équipes et les passages sont publics (ADR 0031) : l'API ordinaire.
+      const db = rest(await accessToken());
+      const organization = await organizationId(db, organizationSlug);
+      const [teams, players, stints] = await Promise.all([
+        db
+          .from('teams')
+          .select('id, tag, name, divisions')
+          .eq('organization_id', organization)
+          .is('archived_at', null)
+          .order('tag')
+          .overrideTypes<
+            { id: string; tag: string; name: string; divisions: Division[] }[],
+            { merge: false }
+          >(),
+        db
+          .from('players')
+          .select('id, nickname')
+          .eq('organization_id', organization)
+          .is('merged_into', null)
+          .order('nickname')
+          .overrideTypes<{ id: string; nickname: string }[], { merge: false }>(),
+        db
+          .from('team_memberships')
+          .select('player_id, team_id, status')
+          .eq('organization_id', organization)
+          .is('left_on', null)
+          .overrideTypes<
+            { player_id: string; team_id: string; status: RosterStatus }[],
+            { merge: false }
+          >(),
+      ]);
+      if (teams.error) throw teams.error;
+      if (players.error) throw players.error;
+      if (stints.error) throw stints.error;
+      const places = new Map(
+        stints.data.map((s) => [s.player_id, { teamId: s.team_id, status: s.status }]),
+      );
+      return {
+        teams: teams.data,
+        players: players.data.map((p) => ({ ...p, place: places.get(p.id) ?? null })),
+      };
+    },
+    createTeam: (tag, name, divisions) => command('create-team', { tag, name, divisions }),
+    transferPlayer: (playerId, to) => command('transfer-player', { playerId, to }),
+    archiveTeam: (teamId) => command('archive-team', { teamId }),
   };
 
   return { auth, admin };

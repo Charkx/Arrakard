@@ -120,6 +120,10 @@ const REFUSED: AdminSource = {
   activeSeason: refused,
   openSeason: refused,
   closeSeason: refused,
+  rosters: refused,
+  createTeam: refused,
+  transferPlayer: refused,
+  archiveTeam: refused,
 };
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */

@@ -1,4 +1,6 @@
+import type { Division } from '@arrakis/backend/domain';
 import type { AdminEdition } from '../features/admin/admin.ts';
+import type { RosterPlace, Rosters } from '../features/admin/teams.ts';
 
 /** La saison ouverte de l'organisation (ADR 0014). */
 export interface ActiveSeason {
@@ -27,6 +29,14 @@ export interface AdminSource {
   openSeason(name: string, year: number): Promise<void>;
   /** Clôture une saison : ses notes sont figées. */
   closeSeason(seasonId: string): Promise<void>;
+  /** Les équipes non archivées, et tous les joueurs avec leur passage en cours. */
+  rosters(): Promise<Rosters>;
+  /** Crée une équipe ; refuse un tag déjà pris. */
+  createTeam(tag: string, name: string, divisions: readonly Division[]): Promise<void>;
+  /** Transfère un joueur à cette place, ou hors de toute équipe (null). */
+  transferPlayer(playerId: string, to: RosterPlace | null): Promise<void>;
+  /** Archive une équipe : ses joueurs la quittent. */
+  archiveTeam(teamId: string): Promise<void>;
 }
 
 /** Une source chargée au premier usage, avec la connexion (ADR 0024). */
@@ -38,5 +48,9 @@ export function lazyAdminSource(load: () => Promise<AdminSource>): AdminSource {
     activeSeason: async () => (await source()).activeSeason(),
     openSeason: async (name, year) => (await source()).openSeason(name, year),
     closeSeason: async (seasonId) => (await source()).closeSeason(seasonId),
+    rosters: async () => (await source()).rosters(),
+    createTeam: async (tag, name, divisions) => (await source()).createTeam(tag, name, divisions),
+    transferPlayer: async (playerId, to) => (await source()).transferPlayer(playerId, to),
+    archiveTeam: async (teamId) => (await source()).archiveTeam(teamId),
   };
 }

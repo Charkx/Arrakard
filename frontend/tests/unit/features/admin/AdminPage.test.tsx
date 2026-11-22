@@ -52,6 +52,10 @@ function serving(
       season = null;
       return Promise.resolve();
     }),
+    rosters: () => Promise.resolve({ teams: [], players: [] }),
+    createTeam: () => Promise.resolve(),
+    transferPlayer: () => Promise.resolve(),
+    archiveTeam: () => Promise.resolve(),
   } satisfies AdminSource;
 }
 
