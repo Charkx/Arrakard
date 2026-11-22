@@ -26,6 +26,10 @@ seul l'adaptateur de lecture (`supabase-source.ts`) change.
 `supabase-js` reviendra avec la connexion Discord (tranche 2), chargé
 seulement par les pages qui en ont besoin.
 
+> **Précisé par [0030](0030-le-role-admin-vient-de-discord.md).** C'est
+> `@supabase/auth-js` seul qui revient, chargé au premier usage de la
+> connexion.
+
 ## Options écartées
 
 - **Garder `supabase-js`** : rien à changer, mais un tiers du JavaScript ne

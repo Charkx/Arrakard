@@ -21,6 +21,7 @@ réponse donne lieu à un ADR et à des tests.
 | Q13 | Garder la composition des équipes d'In House ? | Non migrée : ces équipes n'existent que le temps d'une soirée              | [ADR 0016](adr/0016-perimetre-repris-de-la-v1.md)      |
 | Q16 | Saisir un match à la main ?                    | Oui, dès la tranche 2 (cas d'usage A14), en plus de l'import               | [ADR 0022](adr/0022-perimetre-de-la-tranche-2.md)      |
 | Q17 | Où héberger le site en lecture ?               | Nouveau projet Supabase gratuit et nouveau projet Vercel, séparés de la v1 | [ADR 0020](adr/0020-heberger-le-site-en-lecture.md)    |
+| Q18 | Quel rôle Discord fait un admin ?              | Serveur `1031291061936595015`, rôle `1514024774131519638` (2026-11-22)     | [ADR 0030](adr/0030-le-role-admin-vient-de-discord.md) |
 
 ## En attente
 
@@ -54,12 +55,6 @@ parties sont créées, et si Riot donne accès aux parties personnalisées.
 Le cas d'usage A12 propose des équipes équilibrées à partir des inscrits. Il
 faut d'abord savoir qui les forme, avec quels critères, et ce qui pose
 problème.
-
-**Q18 — Quel rôle du serveur Discord d'Arrakis fait un admin ?**
-La connexion par Discord et la revérification du rôle à chaque connexion sont
-décidées ([ADR 0002](adr/0002-supabase-source-de-verite.md),
-[ADR 0008](adr/0008-multi-tenant-et-portabilite.md)). Il manque le nom exact du
-rôle, et l'identifiant du serveur. Bloque le ticket de connexion de la tranche 2.
 
 **Q19 — Faut-il envoyer des pages déjà remplies pour descendre sous 2 s sur mobile ?**
 La vision vise une page publique utilisable en moins de 2 s sur mobile 4G. À la
