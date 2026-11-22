@@ -1,4 +1,4 @@
-import type { EditionType } from '@arrakis/backend/domain';
+import { editionStatus, type EditionStatus, type EditionType } from '@arrakis/backend/domain';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { championIconUrl } from '../data/champions.ts';
@@ -9,6 +9,7 @@ import {
   type EditionMatch,
   type EditionPageData,
   type MatchPlayer,
+  todayInParis,
   type StandingRow,
 } from '../data/edition.ts';
 import type { DataSource } from '../data/leaderboard.ts';
@@ -16,6 +17,13 @@ import { useI18n } from '../i18n/i18n.tsx';
 
 const loadEdition = (source: DataSource, editionId: string): Promise<EditionPageData | null> =>
   source.loadEdition(editionId);
+
+/** La pastille de chaque statut, aux couleurs de la v1. */
+const STATUS_BADGE: Readonly<Record<EditionStatus, string>> = {
+  upcoming: 'ev-badge-type',
+  ongoing: 'ev-badge-live',
+  completed: 'ev-badge-done',
+};
 
 const isLeague = (type: EditionType) => type === 'league_div1' || type === 'league_div2';
 /** Un événement externe n'a pas de match enregistré, seulement des participants (glossaire). */
@@ -59,6 +67,17 @@ function Edition({ data }: { readonly data: EditionPageData }) {
   const { t, language } = useI18n();
   const navigate = useNavigate();
   const { edition, standings, matches, participants } = data;
+  // Affiché, jamais enregistré : la règle est celle du domaine (ADR 0013).
+  const status = editionStatus(
+    {
+      type: edition.type,
+      date: edition.date,
+      closedAt: edition.closedAt,
+      hasPublishedResults: edition.hasResults,
+      hasPublishedFinal: edition.hasFinal,
+    },
+    todayInParis(),
+  );
   const date = new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-GB', {
     day: 'numeric',
     month: 'long',
@@ -92,6 +111,9 @@ function Edition({ data }: { readonly data: EditionPageData }) {
           <h1 className="ev-title">{edition.name}</h1>
           <div className="ev-hero-badges">
             <span className="ev-hero-dates">{date}</span>
+            <span className={`ev-badge ${STATUS_BADGE[status]}`}>
+              {t(`edition.status.${status}`)}
+            </span>
             {edition.location && (
               <span className="ev-badge ev-badge-place">{edition.location}</span>
             )}

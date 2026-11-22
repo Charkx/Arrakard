@@ -169,6 +169,11 @@
   background: rgba(93, 202, 165, 0.08);
 }
 
+.ev-badge-live {
+  color: var(--gold);
+  background: transparent;
+}
+
 .ev-badge-type {
   color: var(--violet2);
   border-color: rgba(176, 170, 255, 0.25);

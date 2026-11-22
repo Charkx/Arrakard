@@ -311,6 +311,9 @@ interface EditionPageRow {
   readonly location: string | null;
   readonly description: string | null;
   readonly event_mvp_nickname: string | null;
+  readonly closed_at: string | null;
+  readonly match_count: number;
+  readonly has_final: boolean;
 }
 
 const toHeader = (r: EditionPageRow): EditionHeader => ({
@@ -322,6 +325,9 @@ const toHeader = (r: EditionPageRow): EditionHeader => ({
   location: r.location,
   description: r.description,
   eventMvp: r.event_mvp_nickname,
+  closedAt: r.closed_at,
+  hasResults: r.match_count > 0,
+  hasFinal: r.has_final,
 });
 
 interface StandingViewRow {
