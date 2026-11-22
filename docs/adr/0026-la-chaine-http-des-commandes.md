@@ -23,7 +23,9 @@ points restaient ouverts, et la base locale en a tranché deux :
 
 ## Décision
 
-**Le contrat.** L'entrée d'une commande est décrite par un schéma Zod dans
+**Le contrat.** Zod devient une dépendance directe du back, en 4.6.7 (déjà
+dans l'arbre par l'outillage), comme le prévoyait l'ADR 0023 : Charly l'a
+acceptée le 2026-11-22. L'entrée d'une commande est décrite par un schéma Zod dans
 `backend/src/contracts/`, une par fichier, comme prévu par l'ADR 0025. Il
 n'importe que Zod, et le site pourra le réutiliser. Le contrat porte aussi
 `organizationId`, l'organisation où l'admin agit.
@@ -41,7 +43,8 @@ Deno. Ses réponses :
 | Pas de jeton valide                        | `401` |
 | L'acteur n'est pas admin (`forbidden`)     | `403` |
 | Agrégat introuvable (`not_found`)          | `404` |
-| Version périmée, ou déjà fait              | `409` |
+| Version périmée (`conflict`)               | `409` |
+| Déjà fait (`already_done`)                 | `409` |
 | Erreur imprévue, sans détail               | `500` |
 
 **L'Edge Function tient en trois imports et une ligne.** Elle n'importe que
@@ -55,7 +58,7 @@ coupée pour ces fonctions (`verify_jwt = false`) : sinon un visiteur sans
 jeton recevrait une erreur de la passerelle au lieu de notre `401`, et le
 code dépendrait de l'algorithme de signature du projet.
 
-**`postgres` est figé à 3.4.7** dans tout le dépôt, et
+**`postgres` est figé à 3.4.7** dans tout le dépôt (il était en `^4.1.0`), et
 `supabase/functions/deno.json` charge les mêmes versions de `postgres` et de
 Zod que le back. Un test le vérifie.
 
@@ -81,6 +84,10 @@ pour que `pnpm test:db` essaie la fonction de bout en bout.
 
 ## Conséquences
 
+- Un `409` se lit avec son champ `error` : `conflict` (recharger la page) ou
+  `already_done` (rien à faire).
+- L'unité de travail en mémoire n'annule rien : l'annulation et le verrou ne se
+  testent que sur Postgres (`tests/integration/infrastructure/commands.test.ts`).
 - Chaque nouvelle commande ajoute un contrat, une fonction dans
   `application/commands/`, et une Edge Function de quelques lignes.
 - `pnpm db:start` démarre deux services de plus : il est un peu plus long.

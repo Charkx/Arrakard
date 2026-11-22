@@ -1,5 +1,8 @@
 import { readFileSync } from 'node:fs';
+import { closeEdition } from '#application/index.ts';
+import { closeEditionRequest } from '#contracts/index.ts';
 import { describe, expect, it } from 'vitest';
+import { edgeCommandHandler } from '#infrastructure/edge.ts';
 
 /** Lit un fichier JSON du dépôt, depuis la racine. */
 const readJson = (path: string): unknown =>
@@ -18,5 +21,16 @@ describe('les Edge Functions', () => {
       postgres: `npm:postgres@${dependencies.postgres ?? ''}`,
       zod: `npm:zod@${dependencies.zod ?? ''}`,
     });
+  });
+});
+
+describe('edgeCommandHandler', () => {
+  it('refuse de démarrer sans l’adresse de Supabase', () => {
+    expect(() =>
+      edgeCommandHandler(closeEdition, closeEditionRequest, {
+        SUPABASE_DB_URL: 'postgresql://127.0.0.1:1/aucune',
+        SUPABASE_ANON_KEY: 'clé',
+      }),
+    ).toThrow('Variable SUPABASE_URL manquante.');
   });
 });

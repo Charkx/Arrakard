@@ -56,6 +56,7 @@ async function reset(): Promise<void> {
 let organizationId: string;
 let admin: { id: string; token: string };
 let otherAdmin: { id: string; token: string };
+let outsider: { id: string; token: string };
 
 beforeAll(async () => {
   await reset();
@@ -69,6 +70,7 @@ beforeAll(async () => {
   });
   admin = await signUp('admin');
   otherAdmin = await signUp('autre');
+  outsider = await signUp('visiteur');
   await sql`
     insert into organization_members (organization_id, user_id, role) values
       (${organizationId}, ${admin.id}, 'admin'),
@@ -85,6 +87,10 @@ describe('la fonction close-edition', () => {
 
   it('refuse un visiteur sans connexion', async () => {
     expect((await closeEdition(input())).status).toBe(401);
+  });
+
+  it('refuse un joueur connecté qui n’est membre d’aucune organisation', async () => {
+    expect((await closeEdition(input(), outsider.token)).status).toBe(403);
   });
 
   it('refuse l’admin d’une autre organisation', async () => {

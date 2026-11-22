@@ -30,7 +30,7 @@ export const closeEdition: Command<CloseEditionInput, CloseEditionOutcome> = {
       );
     }
     if (edition.closedAt !== null) {
-      throw new CommandRejected('already_closed', 'Cette édition est déjà clôturée.');
+      throw new CommandRejected('already_done', 'Cette édition est déjà clôturée.');
     }
     const newVersion = await editions.close(organizationId, editionId, now, version);
     return { editionId, closedAt: now, version: newVersion };

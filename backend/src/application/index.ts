@@ -8,14 +8,13 @@ export type {
   CommandLog,
   CommandLogEntry,
   CommandServices,
-  EditionRepository,
-  EditionState,
   MembershipRepository,
   RejectionReason,
   Repositories,
   TransactionPorts,
   UnitOfWork,
 } from './command.ts';
+export type { EditionRepository, EditionState } from './editions.ts';
 export { closeEdition } from './commands/close-edition.ts';
 export type { CloseEditionInput, CloseEditionOutcome } from './commands/close-edition.ts';
 export { toFacts } from './facts.ts';

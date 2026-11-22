@@ -13,12 +13,15 @@ export interface Authenticator {
   userId(request: Request): Promise<string | undefined>;
 }
 
+/** Le contrat d'une commande : son entrée, plus l'organisation où l'admin agit. */
+export type CommandContract<Input> = z.ZodType<Input & { readonly organizationId: string }>;
+
 /** Le code HTTP de chaque refus métier. */
 const STATUS: Readonly<Record<RejectionReason, number>> = {
   forbidden: 403,
   not_found: 404,
   conflict: 409,
-  already_closed: 409,
+  already_done: 409,
 };
 
 /** Le site appelle les fonctions depuis un autre domaine : il faut l'y autoriser. */
@@ -38,7 +41,7 @@ const json = (status: number, body: unknown): Response =>
  */
 export function commandHandler<Input, Outcome>(
   command: Command<Input, Outcome>,
-  contract: z.ZodType<Input & { readonly organizationId: string }>,
+  contract: CommandContract<Input>,
   services: CommandServices,
   authenticator: Authenticator,
 ): (request: Request) => Promise<Response> {

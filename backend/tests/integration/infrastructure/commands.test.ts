@@ -1,4 +1,9 @@
-import { closeEdition, executeCommand, type CommandLogEntry } from '#application/index.ts';
+import {
+  closeEdition,
+  executeCommand,
+  type Command,
+  type CommandLogEntry,
+} from '#application/index.ts';
 import { V1_RATING_RULES } from '#domain/index.ts';
 import { describeCloseEditionContract, NOW } from '#support/application/close-edition-contract.ts';
 import { FIXTURE_ROWS, LEAGUE_ID } from '#support/application/fixture.ts';
@@ -116,5 +121,32 @@ describe('deux commandes en même temps (ADR 0009)', () => {
     const [log] = await sql<{ count: number }[]>`
       select count(*)::int as count from command_log where organization_id = ${organizationId}`;
     expect(log?.count).toBe(1);
+  });
+});
+
+describe('une erreur après l’écriture', () => {
+  it('annule tout ce que la commande a écrit : ni clôture, ni journal', async () => {
+    const { organizationId, adminId } = await seed();
+    const closeThenFail: Command<{ editionId: string; version: number }, never> = {
+      name: 'closeThenFail',
+      async run(repositories, context, input) {
+        await closeEdition.run(repositories, context, input);
+        throw new Error('panne après l’écriture');
+      },
+    };
+
+    await expect(
+      executeCommand(services, { userId: adminId, organizationId }, closeThenFail, {
+        editionId: LEAGUE_ID,
+        version: 1,
+      }),
+    ).rejects.toThrow('panne');
+
+    const [edition] = await sql<{ version: number; closed_at: Date | null }[]>`
+      select version, closed_at from editions where id = ${LEAGUE_ID}`;
+    expect(edition).toEqual({ version: 1, closed_at: null });
+    const [log] = await sql<{ count: number }[]>`
+      select count(*)::int as count from command_log where organization_id = ${organizationId}`;
+    expect(log?.count).toBe(0);
   });
 });

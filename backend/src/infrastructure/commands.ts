@@ -54,6 +54,9 @@ function postgresEditions(tx: TransactionSql): EditionRepository {
       return edition && { version: edition.version, closedAt: toIso(edition.closed_at) };
     },
     async close(organizationId, editionId, closedAt, version) {
+      // La commande a déjà comparé les versions, sous le verrou de l'organisation.
+      // La condition `version = …` reste le garde de la base, si un jour une
+      // écriture passait sans ce verrou.
       const [edition] = await tx<{ version: number }[]>`
         update editions set closed_at = ${closedAt}, version = version + 1
         where organization_id = ${organizationId} and id = ${editionId} and version = ${version}

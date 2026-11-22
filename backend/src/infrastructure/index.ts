@@ -2,7 +2,7 @@
 export { postgresUnitOfWork, systemClock } from './commands.ts';
 export { edgeCommandHandler } from './edge.ts';
 export { commandHandler } from './http.ts';
-export type { Authenticator } from './http.ts';
+export type { Authenticator, CommandContract } from './http.ts';
 export { supabaseAuthenticator } from './supabase-auth.ts';
 export { LOCAL_DATABASE_URL } from './local.ts';
 export { RATING_RULES, upsertOrganization } from './organizations.ts';

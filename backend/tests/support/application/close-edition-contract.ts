@@ -101,7 +101,7 @@ export function describeCloseEditionContract(name: string, harness: () => Comman
 
       await expect(
         executeCommand(services, actor, closeEdition, { editionId: LEAGUE_ID, version: 2 }),
-      ).rejects.toMatchObject({ reason: 'already_closed' });
+      ).rejects.toMatchObject({ reason: 'already_done' });
       expect((await edition(organizationId, LEAGUE_ID))?.version).toBe(2);
     });
 

@@ -1,8 +1,7 @@
 import type { Command } from '../application/index.ts';
 import postgres from 'postgres';
-import type { z } from 'zod';
 import { postgresUnitOfWork, systemClock } from './commands.ts';
-import { commandHandler } from './http.ts';
+import { commandHandler, type CommandContract } from './http.ts';
 import { supabaseAuthenticator } from './supabase-auth.ts';
 
 /** Les variables d'une Edge Function dont une commande a besoin. */
@@ -22,7 +21,7 @@ function required(env: Env, name: string): string {
  */
 export function edgeCommandHandler<Input, Outcome>(
   command: Command<Input, Outcome>,
-  contract: z.ZodType<Input & { readonly organizationId: string }>,
+  contract: CommandContract<Input>,
   env: Env,
 ): (request: Request) => Promise<Response> {
   const sql = postgres(env.COMMAND_DB_URL ?? required(env, 'SUPABASE_DB_URL'));

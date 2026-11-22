@@ -1,3 +1,4 @@
+import type { EditionRepository } from './editions.ts';
 import { recomputeProjections, type RecomputePorts } from './recompute.ts';
 
 /** L'utilisateur qui exécute une commande, et l'organisation où il agit. */
@@ -14,29 +15,6 @@ export interface Clock {
 /** Dit si un utilisateur est admin d'une organisation (ADR 0008). */
 export interface MembershipRepository {
   isAdmin(organizationId: string, userId: string): Promise<boolean>;
-}
-
-/** Ce qu'une commande change d'une édition, hors faits de jeu. */
-export interface EditionState {
-  readonly version: number;
-  /** Date ISO de la clôture, ou null si l'édition n'est pas clôturée (ADR 0013). */
-  readonly closedAt: string | null;
-}
-
-/** Lit et écrit une édition d'une organisation, avec sa version (ADR 0005). */
-export interface EditionRepository {
-  /** L'édition de cette organisation, ou `undefined` si elle n'y est pas. */
-  find(organizationId: string, editionId: string): Promise<EditionState | undefined>;
-  /**
-   * La clôture, si l'édition est encore à la version `version`. Rend la
-   * nouvelle version ; refuse par un conflit si la version a changé.
-   */
-  close(
-    organizationId: string,
-    editionId: string,
-    closedAt: string,
-    version: number,
-  ): Promise<number>;
 }
 
 /** Une ligne du journal des commandes (ADR 0009). */
@@ -95,8 +73,11 @@ export interface Command<Input, Outcome> {
   run(repositories: Repositories, context: CommandContext, input: Input): Promise<Outcome>;
 }
 
-/** Pourquoi une commande est refusée. L'adaptateur HTTP en tire son code (403, 404, 409). */
-export type RejectionReason = 'forbidden' | 'not_found' | 'conflict' | 'already_closed';
+/**
+ * Pourquoi une commande est refusée. L'adaptateur HTTP en tire son code (403,
+ * 404, 409). `already_done` : ce que la commande demande est déjà fait.
+ */
+export type RejectionReason = 'forbidden' | 'not_found' | 'conflict' | 'already_done';
 
 /** Une commande refusée pour une raison métier. Rien n'est écrit. */
 export class CommandRejected extends Error {
