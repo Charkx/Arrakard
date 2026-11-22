@@ -368,11 +368,17 @@ export function inMemoryStore(): InMemoryStore {
             .map((p) => ({ matchId: p.matchId, playerId: p.playerId })),
           eventMvps: organization.facts.editions
             .filter((e) => e.eventMvpPlayerId !== undefined && ids.has(e.eventMvpPlayerId))
-            .map((e) => ({ editionId: e.id, playerId: e.eventMvpPlayerId ?? '' })),
+            .flatMap((e) =>
+              e.eventMvpPlayerId ? [{ editionId: e.id, playerId: e.eventMvpPlayerId }] : [],
+            ),
           matchMvps: organization.facts.matches
             .filter((m) => m.mvpPlayerId !== undefined && ids.has(m.mvpPlayerId))
-            .map((m) => ({ matchId: m.id, playerId: m.mvpPlayerId ?? '' })),
-          participations: [],
+            .flatMap((m) => (m.mvpPlayerId ? [{ matchId: m.id, playerId: m.mvpPlayerId }] : [])),
+          participations: [...organization.editionRecords].flatMap(([editionId, record]) =>
+            record.participantIds
+              .filter((playerId) => ids.has(playerId))
+              .map((playerId) => ({ editionId, playerId })),
+          ),
           memberships: [...ids].flatMap((playerId) =>
             (organization.stints.get(playerId) ?? []).map((st, i) => ({
               id: `${playerId}:${String(i)}`,
@@ -380,6 +386,7 @@ export function inMemoryStore(): InMemoryStore {
               current: st.leftOn === null,
             })),
           ),
+          // La mémoire ne garde pas les personnalisations : leur sort se teste sur Postgres.
           customizedPlayerIds: [],
         });
       },
@@ -401,6 +408,13 @@ export function inMemoryStore(): InMemoryStore {
           };
           for (const [id, draft] of organization.drafts) {
             organization.drafts.set(id, { ...draft, performances: draft.performances.map(follow) });
+          }
+          for (const [editionId, record] of organization.editionRecords) {
+            if (!record.participantIds.includes(absorbedId)) continue;
+            const ids = new Set(
+              record.participantIds.map((id) => (id === absorbedId ? keptId : id)),
+            );
+            organization.editionRecords.set(editionId, { ...record, participantIds: [...ids] });
           }
           const aliases = organization.aliases.get(keptId) ?? new Set<string>();
           for (const alias of plan.aliasesAdded) aliases.add(alias);

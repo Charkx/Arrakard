@@ -1,10 +1,10 @@
+import type { MergeFacts, MergePlan } from '../domain/index.ts';
+
 /** Ce qu'une commande lit d'un profil de joueur non fusionné. */
 export interface PlayerState {
   /** Le compte Discord lié à sa carte, ou null. */
   readonly discordUserId: string | null;
 }
-
-import type { MergeFacts, MergePlan } from '../domain/index.ts';
 
 /** Lit et écrit les profils des joueurs d'une organisation. */
 export interface PlayerRepository {

@@ -396,8 +396,14 @@ function postgresPlayers(tx: TransactionSql): PlayerRepository {
           )}
           on conflict do nothing`;
       }
+      // Ses graphies sont celles du conservé désormais : un import ne doit plus viser l'absorbé.
+      await tx`
+        delete from player_aliases
+        where organization_id = ${organizationId} and player_id = ${absorbId}`;
       if (plan.membershipClosed !== null) {
-        await tx`update team_memberships set left_on = ${on} where id = ${plan.membershipClosed}`;
+        await tx`
+          update team_memberships set left_on = ${on}
+          where organization_id = ${organizationId} and id = ${plan.membershipClosed}`;
       }
       await tx`
         update team_memberships set player_id = ${keepId}
