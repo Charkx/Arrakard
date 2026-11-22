@@ -33,7 +33,13 @@ export interface EditionDetails {
 
 /** Ce que lit le formulaire : l'édition à modifier (ou null), les saisons et les joueurs. */
 export interface EditionForm {
-  readonly edition: (EditionDetails & { readonly version: number }) | null;
+  readonly edition:
+    | (EditionDetails & {
+        readonly version: number;
+        /** Instant ISO de sa clôture (ADR 0013), ou null. */
+        readonly closedAt: string | null;
+      })
+    | null;
   readonly seasons: readonly {
     readonly id: string;
     readonly name: string;

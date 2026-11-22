@@ -265,6 +265,11 @@ const fr = {
   'admin.edition.confirmArchive':
     'Archiver {edition} ? Elle disparaît du site. Seule une édition sans match s’archive.',
   'admin.edition.archiveYes': 'Oui, archiver',
+  'admin.edition.close': 'Clôturer l’édition',
+  'admin.edition.confirmClose':
+    'Clôturer {edition} ? Elle sera terminée, même sans finale. Ses matchs restent.',
+  'admin.edition.closeYes': 'Oui, clôturer',
+  'admin.edition.closedOn': 'Clôturée le {date}.',
   'admin.prestige.normal': 'Normal',
   'admin.prestige.premium': 'Premium',
   'admin.prestige.championship': 'Championnat',
@@ -533,6 +538,11 @@ const en: Record<TextKey, string> = {
   'admin.edition.confirmArchive':
     'Archive {edition}? It leaves the site. Only an edition without matches can be archived.',
   'admin.edition.archiveYes': 'Yes, archive it',
+  'admin.edition.close': 'Close the edition',
+  'admin.edition.confirmClose':
+    'Close {edition}? It will be finished, even without a final. Its matches stay.',
+  'admin.edition.closeYes': 'Yes, close it',
+  'admin.edition.closedOn': 'Closed on {date}.',
   'admin.prestige.normal': 'Normal',
   'admin.prestige.premium': 'Premium',
   'admin.prestige.championship': 'Championship',

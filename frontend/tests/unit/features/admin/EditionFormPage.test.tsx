@@ -52,6 +52,7 @@ const LAN: NonNullable<EditionForm['edition']> = {
   arrakisWon: null,
   participantIds: ['p-zephyr'],
   version: 4,
+  closedAt: null,
 };
 
 /** Une source admin en mémoire : ce formulaire, et les commandes reçues. */
@@ -73,6 +74,7 @@ function serving(form: EditionForm = FORM) {
     createEdition: vi.fn(() => Promise.resolve('e-new')),
     updateEdition: vi.fn(() => Promise.resolve()),
     archiveEdition: vi.fn(() => Promise.resolve()),
+    closeEdition: vi.fn(() => Promise.resolve()),
   } satisfies AdminSource;
 }
 
@@ -148,7 +150,7 @@ describe('le formulaire d’édition', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
 
     expect(admin.editionForm).toHaveBeenCalledWith('e-lan');
-    const { version: _version, ...details } = LAN;
+    const { version: _version, closedAt: _closedAt, ...details } = LAN;
     expect(admin.updateEdition).toHaveBeenCalledWith('e-lan', 4, {
       ...details,
       location: 'Futuroscope',
@@ -167,6 +169,27 @@ describe('le formulaire d’édition', () => {
       expect(screen.getByTestId('address').textContent).toBe('/admin');
     });
     expect(admin.archiveEdition).toHaveBeenCalledWith('e-lan', 4);
+  });
+
+  it('clôture l’édition après confirmation', async () => {
+    const admin = serving({ ...FORM, edition: { ...LAN, type: 'tournament', participantIds: [] } });
+    openSite('/admin/editions/e-tournoi', { auth: authAs(ADMIN), admin });
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Clôturer l’édition' }));
+    expect(admin.closeEdition).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Oui, clôturer' }));
+
+    expect(admin.closeEdition).toHaveBeenCalledWith('e-tournoi', 4);
+  });
+
+  it('dit qu’une édition est clôturée, sans proposer de la clôturer encore', async () => {
+    openSite('/admin/editions/e-tournoi', {
+      auth: authAs(ADMIN),
+      admin: serving({ ...FORM, edition: { ...LAN, closedAt: '2026-11-20T21:00:00.000Z' } }),
+    });
+
+    expect(await screen.findByText('Clôturée le 2026-11-20.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Clôturer l’édition' })).toBeNull();
   });
 
   it('dit ce que le serveur a refusé', async () => {

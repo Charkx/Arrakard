@@ -51,6 +51,8 @@ export interface AdminSource {
   createEdition(details: EditionDetails): Promise<string>;
   /** Modifie une édition, à la version que l'admin a sous les yeux. */
   updateEdition(editionId: string, version: number, details: EditionDetails): Promise<void>;
+  /** Clôture une édition que les faits ne suffisent pas à terminer (ADR 0013). */
+  closeEdition(editionId: string, version: number): Promise<void>;
   /** Archive une édition sans match. */
   archiveEdition(editionId: string, version: number): Promise<void>;
 }
@@ -76,6 +78,7 @@ export function lazyAdminSource(load: () => Promise<AdminSource>): AdminSource {
     createEdition: async (details) => (await source()).createEdition(details),
     updateEdition: async (editionId, version, details) =>
       (await source()).updateEdition(editionId, version, details),
+    closeEdition: async (editionId, version) => (await source()).closeEdition(editionId, version),
     archiveEdition: async (editionId, version) =>
       (await source()).archiveEdition(editionId, version),
   };

@@ -64,17 +64,18 @@ function EditionFields({
   const navigate = useNavigate();
   const [details, setDetails] = useState<EditionDetails>(() => {
     if (form.edition === null) return blankEdition(todayInParis(), form);
-    const { version: _read, ...saved } = form.edition;
+    const { version: _read, closedAt: _closed, ...saved } = form.edition;
     return saved;
   });
   const [search, setSearch] = useState('');
-  const [confirming, setConfirming] = useState(false);
+  const [confirming, setConfirming] = useState<'close' | 'archive' | null>(null);
   const { busy, failure, send } = useCommand(onSaved);
   const set = (change: Partial<EditionDetails>) => {
     setDetails((current) => ({ ...current, ...change }));
   };
   const text = (value: string) => (value === '' ? null : value);
   const version = form.edition?.version;
+  const closedAt = form.edition?.closedAt ?? null;
 
   const save = (event: SyntheticEvent) => {
     event.preventDefault();
@@ -245,43 +246,81 @@ function EditionFields({
           </button>
         </form>
         {editionId !== null && version !== undefined && (
-          <div className="auth-actions">
-            {confirming ? (
-              <>
-                <p>{t('admin.edition.confirmArchive', { edition: details.name })}</p>
-                <button
-                  type="button"
-                  className="auth-button"
-                  disabled={busy}
-                  onClick={() => {
-                    send(async () => {
-                      await admin.archiveEdition(editionId, version);
-                      void navigate('/admin', { replace: true });
-                    });
-                  }}
-                >
-                  {t('admin.edition.archiveYes')}
-                </button>
+          <div className="admin-panel-body admin-edition-actions">
+            {closedAt !== null && (
+              <p>{t('admin.edition.closedOn', { date: closedAt.slice(0, 10) })}</p>
+            )}
+            {confirming === null ? (
+              <div className="auth-actions">
+                {closedAt === null && (
+                  <button
+                    type="button"
+                    className="auth-button auth-button-secondary"
+                    onClick={() => {
+                      setConfirming('close');
+                    }}
+                  >
+                    {t('admin.edition.close')}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="auth-button auth-button-secondary"
                   onClick={() => {
-                    setConfirming(false);
+                    setConfirming('archive');
                   }}
                 >
-                  {t('admin.cancel')}
+                  {t('admin.edition.archive')}
                 </button>
-              </>
+              </div>
             ) : (
-              <button
-                type="button"
-                className="auth-button auth-button-secondary"
-                onClick={() => {
-                  setConfirming(true);
-                }}
-              >
-                {t('admin.edition.archive')}
-              </button>
+              <>
+                <p>
+                  {t(
+                    confirming === 'close'
+                      ? 'admin.edition.confirmClose'
+                      : 'admin.edition.confirmArchive',
+                    { edition: details.name },
+                  )}
+                </p>
+                <div className="auth-actions">
+                  <button
+                    type="button"
+                    className="auth-button"
+                    disabled={busy}
+                    onClick={() => {
+                      if (confirming === 'close') {
+                        send(
+                          () => admin.closeEdition(editionId, version),
+                          () => {
+                            setConfirming(null);
+                          },
+                        );
+                        return;
+                      }
+                      send(async () => {
+                        await admin.archiveEdition(editionId, version);
+                        void navigate('/admin', { replace: true });
+                      });
+                    }}
+                  >
+                    {t(
+                      confirming === 'close'
+                        ? 'admin.edition.closeYes'
+                        : 'admin.edition.archiveYes',
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className="auth-button auth-button-secondary"
+                    onClick={() => {
+                      setConfirming(null);
+                    }}
+                  >
+                    {t('admin.cancel')}
+                  </button>
+                </div>
+              </>
             )}
           </div>
         )}

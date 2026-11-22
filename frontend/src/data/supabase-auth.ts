@@ -275,7 +275,7 @@ export function supabaseSession(
           : db
               .from('editions')
               .select(
-                'name, type, date, season_id, prestige, location, url, description, arrakis_won, version',
+                'name, type, date, season_id, prestige, location, url, description, arrakis_won, version, closed_at',
               )
               .eq('organization_id', organization)
               .eq('id', editionId)
@@ -310,6 +310,7 @@ export function supabaseSession(
                 arrakisWon: e.arrakis_won,
                 participantIds: (participants.data ?? []).map((p) => p.player_id),
                 version: e.version,
+                closedAt: e.closed_at,
               },
       };
     },
@@ -318,6 +319,9 @@ export function supabaseSession(
     },
     async updateEdition(editionId, version, details) {
       await command('update-edition', { editionId, version, ...details });
+    },
+    async closeEdition(editionId, version) {
+      await command('close-edition', { editionId, version });
     },
     async archiveEdition(editionId, version) {
       await command('archive-edition', { editionId, version });
@@ -349,6 +353,7 @@ interface EditionRow {
   readonly description: string | null;
   readonly arrakis_won: boolean | null;
   readonly version: number;
+  readonly closed_at: string | null;
 }
 
 /** Une ligne de `admin_editions` (migration 20261122050000_admin_editions.sql). */

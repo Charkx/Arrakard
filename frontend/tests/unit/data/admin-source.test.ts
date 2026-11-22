@@ -20,6 +20,7 @@ describe('lazyAdminSource', () => {
         createEdition: () => Promise.resolve('e-new'),
         updateEdition: () => Promise.resolve(),
         archiveEdition: () => Promise.resolve(),
+        closeEdition: () => Promise.resolve(),
       }),
     );
     const admin = lazyAdminSource(load);
@@ -63,7 +64,8 @@ describe('lazyAdminSource', () => {
       arrakisWon: null,
       participantIds: [],
     });
-    await admin.archiveEdition('e-1', 2);
+    await admin.closeEdition('e-1', 2);
+    await admin.archiveEdition('e-1', 3);
     expect(load).toHaveBeenCalledOnce();
   });
 });

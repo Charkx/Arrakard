@@ -56,6 +56,7 @@ function serving(rosters: Rosters = ROSTERS) {
     createEdition: () => Promise.reject(new Error('Hors sujet.')),
     updateEdition: () => Promise.reject(new Error('Hors sujet.')),
     archiveEdition: () => Promise.reject(new Error('Hors sujet.')),
+    closeEdition: () => Promise.reject(new Error('Hors sujet.')),
   } satisfies AdminSource;
 }
 
