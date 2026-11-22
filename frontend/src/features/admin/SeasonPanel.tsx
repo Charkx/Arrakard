@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 import { useAdminSource } from '../../data/DataContext.tsx';
 import type { ActiveSeason } from '../../data/admin-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
@@ -40,7 +40,7 @@ export function SeasonPanel({
     );
   };
 
-  const open = (event: FormEvent) => {
+  const open = (event: SyntheticEvent) => {
     event.preventDefault();
     send(() => admin.openSeason(name.trim(), year));
   };
