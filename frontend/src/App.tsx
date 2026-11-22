@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Navbar } from './shared/components/Navbar.tsx';
 import { useI18n } from './shared/i18n/i18n.tsx';
+import { LoginPage } from './features/auth/LoginPage.tsx';
 import { EditionPage } from './features/edition/EditionPage.tsx';
 import { LeaderboardPage } from './features/leaderboard/LeaderboardPage.tsx';
 import { PlayerPage } from './features/player/PlayerPage.tsx';
@@ -23,6 +24,7 @@ export function App() {
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/player/:id" element={<PlayerPage />} />
           <Route path="/event/:id" element={<EditionPage />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<Navigate to="/leaderboard" replace />} />
         </Routes>
       </main>

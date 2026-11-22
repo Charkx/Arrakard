@@ -5,6 +5,7 @@ export type Language = (typeof LANGUAGES)[number];
 const fr = {
   'site.name': 'Arrakis',
   'nav.leaderboard': 'Classement',
+  'nav.login': 'Connexion',
   'lang.switch': 'EN',
   'lang.switch.label': 'Switch to English',
   'banner.readOnly':
@@ -164,6 +165,18 @@ const fr = {
   'role.SUP': 'support',
   'role.SUP.plural': 'supports',
   'why.next.top': 'Palier le plus haut atteint',
+
+  'auth.title': 'Connexion',
+  'auth.intro':
+    'Connecte-toi avec ton compte Discord. Les admins d’Arrakis y retrouvent leurs droits.',
+  'auth.signIn': 'Se connecter avec Discord',
+  'auth.signOut': 'Se déconnecter',
+  'auth.signedInAs': 'Connecté en tant que {name}.',
+  'auth.role.admin': 'Tu es admin d’Arrakis.',
+  'auth.role.member': 'Tu es membre d’Arrakis, sans droits d’admin.',
+  'auth.role.none':
+    'Tu n’es pas sur le serveur Discord d’Arrakis : rejoins-le, puis reconnecte-toi.',
+  'auth.error': 'La connexion a échoué.',
 } as const;
 
 /** Une clé de texte. Une clé inconnue ne compile pas. */
@@ -173,6 +186,7 @@ export type TextKey = keyof typeof fr;
 const en: Record<TextKey, string> = {
   'site.name': 'Arrakis',
   'nav.leaderboard': 'Leaderboard',
+  'nav.login': 'Sign in',
   'lang.switch': 'FR',
   'lang.switch.label': 'Passer en français',
   'banner.readOnly': 'Read-only site: results are still entered on the old site.',
@@ -328,6 +342,16 @@ const en: Record<TextKey, string> = {
   'role.SUP': 'support',
   'role.SUP.plural': 'supports',
   'why.next.top': 'Highest tier reached',
+
+  'auth.title': 'Sign in',
+  'auth.intro': 'Sign in with your Discord account. Arrakis admins get their rights back there.',
+  'auth.signIn': 'Sign in with Discord',
+  'auth.signOut': 'Sign out',
+  'auth.signedInAs': 'Signed in as {name}.',
+  'auth.role.admin': 'You are an Arrakis admin.',
+  'auth.role.member': 'You are an Arrakis member, without admin rights.',
+  'auth.role.none': 'You are not on the Arrakis Discord server: join it, then sign in again.',
+  'auth.error': 'Sign-in failed.',
 };
 
 export const DICTIONARY: Record<Language, Record<TextKey, string>> = { fr, en };

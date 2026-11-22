@@ -1,16 +1,31 @@
 import { createContext, use, useEffect, useState, type ReactNode } from 'react';
+import type { AuthSource } from './auth-source.ts';
 import type { DataSource } from './data-source.ts';
 
 const DataContext = createContext<DataSource | null>(null);
+const AuthContext = createContext<AuthSource | null>(null);
 
+/** Donne aux pages la source des données, et la connexion. */
 export function DataProvider({
   source,
+  auth,
   children,
 }: {
   readonly source: DataSource;
+  readonly auth: AuthSource;
   readonly children: ReactNode;
 }) {
-  return <DataContext value={source}>{children}</DataContext>;
+  return (
+    <DataContext value={source}>
+      <AuthContext value={auth}>{children}</AuthContext>
+    </DataContext>
+  );
+}
+
+export function useAuthSource(): AuthSource {
+  const auth = use(AuthContext);
+  if (!auth) throw new Error('useAuthSource s’utilise sous <DataProvider>.');
+  return auth;
 }
 
 export function useDataSource(): DataSource {
