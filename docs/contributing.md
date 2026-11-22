@@ -96,6 +96,25 @@ Entre deux portes, le travail avance sans nouvelle validation, sur une branche
 et jamais sur `main` : à deux en mode Ensemble, l'agent seul dans les autres
 modes.
 
+### Jusqu'à la bascule : l'agent seul
+
+Décision de Charly du 2026-11-22 : pour amener la v2 à la bascule (les tickets
+de la tranche 2), l'agent travaille seul, et les trois portes passent à
+l'agent, avec ces limites :
+
+- il prend les tickets dans l'ordre de leurs blocages, tous en mode Délégué, le
+  ping-pong compris ;
+- il fusionne une PR lui-même, seulement quand `pnpm check`, `pnpm test:db`, la
+  CI et les deux rapports de `revue` sont verts. Chaque PR garde sa description
+  en mots simples, avec les fichiers modèles à relire en premier ;
+- il tranche les choix structurants dans un ADR et les termes dans le
+  glossaire, que Charly relit après ;
+- il s'arrête et demande toujours pour une nouvelle dépendance, les données
+  réelles, la production, ou un service hébergé (Supabase en ligne, Discord,
+  Vercel).
+
+Après la bascule, les trois portes reviennent à Charly.
+
 ### Trois modes
 
 Chaque ticket porte son mode, fixé au découpage.

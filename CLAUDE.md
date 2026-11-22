@@ -55,7 +55,8 @@ conclure.
   (`cat`, `grep`, scripts). Seule exception, au commit : un `.env.example` sans
   secret.
 - **Jamais de travail sur `main`** : une branche, une PR. Charly fusionne
-  lui-même. Pas de push forcé.
+  lui-même. Pas de push forcé. Exception jusqu'à la bascule : voir « Jusqu'à la
+  bascule » dans `docs/contributing.md`.
 - **Pas de nouvelle dépendance** sans demander.
 - **Aucune mention de Claude** dans les commits ni les PR : ni `Co-Authored-By`,
   ni « Generated with ».
