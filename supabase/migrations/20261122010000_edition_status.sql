@@ -4,6 +4,8 @@
 -- Le statut n'est jamais saisi : la page le déduit, par la règle du domaine
 -- (`editionStatus`), de la date, de la clôture et des résultats publiés. La vue
 -- de l'en-tête donne donc la clôture et la présence d'un match final.
+-- Jusqu'aux brouillons (ticket #43), tout match en base est publié : le
+-- ticket des brouillons ne comptera ici que les matchs publiés.
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- Deux colonnes, à la fin : les colonnes existantes ne bougent pas.

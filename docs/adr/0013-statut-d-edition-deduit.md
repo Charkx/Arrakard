@@ -65,3 +65,7 @@ La règle exacte s'écrit en tests dans le domaine.
   Les autres statuts v1 sont ignorés.
 - Un statut « terminée » n'interdit pas d'écrire : on peut encore publier un
   match oublié ou corriger un résultat.
+
+> **Complété par [0027](0027-statut-calcule-a-l-affichage.md).** Le statut se
+> calcule à l'affichage, au jour de Paris, par la fonction du domaine ; il
+> n'est pas stocké.

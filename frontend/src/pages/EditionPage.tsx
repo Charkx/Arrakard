@@ -1,4 +1,9 @@
-import { editionStatus, type EditionStatus, type EditionType } from '@arrakis/backend/domain';
+import {
+  editionStatus,
+  isExternal,
+  type EditionStatus,
+  type EditionType,
+} from '@arrakis/backend/domain';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { championIconUrl } from '../data/champions.ts';
@@ -26,8 +31,6 @@ const STATUS_BADGE: Readonly<Record<EditionStatus, string>> = {
 };
 
 const isLeague = (type: EditionType) => type === 'league_div1' || type === 'league_div2';
-/** Un événement externe n'a pas de match enregistré, seulement des participants (glossaire). */
-const isExternal = (type: EditionType) => type === 'external_event' || type === 'external_lan';
 
 /** La page d'une édition (cas d'usage V4), au design de la v1. Adresse de la v1 : /event/:id. */
 export function EditionPage() {
@@ -67,17 +70,8 @@ function Edition({ data }: { readonly data: EditionPageData }) {
   const { t, language } = useI18n();
   const navigate = useNavigate();
   const { edition, standings, matches, participants } = data;
-  // Affiché, jamais enregistré : la règle est celle du domaine (ADR 0013).
-  const status = editionStatus(
-    {
-      type: edition.type,
-      date: edition.date,
-      closedAt: edition.closedAt,
-      hasPublishedResults: edition.hasResults,
-      hasPublishedFinal: edition.hasFinal,
-    },
-    todayInParis(),
-  );
+  // Affiché, jamais enregistré : la règle est celle du domaine (ADR 0013, ADR 0027).
+  const status = editionStatus(edition, todayInParis());
   const date = new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-GB', {
     day: 'numeric',
     month: 'long',

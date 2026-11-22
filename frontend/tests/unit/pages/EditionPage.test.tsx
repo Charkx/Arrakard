@@ -84,8 +84,8 @@ function anEdition(overrides: Partial<EditionPageData> = {}): EditionPageData {
       description: null,
       eventMvp: null,
       closedAt: null,
-      hasResults: false,
-      hasFinal: false,
+      hasPublishedResults: false,
+      hasPublishedFinal: false,
     },
     standings: [],
     matches: [],
@@ -250,8 +250,12 @@ describe('le statut d’une édition (ADR 0013)', () => {
 
   it.each([
     ['à venir', { ...header, date: '2026-03-01' }, 'À venir'],
-    ['en cours, sans finale publiée', { ...header, hasResults: true }, 'En cours'],
-    ['terminée, finale publiée', { ...header, hasResults: true, hasFinal: true }, 'Terminée'],
+    ['en cours, sans finale publiée', { ...header, hasPublishedResults: true }, 'En cours'],
+    [
+      'terminée, finale publiée',
+      { ...header, hasPublishedResults: true, hasPublishedFinal: true },
+      'Terminée',
+    ],
     [
       'terminée, clôturée par un admin',
       { ...header, closedAt: '2026-02-10T20:00:00Z' },
@@ -263,10 +267,14 @@ describe('le statut d’une édition (ADR 0013)', () => {
     expect(await screen.findByText(label)).toBeDefined();
   });
 
-  it('se lit en anglais', async () => {
+  it.each([
+    [{ ...header, date: '2026-03-01' }, 'Upcoming'],
+    [header, 'Ongoing'],
+    [{ ...header, closedAt: '2026-02-10T20:00:00Z' }, 'Completed'],
+  ])('se lit en anglais : %#', async (edition, label) => {
     vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-GB');
-    openSite('/event/e-1', { editions: { 'e-1': anEdition() } });
+    openSite('/event/e-1', { editions: { 'e-1': anEdition({ edition }) } });
 
-    expect(await screen.findByText('Ongoing')).toBeDefined();
+    expect(await screen.findByText(label)).toBeDefined();
   });
 });

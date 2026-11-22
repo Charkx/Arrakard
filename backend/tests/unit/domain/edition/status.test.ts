@@ -58,11 +58,20 @@ describe('editionStatus (ADR 0013)', () => {
     });
   });
 
-  it.each(['external_event', 'external_lan'] as const)(
-    'un événement externe (%s) est terminé dès que sa date est passée',
+  describe.each(['external_event', 'external_lan'] as const)(
+    'un événement externe (%s)',
     (type) => {
-      expect(editionStatus(league({ type, date: '2026-11-21' }), TODAY)).toBe('completed');
-      expect(editionStatus(league({ type }), TODAY)).toBe('ongoing');
+      it('est terminé dès que sa date est passée', () => {
+        expect(editionStatus(league({ type, date: '2026-11-21' }), TODAY)).toBe('completed');
+      });
+
+      it('est en cours le jour même', () => {
+        expect(editionStatus(league({ type }), TODAY)).toBe('ongoing');
+      });
+
+      it('est à venir avant sa date', () => {
+        expect(editionStatus(league({ type, date: '2026-12-01' }), TODAY)).toBe('upcoming');
+      });
     },
   );
 
@@ -71,5 +80,6 @@ describe('editionStatus (ADR 0013)', () => {
 
     expect(editionStatus(league({ closedAt }), TODAY)).toBe('completed');
     expect(editionStatus(league({ closedAt, date: '2026-12-01' }), TODAY)).toBe('completed');
+    expect(editionStatus(league({ closedAt, date: '2026-09-01' }), TODAY)).toBe('completed');
   });
 });

@@ -326,8 +326,9 @@ const toHeader = (r: EditionPageRow): EditionHeader => ({
   description: r.description,
   eventMvp: r.event_mvp_nickname,
   closedAt: r.closed_at,
-  hasResults: r.match_count > 0,
-  hasFinal: r.has_final,
+  // Tout match en base est publié, jusqu'aux brouillons (ticket #43).
+  hasPublishedResults: r.match_count > 0,
+  hasPublishedFinal: r.has_final,
 });
 
 interface StandingViewRow {

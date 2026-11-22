@@ -46,3 +46,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0024](0024-lire-avec-postgrest-js.md)                  | Lire la base avec postgrest-js                       | Accepté |
 | [0025](0025-un-front-un-back.md)                        | Un front, un back                                    | Accepté |
 | [0026](0026-la-chaine-http-des-commandes.md)            | La chaîne HTTP des commandes                         | Accepté |
+| [0027](0027-statut-calcule-a-l-affichage.md)            | Le statut d'une édition se calcule à l'affichage     | Accepté |

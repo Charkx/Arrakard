@@ -14,8 +14,8 @@ export interface EditionHeader {
   /** Date de la clôture par un admin, ou null (ADR 0013). */
   readonly closedAt: string | null;
   /** L'édition a-t-elle des matchs publiés, et parmi eux son match final ? */
-  readonly hasResults: boolean;
-  readonly hasFinal: boolean;
+  readonly hasPublishedResults: boolean;
+  readonly hasPublishedFinal: boolean;
 }
 
 /** Une ligne du classement de soirée (vue `edition_standings_view`), calculée par la base. */
