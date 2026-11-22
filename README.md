@@ -5,7 +5,7 @@ joueurs façon FUT, classements, pages d'événements, inscriptions et
 administration des résultats.
 
 > **Statut : tranche 1 en préparation (lecture).** Le domaine est terminé : les
-> règles métier sont écrites en TDD dans `backend/domain` et validées contre
+> règles métier sont écrites en TDD dans `backend/src/domain` et validées contre
 > la production v1 (golden master). Côté serveur, le schéma et ses
 > droits d'accès sont testés en pgTAP, et la migration v1 → v2 est planifiée
 > et vérifiée (`tools/migrate-v1`). Le socle du site existe (`frontend`),
@@ -94,7 +94,7 @@ pnpm build             # construit le site dans frontend/dist
 pnpm size              # poids du JavaScript initial (limite : 250 kB compressé)
 ```
 
-## Le domaine (`backend/domain`)
+## Le domaine (`backend/src/domain`)
 
 | Module           | Rôle                                                        | Cas d'usage |
 | ---------------- | ----------------------------------------------------------- | ----------- |
@@ -114,13 +114,13 @@ migration (`tools/migrate-v1`). Le serveur est rangé en trois couches ; chacune
 n'importe que celles plus au centre, et une règle de lint le vérifie dossier
 par dossier.
 
-| Dossier                  | Rôle                                                           | Dépend de            |
-| ------------------------ | -------------------------------------------------------------- | -------------------- |
-| `backend/domain`         | Règles métier pures                                            | rien                 |
-| `backend/application`    | Cas d'usage et leurs ports (aujourd'hui : le recalcul)         | le domaine           |
-| `backend/infrastructure` | Adaptateurs : implémente les ports avec postgres.js            | domaine, application |
-| `frontend`               | Le site : lit les vues par `DataSource` (ADR 0019)             | le domaine           |
-| `tools/migrate-v1`       | Outil de migration : écrit les faits, puis appelle le recalcul | tout le back         |
+| Dossier                      | Rôle                                                           | Dépend de            |
+| ---------------------------- | -------------------------------------------------------------- | -------------------- |
+| `backend/src/domain`         | Règles métier pures                                            | rien                 |
+| `backend/src/application`    | Cas d'usage et leurs ports (aujourd'hui : le recalcul)         | le domaine           |
+| `backend/src/infrastructure` | Adaptateurs : implémente les ports avec postgres.js            | domaine, application |
+| `frontend`                   | Le site : lit les vues par `DataSource` (ADR 0019)             | le domaine           |
+| `tools/migrate-v1`           | Outil de migration : écrit les faits, puis appelle le recalcul | tout le back         |
 
 ## Feuille de route
 
@@ -131,7 +131,7 @@ remplacent les anciennes phases 3 (backend), 4 (front) et 5 (bascule).
 | Étape                   | Contenu                                                                                                            | Livrable                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
 | **Phase 1. Cadrage**    | Vision, cas d'usage, glossaire, spec de note, ADR                                                                  | Cette documentation                                              |
-| **Phase 2. Domaine**    | Monorepo, `backend/domain` en TDD, golden master v1                                                                | Moteur de calcul validé contre la prod                           |
+| **Phase 2. Domaine**    | Monorepo, `backend/src/domain` en TDD, golden master v1                                                            | Moteur de calcul validé contre la prod                           |
 | **Tranche 1. Lecture**  | Écriture des données migrées, pages publiques, explication de la note, design v1 réutilisé                         | Site v2 en ligne en lecture seule ; les admins restent sur la v1 |
 | **Tranche 2. Soirée**   | Import, corrections, brouillon puis publication, récap, annonce Discord, connexion, inscriptions, personnalisation | Les admins passent sur la v2 ; v1 archivée (bascule)             |
 | **Tranche 3. Histoire** | Album de saison, notes de patch, équipes d'In House proposées, fiche de match                                      | Dans l'ordre que la communauté demande                           |

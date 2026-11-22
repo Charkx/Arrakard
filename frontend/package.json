@@ -4,6 +4,10 @@
   "private": true,
   "description": "Le site d'Arrakis : il affiche et envoie des commandes, il ne calcule rien qu'il enregistre.",
   "type": "module",
+  "imports": {
+    "#src/*": "./src/*",
+    "#support/*": "./tests/support/*"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

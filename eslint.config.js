@@ -19,7 +19,6 @@ const ONLY_RELATIVE = refuse(
   '^(?!\\.{1,2}/)',
   'Le domaine et l’application n’importent que des fichiers du back, en relatif (ADR 0025).',
 );
-const ONLY_RELATIVE_OR_VITEST = refuse('^(?!\\.{1,2}/|vitest$)', ONLY_RELATIVE.message);
 const NOT_APPLICATION = refuse(
   '/application/',
   'Le domaine ne dépend de rien : ni de l’application, ni de l’infrastructure (ADR 0023).',
@@ -28,9 +27,9 @@ const NOT_INFRASTRUCTURE = refuse(
   '/infrastructure/',
   'Seule l’infrastructure parle à la base : le centre ne l’importe pas (ADR 0023).',
 );
-const NOT_TESTING = refuse(
-  '/testing/',
-  'Les ports en mémoire et les jeux d’essai servent aux tests, pas au code (ADR 0023).',
+const NOT_TESTS = refuse(
+  '^#support/|(^|/)tests/',
+  'Le code de `src/` n’importe jamais les tests ni leurs outils (ADR 0025).',
 );
 const NOT_OUTSIDE = refuse(
   '(^|/)(frontend|tools)/',
@@ -45,7 +44,7 @@ const DOMAIN_BY_ITS_ENTRY = refuse(
   'Le domaine s’importe par son point d’entrée, `domain/index.ts` (ADR 0025).',
 );
 const APPLICATION_BY_ITS_ENTRY = refuse(
-  '/application/(?!index\\.ts$|testing/index\\.ts$)',
+  '/application/(?!index\\.ts$)',
   'L’application s’importe par son point d’entrée, `application/index.ts` (ADR 0025).',
 );
 const imports = (...patterns) => ({
@@ -75,50 +74,38 @@ export default defineConfig([
     files: ['**/*.js'],
     extends: [tseslint.configs.disableTypeChecked],
   },
-  // Le domaine : relatif seulement, rien d'une autre couche. Ses tests ont droit à vitest.
+  // Les couches du back (ADR 0023, ADR 0025). Seul le code de `src/` est
+  // contraint : les tests, dans `tests/`, importent ce qu'ils testent.
+  // Le domaine : relatif seulement, rien d'une autre couche.
   {
-    files: ['backend/domain/**/*.ts'],
-    rules: imports(ONLY_RELATIVE, NOT_APPLICATION, NOT_INFRASTRUCTURE, NOT_TESTING, NOT_OUTSIDE),
+    files: ['backend/src/domain/**/*.ts'],
+    rules: imports(ONLY_RELATIVE, NOT_APPLICATION, NOT_INFRASTRUCTURE, NOT_TESTS, NOT_OUTSIDE),
   },
+  // L'application : le domaine seulement, par son point d'entrée.
   {
-    files: ['backend/domain/**/*.test.ts', 'backend/domain/testing/**/*.ts'],
-    rules: imports(ONLY_RELATIVE_OR_VITEST, NOT_APPLICATION, NOT_INFRASTRUCTURE, NOT_OUTSIDE),
-  },
-  // L'application : le domaine seulement. Ses tests et ses outils de test ont droit à vitest.
-  {
-    files: ['backend/application/**/*.ts'],
-    rules: imports(
-      ONLY_RELATIVE,
-      NOT_INFRASTRUCTURE,
-      NOT_TESTING,
-      NOT_OUTSIDE,
-      DOMAIN_BY_ITS_ENTRY,
-    ),
-  },
-  {
-    files: ['backend/application/**/*.test.ts', 'backend/application/testing/**/*.ts'],
-    rules: imports(ONLY_RELATIVE_OR_VITEST, NOT_INFRASTRUCTURE, NOT_OUTSIDE, DOMAIN_BY_ITS_ENTRY),
+    files: ['backend/src/application/**/*.ts'],
+    rules: imports(ONLY_RELATIVE, NOT_INFRASTRUCTURE, NOT_TESTS, NOT_OUTSIDE, DOMAIN_BY_ITS_ENTRY),
   },
   // L'infrastructure : la périphérie. Ses paquets npm (postgres), mais rien du
-  // dépôt par son nom, et pas les faux en mémoire hors de ses tests.
+  // dépôt par son nom, et le reste du back par ses points d'entrée.
   {
-    files: ['backend/infrastructure/**/*.ts'],
+    files: ['backend/src/infrastructure/**/*.ts'],
     rules: imports(
       NOT_BY_PACKAGE_NAME,
-      NOT_TESTING,
+      NOT_TESTS,
       NOT_OUTSIDE,
       DOMAIN_BY_ITS_ENTRY,
       APPLICATION_BY_ITS_ENTRY,
     ),
   },
+  // L'outil de migration n'importe pas ses tests.
   {
-    files: ['backend/infrastructure/**/*.test.ts'],
-    rules: imports(NOT_BY_PACKAGE_NAME, NOT_OUTSIDE, DOMAIN_BY_ITS_ENTRY, APPLICATION_BY_ITS_ENTRY),
+    files: ['tools/migrate-v1/src/**/*.ts'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [NOT_TESTS] }] },
   },
   // Le site lit par `DataSource` (ADR 0019) : du back, il n'utilise que le domaine.
   {
     files: ['frontend/src/**/*.{ts,tsx}'],
-    ignores: ['frontend/src/**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -138,6 +125,7 @@ export default defineConfig([
               '^\\.{1,2}/.*/backend/',
               'Le site importe le back par `@arrakis/backend/domain`.',
             ),
+            NOT_TESTS,
           ],
         },
       ],
@@ -146,7 +134,7 @@ export default defineConfig([
   // Le site : les règles des hooks React. La v1 a connu un appel conditionnel
   // de hook qu'aucun outil ne signalait (ADR 0006).
   {
-    files: ['frontend/src/**/*.{ts,tsx}'],
+    files: ['frontend/{src,tests}/**/*.{ts,tsx}'],
     extends: [reactHooks.configs.flat.recommended],
   },
   // Scripts lancés par Node, hors du navigateur.

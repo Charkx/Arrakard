@@ -18,17 +18,17 @@ l'arborescence trop complexe.
 Trois paquets au lieu de cinq :
 
 - **`frontend/`** (`@arrakis/frontend`) : le site React ;
-- **`backend/`** (`@arrakis/backend`) : le serveur, en trois dossiers, un par
-  couche de l'ADR 0023, sans dossier `src/` :
-  - `domain/` : les règles pures ;
-  - `application/` : les cas d'usage et leurs ports ;
-  - `infrastructure/` : les adaptateurs, Postgres aujourd'hui ;
+- **`backend/`** (`@arrakis/backend`) : le serveur, dont le code (`src/`) se
+  range en trois dossiers, un par couche de l'ADR 0023 :
+  - `src/domain/` : les règles pures ;
+  - `src/application/` : les cas d'usage et leurs ports ;
+  - `src/infrastructure/` : les adaptateurs, Postgres aujourd'hui ;
 - **`tools/migrate-v1/`** : l'outil de migration, supprimé après la bascule.
 
 `supabase/` reste à la racine, où l'outil de Supabase le cherche : ses Edge
 Functions sont des adaptateurs HTTP, rangés là par contrainte.
 
-`backend/contracts/` accueillera les contrats (Zod) prévus par l'ADR 0001,
+`backend/src/contracts/` accueillera les contrats (Zod) prévus par l'ADR 0001,
 quand la première commande aura une entrée à valider.
 
 La règle des dépendances ne passe plus par les paquets mais par les dossiers.
@@ -38,6 +38,22 @@ que par son point d'entrée (`index.ts`), et le site n'utilise du back que le
 domaine (`@arrakis/backend/domain`). Le domaine et l'application sont
 vérifiés sans les types de Node (`tsconfig.pure.json`), comme avant.
 
+### Les tests
+
+Dans chaque paquet, les tests vivent dans `tests/`, à côté de `src/`, et en
+reprennent l'arborescence :
+
+- `tests/unit/` : le miroir de `src/`, lancé par `pnpm check` ;
+- `tests/integration/` : les tests sur la base locale, lancés par `pnpm test:db`
+  (ils remplacent le suffixe `.db.test.ts`) ;
+- `tests/support/` : jeux d'essai, ports en mémoire, suites de contrat.
+
+Les tests importent le code par les imports internes du paquet (champ `imports`
+du `package.json`, standard de Node) : `#domain/…`, `#application/…`,
+`#infrastructure/…` dans le back, `#src/…` ailleurs, et `#support/…` pour leurs
+outils. Le code de `src/` garde des imports relatifs (Deno) et n'importe jamais
+`tests/` : le lint le refuse.
+
 ## Options écartées
 
 - **Ranger les cinq paquets par couche** (`core/`, `adapters/`, `apps/`,
@@ -45,17 +61,22 @@ vérifiés sans les types de Node (`tsconfig.pure.json`), comme avant.
   configuration.
 - **Mettre `supabase/` dans `backend/`** : tout le serveur au même endroit,
   mais chaque commande Supabase devrait préciser `--workdir backend`.
-- **Garder un dossier `src/` dans le back** : la même forme partout, mais un
-  niveau de plus avant de voir les couches.
+- **Le back sans dossier `src/`** : un niveau de moins, mais `tests/` serait
+  alors rangé à côté des couches, comme une quatrième couche.
+- **Les tests à côté du code** (`rating.ts` et `rating.test.ts`) : on voit le test
+  près de son fichier, mais le code se mêle aux tests et aux jeux d'essai, et
+  les tests sur la base ne se distinguent que par un suffixe. Les deux formes
+  se pratiquent ; Vitest n'en impose aucune.
 
 ## Conséquences
 
 - Moins de configuration : un `package.json` pour tout le serveur, une config
   de tests, des seuils de couverture par couche.
-- Les couches se lisent en ouvrant `backend/`.
-- Un nouvel adaptateur (Discord, par exemple) va dans `infrastructure/`, qui
+- Les couches se lisent en ouvrant `backend/src/`, et `src/` ne contient que
+  ce qui part en production.
+- Un nouvel adaptateur (Discord, par exemple) va dans `src/infrastructure/`, qui
   se découpera alors en un sous-dossier par adaptateur.
 - Plus difficile : la frontière entre couches n'est plus celle d'un paquet,
   seul le lint la tient. Les ADR acceptés gardent les chemins de leur date,
   avec un encart qui renvoie ici. L'hébergeur du site doit pointer vers
-  `frontend/`.
+  `frontend/`. Déplacer un fichier oblige à déplacer son test dans le miroir.

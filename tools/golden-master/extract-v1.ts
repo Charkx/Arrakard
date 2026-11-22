@@ -32,7 +32,10 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const OUTPUT = resolve(import.meta.dirname, '../../backend/domain/golden-master/v1.json');
+const OUTPUT = resolve(
+  import.meta.dirname,
+  '../../backend/tests/unit/domain/golden-master/v1.json',
+);
 
 const { V1_REPO, V1_EXPORT, V1_BACKUP, V1_REFERENCE, SUPABASE_URL, SUPABASE_ANON_KEY } =
   process.env;

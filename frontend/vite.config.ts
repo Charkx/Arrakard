@@ -6,21 +6,15 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.{ts,tsx}'],
-    // Les tests sur l'API locale : `pnpm test:db`.
-    exclude: ['src/**/*.db.test.ts'],
-    setupFiles: ['src/testing/setup.ts'],
+    // Les tests unitaires. Ceux sur l'API locale (`tests/integration`) : `pnpm test:db`.
+    include: ['tests/unit/**/*.test.{ts,tsx}'],
+    setupFiles: ['tests/support/setup.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
       // main.tsx branche le site sur la page ; supabase-source.ts parle à l'API,
       // et se vérifie sur la base locale (README).
-      exclude: [
-        'src/**/*.test.{ts,tsx}',
-        'src/main.tsx',
-        'src/data/supabase-source.ts',
-        'src/testing/**',
-      ],
+      exclude: ['src/main.tsx', 'src/data/supabase-source.ts'],
     },
   },
 });

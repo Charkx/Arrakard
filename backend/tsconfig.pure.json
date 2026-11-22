@@ -5,7 +5,5 @@
   "compilerOptions": {
     "types": []
   },
-  "include": ["domain", "application"],
-  // Les tests et leurs outils ne tournent que sous Node, avec vitest.
-  "exclude": ["**/*.test.ts", "**/testing/**"]
+  "include": ["src/domain", "src/application"]
 }

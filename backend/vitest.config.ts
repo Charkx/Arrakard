@@ -4,29 +4,26 @@ const AT_LEAST_95 = { lines: 95, functions: 95, branches: 95, statements: 95 };
 
 export default defineConfig({
   test: {
-    include: ['{domain,application,infrastructure}/**/*.test.ts'],
-    // Les tests sur la base locale tournent avec `pnpm test:db`.
-    exclude: ['**/*.db.test.ts', 'node_modules/**'],
+    // Les tests unitaires. Ceux sur la base locale (`tests/integration`) tournent avec `pnpm test:db`.
+    include: ['tests/unit/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['{domain,application,infrastructure}/**/*.ts'],
+      include: ['src/**/*.ts'],
       exclude: [
-        '**/*.test.ts',
         '**/index.ts',
-        'domain/testing/**',
-        // Ce qui parle à la base est couvert par les tests sur la base locale (`pnpm test:db`).
-        'infrastructure/local.ts',
-        'infrastructure/organizations.ts',
-        'infrastructure/ports.ts',
-        'infrastructure/read.ts',
-        'infrastructure/tables.ts',
-        'infrastructure/write.ts',
+        // Ce qui parle à la base est couvert par les tests d'intégration (`pnpm test:db`).
+        'src/infrastructure/local.ts',
+        'src/infrastructure/organizations.ts',
+        'src/infrastructure/ports.ts',
+        'src/infrastructure/read.ts',
+        'src/infrastructure/tables.ts',
+        'src/infrastructure/write.ts',
       ],
       // ADR 0006 : au moins 95 %, couche par couche.
       thresholds: {
-        'domain/**': AT_LEAST_95,
-        'application/**': AT_LEAST_95,
-        'infrastructure/**': AT_LEAST_95,
+        'src/domain/**': AT_LEAST_95,
+        'src/application/**': AT_LEAST_95,
+        'src/infrastructure/**': AT_LEAST_95,
       },
     },
   },

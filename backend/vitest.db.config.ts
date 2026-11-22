@@ -1,9 +1,9 @@
 import { defineConfig } from 'vitest/config';
 
-// Tests sur la base locale (`pnpm db:start`) : ils tournent avec `pnpm test:db`.
+// Tests d'intégration, sur la base locale (`pnpm db:start`) : ils tournent avec `pnpm test:db`.
 export default defineConfig({
   test: {
-    include: ['infrastructure/**/*.db.test.ts'],
+    include: ['tests/integration/**/*.test.ts'],
     fileParallelism: false,
   },
 });

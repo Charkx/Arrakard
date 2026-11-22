@@ -4,6 +4,6 @@ import { defineConfig } from 'vitest/config';
 // à part de `pnpm check`, avec les tests de la base.
 export default defineConfig({
   test: {
-    include: ['src/**/*.db.test.ts'],
+    include: ['tests/integration/**/*.test.ts'],
   },
 });
