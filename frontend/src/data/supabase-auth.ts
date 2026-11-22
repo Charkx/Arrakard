@@ -1,5 +1,7 @@
 import { AuthClient, type Session } from '@supabase/auth-js';
 import { PostgrestClient } from '@supabase/postgrest-js';
+import type { EditionType } from '@arrakis/backend/domain';
+import type { AdminEdition } from '../features/admin/admin.ts';
 import type { AuthSource, MemberRole, SignedInUser } from './auth-source.ts';
 import { supabaseConfig } from './supabase-config.ts';
 import { organizationId } from './supabase-source.ts';
@@ -103,6 +105,17 @@ export function supabaseAuth({ api, key, organizationSlug } = supabaseConfig()):
       });
       if (error) throw error;
     },
+    async adminEditions() {
+      const { data, error } = await client.getSession();
+      if (error) throw error;
+      if (!data.session) throw new Error('Personne n’est connecté.');
+      const db = rest(data.session.access_token);
+      const rows = await db.rpc('admin_editions', {
+        org: await organizationId(db, organizationSlug),
+      });
+      if (rows.error) throw rows.error;
+      return (rows.data as readonly AdminEditionRow[]).map(toAdminEdition);
+    },
     async signOut() {
       returningFromDiscord = false;
       synced = undefined;
@@ -121,3 +134,32 @@ function displayName({ user }: Session): string {
   };
   return metadata.custom_claims?.global_name ?? metadata.full_name ?? metadata.name ?? '';
 }
+
+/** Une ligne de `admin_editions` (migration 20261122050000_admin_editions.sql). */
+interface AdminEditionRow {
+  readonly edition_id: string;
+  readonly name: string;
+  readonly type: EditionType;
+  readonly date: string;
+  readonly season_id: string | null;
+  readonly season_name: string | null;
+  readonly season_status: 'open' | 'closed' | null;
+  readonly closed_at: string | null;
+  readonly has_results: boolean;
+  readonly has_final: boolean;
+  readonly draft_count: number;
+}
+
+const toAdminEdition = (r: AdminEditionRow): AdminEdition => ({
+  editionId: r.edition_id,
+  name: r.name,
+  type: r.type,
+  date: r.date,
+  seasonId: r.season_id,
+  seasonName: r.season_name,
+  seasonStatus: r.season_status,
+  closedAt: r.closed_at,
+  hasPublishedResults: r.has_results,
+  hasPublishedFinal: r.has_final,
+  draftCount: r.draft_count,
+});

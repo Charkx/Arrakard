@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthSource } from '../../data/DataContext.tsx';
 import type { SignedInUser } from '../../data/auth-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
@@ -85,7 +86,14 @@ export function LoginPage() {
               {signOut}
             </div>
           ) : (
-            signOut
+            <div className="auth-actions">
+              {state.user.role === 'admin' && (
+                <Link to="/admin" className="auth-button">
+                  {t('auth.openAdmin')}
+                </Link>
+              )}
+              {signOut}
+            </div>
           )}
         </>
       )}

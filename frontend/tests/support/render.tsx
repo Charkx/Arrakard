@@ -109,6 +109,7 @@ const NOBODY: AuthSource = {
   currentUser: () => Promise.resolve(null),
   signIn: () => Promise.resolve(),
   signOut: () => Promise.resolve(),
+  adminEditions: () => Promise.reject(new Error('Réservé aux admins.')),
 };
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */

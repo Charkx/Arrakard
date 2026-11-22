@@ -14,11 +14,11 @@ import {
   type EditionMatch,
   type EditionPageData,
   type MatchPlayer,
-  todayInParis,
   type StandingRow,
 } from './edition.ts';
 import type { DataSource } from '../../data/data-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
+import { todayInParis } from '../../shared/today.ts';
 
 const loadEdition = (source: DataSource, editionId: string): Promise<EditionPageData | null> =>
   source.loadEdition(editionId);

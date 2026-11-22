@@ -21,6 +21,7 @@ function fakeAuth(user: SignedInUser | null | 'fails') {
     ),
     signIn: vi.fn(() => Promise.resolve()),
     signOut: vi.fn(() => Promise.resolve()),
+    adminEditions: vi.fn(() => Promise.resolve([])),
   } satisfies AuthSource;
   return auth;
 }
@@ -40,6 +41,8 @@ describe('la page de connexion', () => {
 
     expect(await screen.findByText('Connecté en tant que Kinox.')).toBeTruthy();
     expect(screen.getByText('Tu es admin d’Arrakis.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('link', { name: 'Ouvrir l’espace admin' }));
+    expect(screen.getByTestId('address').textContent).toBe('/admin');
   });
 
   it('dit à un joueur du serveur qu’il est membre, sans droits d’admin', async () => {
