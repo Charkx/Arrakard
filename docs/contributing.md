@@ -58,9 +58,12 @@ code : voir [Travailler avec un agent](#travailler-avec-un-agent).
   `tests/`, qui reprend l'arborescence de `src/` :
   - `tests/unit/` : le miroir de `src/` (`src/domain/rating/rating.ts` se teste
     dans `tests/unit/domain/rating/rating.test.ts`), lancé par `pnpm check` ;
+    Deux exceptions, sans fichier source en face : le golden master
+    (`tests/unit/domain/golden-master/`, qui vérifie tout le domaine contre la
+    v1) et les tests des outils de test eux-mêmes (`tests/unit/support/`) ;
   - `tests/integration/` : les tests qui ont besoin de la base locale, lancés par
     `pnpm test:db` ;
-  - `tests/support/` : jeux d'essai, faux en mémoire, suites de contrat.
+  - `tests/support/` : jeux d'essai, entrepôts en mémoire, suites de contrat, outils des tests.
 
   Un test importe le code par les imports internes du paquet (`#domain/…`,
   `#application/…`, `#src/…`) et ses outils par `#support/…`. Le code de `src/`

@@ -28,8 +28,8 @@ const NOT_INFRASTRUCTURE = refuse(
   'Seule l’infrastructure parle à la base : le centre ne l’importe pas (ADR 0023).',
 );
 const NOT_TESTS = refuse(
-  '^#support/|(^|/)tests/',
-  'Le code de `src/` n’importe jamais les tests ni leurs outils (ADR 0025).',
+  '^#|(^|/)tests/',
+  'Le code de `src/` importe en relatif, et jamais les tests : les alias `#…` sont réservés aux tests (ADR 0025).',
 );
 const NOT_OUTSIDE = refuse(
   '(^|/)(frontend|tools)/',
@@ -97,6 +97,23 @@ export default defineConfig([
       DOMAIN_BY_ITS_ENTRY,
       APPLICATION_BY_ITS_ENTRY,
     ),
+  },
+  // Les tests du domaine et leurs outils restent du côté du domaine.
+  {
+    files: ['backend/tests/unit/domain/**/*.ts', 'backend/tests/support/domain/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            refuse(
+              '^#(application|infrastructure)/',
+              'Un test du domaine n’importe ni l’application ni l’infrastructure (ADR 0023).',
+            ),
+          ],
+        },
+      ],
+    },
   },
   // L'outil de migration n'importe pas ses tests.
   {

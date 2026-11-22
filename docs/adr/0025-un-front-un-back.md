@@ -43,16 +43,19 @@ vérifiés sans les types de Node (`tsconfig.pure.json`), comme avant.
 Dans chaque paquet, les tests vivent dans `tests/`, à côté de `src/`, et en
 reprennent l'arborescence :
 
-- `tests/unit/` : le miroir de `src/`, lancé par `pnpm check` ;
+- `tests/unit/` : le miroir de `src/`, lancé par `pnpm check`, sauf le golden
+  master (`tests/unit/domain/golden-master/`) et les tests des outils de test
+  (`tests/unit/support/`), qui n'ont pas de fichier source en face ;
 - `tests/integration/` : les tests sur la base locale, lancés par `pnpm test:db`
   (ils remplacent le suffixe `.db.test.ts`) ;
-- `tests/support/` : jeux d'essai, ports en mémoire, suites de contrat.
+- `tests/support/` : jeux d'essai, entrepôts en mémoire, suites de contrat, outils des tests.
 
 Les tests importent le code par les imports internes du paquet (champ `imports`
 du `package.json`, standard de Node) : `#domain/…`, `#application/…`,
 `#infrastructure/…` dans le back, `#src/…` ailleurs, et `#support/…` pour leurs
-outils. Le code de `src/` garde des imports relatifs (Deno) et n'importe jamais
-`tests/` : le lint le refuse.
+outils. Le code de `src/` garde des imports relatifs (Deno), n'utilise aucun
+alias `#…` et n'importe jamais `tests/` : le lint le refuse. Les tests du
+domaine n'importent ni l'application ni l'infrastructure.
 
 ## Options écartées
 

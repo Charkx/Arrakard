@@ -112,7 +112,7 @@ arrakis/
 │   └── tests/
 │       ├── unit/            Le miroir de src/ (pnpm check)
 │       ├── integration/     Sur la base locale (pnpm test:db)
-│       └── support/         Jeux d'essai, ports en mémoire, suites de contrat
+│       └── support/         Jeux d'essai, entrepôts en mémoire, suites de contrat
 ├── supabase/
 │   ├── migrations/
 │   ├── functions/           Adaptateur HTTP, une fonction mince par commande (place imposée par Supabase)
