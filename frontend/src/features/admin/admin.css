@@ -220,3 +220,43 @@
   flex-wrap: wrap;
   gap: 16px;
 }
+
+.admin-edition-form .admin-wide {
+  flex-basis: 100%;
+}
+
+.admin-form textarea {
+  padding: 8px 10px;
+  border: 0.5px solid var(--border-med);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.admin-participants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.admin-participants legend {
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.admin-form .admin-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-edition-name .admin-edit {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}

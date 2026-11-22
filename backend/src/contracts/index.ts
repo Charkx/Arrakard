@@ -12,3 +12,13 @@ export { archiveTeamRequest, createTeamRequest, transferPlayerRequest } from './
 export type { ArchiveTeamRequest, CreateTeamRequest, TransferPlayerRequest } from './team.ts';
 export { linkDiscordAccountRequest, mergePlayersRequest } from './player.ts';
 export type { LinkDiscordAccountRequest, MergePlayersRequest } from './player.ts';
+export {
+  archiveEditionRequest,
+  createEditionRequest,
+  updateEditionRequest,
+} from './edition-details.ts';
+export type {
+  ArchiveEditionRequest,
+  CreateEditionRequest,
+  UpdateEditionRequest,
+} from './edition-details.ts';

@@ -3,6 +3,7 @@ export { describeCloseEditionContract } from './close-edition-contract.ts';
 export { DRAFT_MATCH_NUMBER, NOW } from './command-harness.ts';
 export type {
   CommandHarness,
+  EditionRecord,
   EditionSnapshot,
   ProfileRecord,
   SeasonRecord,
@@ -12,6 +13,7 @@ export type {
 } from './command-harness.ts';
 export { describeTeamContract } from './team-contract.ts';
 export { describePlayerContract } from './player-contract.ts';
+export { describeEditionContract } from './edition-contract.ts';
 export { describeSeasonContract } from './season-contract.ts';
 export { inMemoryCommandHarness } from './in-memory-harness.ts';
 export { describePublishEditionContract } from './publish-edition-contract.ts';

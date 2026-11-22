@@ -1,5 +1,6 @@
 import type {
   CommandLogEntry,
+  EditionDetails,
   CommandServices,
   Publication,
   RosterStatus,
@@ -34,6 +35,11 @@ export interface CommandHarness {
     organizationId: string,
     editionId: string,
   ) => Promise<EditionSnapshot | undefined>;
+  /** Ce qu'un admin a saisi d'une édition, et son archivage. */
+  readonly editionRecord: (
+    organizationId: string,
+    editionId: string,
+  ) => Promise<EditionRecord | undefined>;
   /** Les lignes du journal des commandes de l'organisation. */
   readonly commandLog: (organizationId: string) => Promise<readonly CommandLogEntry[]>;
   /** L'organisation a-t-elle des projections écrites ? */
@@ -80,6 +86,11 @@ export interface CommandHarness {
   readonly team: (organizationId: string, teamId: string) => Promise<TeamRecord | undefined>;
   /** Les passages du joueur dans des équipes, du plus ancien au plus récent. */
   readonly stints: (organizationId: string, playerId: string) => Promise<readonly StintRecord[]>;
+}
+
+/** Une édition telle qu'une commande la laisse ; participants triés. */
+export interface EditionRecord extends EditionDetails {
+  readonly archived: boolean;
 }
 
 /** Un profil de joueur tel qu'une commande le laisse. */

@@ -33,6 +33,8 @@ export function inMemoryCommandHarness(): CommandHarness {
     },
     edition: (organizationId, editionId) =>
       Promise.resolve(store.editionOf(organizationId, editionId)),
+    editionRecord: (organizationId, editionId) =>
+      Promise.resolve(store.editionRecordOf(organizationId, editionId)),
     commandLog: (organizationId) => Promise.resolve(store.commandLogOf(organizationId)),
     hasProjections: (organizationId) =>
       Promise.resolve(store.projectionsOf(organizationId) !== undefined),

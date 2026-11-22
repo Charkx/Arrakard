@@ -8,6 +8,7 @@ import {
 } from '#application/index.ts';
 import type { DiscordConfig, MemberRole, Publication, SeasonStatus } from '#application/index.ts';
 import type {
+  EditionRecord,
   EditionSnapshot,
   ProfileRecord,
   SeasonRecord,
@@ -36,6 +37,8 @@ interface StoredOrganization {
   facts: Facts;
   readonly members: Map<string, MemberRole>;
   readonly editions: Map<string, EditionSnapshot>;
+  /** Ce qu'un admin a saisi des éditions, hors faits de jeu. */
+  readonly editionRecords: Map<string, EditionRecord>;
   readonly drafts: Map<string, DraftMatch>;
   readonly seasons: Map<string, StoredSeason>;
   readonly teams: Map<string, TeamRecord>;
@@ -96,6 +99,8 @@ export interface InMemoryStore extends RecomputePorts {
   performanceMatchIdsOf(organizationId: string, playerId: string): readonly string[];
   /** Marque un profil comme fusionné dans un autre. */
   markMerged(organizationId: string, absorbedId: string, keptId: string): void;
+  /** Ce qu'un admin a saisi d'une édition de l'organisation. */
+  editionRecordOf(organizationId: string, editionId: string): EditionRecord | undefined;
   /** Les passages d'un joueur de l'organisation. */
   stintsOf(organizationId: string, playerId: string): readonly StintRecord[];
   /** La version et la clôture d'une édition de l'organisation. */
@@ -178,12 +183,50 @@ export function inMemoryStore(): InMemoryStore {
         const seasonId = organization.facts.editions.find((e) => e.id === editionId)?.seasonId;
         const seasonClosed =
           seasonId != null && organization.seasons.get(seasonId)?.status === 'closed';
-        return Promise.resolve({ ...meta, draftMatchIds, seasonClosed });
+        const record = organization.editionRecords.get(editionId);
+        if (!record) return Promise.resolve(undefined);
+        const matchCount =
+          organization.facts.matches.filter((m) => m.editionId === editionId).length +
+          draftMatchIds.length;
+        return Promise.resolve({
+          ...meta,
+          draftMatchIds,
+          seasonClosed,
+          type: record.type,
+          archived: record.archived,
+          matchCount,
+        });
       },
       close(organizationId, editionId, closedAt, version) {
         return Promise.resolve().then(() =>
           bump(find(organizationId), editionId, version, { closedAt }),
         );
+      },
+      create(organizationId, edition) {
+        const organization = find(organizationId);
+        const editionId = crypto.randomUUID();
+        organization.editions.set(editionId, { version: 1, closedAt: null });
+        organization.editionRecords.set(editionId, { ...edition, archived: false });
+        setEditionFact(organization, editionId, edition);
+        return Promise.resolve(editionId);
+      },
+      update(organizationId, editionId, edition, version) {
+        return Promise.resolve().then(() => {
+          const organization = find(organizationId);
+          const newVersion = bump(organization, editionId, version);
+          organization.editionRecords.set(editionId, { ...edition, archived: false });
+          setEditionFact(organization, editionId, edition);
+          return newVersion;
+        });
+      },
+      archive(organizationId, editionId, _archivedAt, version) {
+        return Promise.resolve().then(() => {
+          const organization = find(organizationId);
+          const newVersion = bump(organization, editionId, version);
+          const record = organization.editionRecords.get(editionId);
+          if (record) organization.editionRecords.set(editionId, { ...record, archived: true });
+          return newVersion;
+        });
       },
       publish(organizationId, publication, version) {
         return Promise.resolve().then(() => {
@@ -395,6 +438,24 @@ export function inMemoryStore(): InMemoryStore {
         facts,
         members: new Map(),
         editions: new Map(facts.editions.map((e) => [e.id, { version: 1, closedAt: null }])),
+        editionRecords: new Map(
+          facts.editions.map((e, i) => [
+            e.id,
+            {
+              name: `Édition d’essai ${String(i + 1)}`,
+              type: e.type,
+              date: e.date,
+              seasonId: e.seasonId,
+              prestige: e.prestige,
+              location: null,
+              url: null,
+              description: null,
+              arrakisWon: null,
+              participantIds: [],
+              archived: false,
+            },
+          ]),
+        ),
         drafts: new Map(),
         seasons: new Map(
           facts.seasons.map((s, i) => [
@@ -456,6 +517,10 @@ export function inMemoryStore(): InMemoryStore {
         .map((p) => p.matchId)
         .sort();
     },
+    editionRecordOf(organizationId, editionId) {
+      const record = organizations.get(organizationId)?.editionRecords.get(editionId);
+      return record && { ...record, participantIds: [...record.participantIds].sort() };
+    },
     markMerged(organizationId, absorbedId, keptId) {
       find(organizationId).mergedInto.set(absorbedId, keptId);
     },
@@ -466,6 +531,20 @@ export function inMemoryStore(): InMemoryStore {
     commandLogOf: (organizationId) => organizations.get(organizationId)?.commandLog ?? [],
     publicationsOf: (organizationId) => organizations.get(organizationId)?.publications ?? [],
     unitOfWork: { run: (_organizationId, work) => work(transactionPorts) },
+  };
+}
+
+/** Écrit dans les faits ce que le recalcul lit d'une édition. */
+function setEditionFact(
+  organization: StoredOrganization,
+  editionId: string,
+  { type, date, seasonId, prestige }: EditionRecord | Omit<EditionRecord, 'archived'>,
+): void {
+  const others = organization.facts.editions.filter((e) => e.id !== editionId);
+  const previous = organization.facts.editions.find((e) => e.id === editionId);
+  organization.facts = {
+    ...organization.facts,
+    editions: [...others, { ...previous, id: editionId, type, date, seasonId, prestige }],
   };
 }
 

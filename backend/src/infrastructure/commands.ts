@@ -2,6 +2,7 @@ import {
   CommandRejected,
   type Clock,
   type CommandLog,
+  type EditionDetails,
   type EditionRepository,
   type IdentityRepository,
   type MembershipRepository,
@@ -12,6 +13,7 @@ import {
   type TeamRepository,
   type UnitOfWork,
 } from '../application/index.ts';
+import type { EditionType } from '../domain/index.ts';
 import type { Sql, TransactionSql } from 'postgres';
 import { postgresRecomputePorts } from './ports.ts';
 
@@ -89,11 +91,15 @@ function postgresEditions(tx: TransactionSql): EditionRepository {
           closed_at: Date | null;
           draft_match_ids: string[];
           season_closed: boolean;
+          type: EditionType;
+          archived: boolean;
+          match_count: number;
         }[]
       >`
-        select e.version, e.closed_at,
+        select e.version, e.closed_at, e.type, e.archived_at is not null as archived,
                array(select m.id from matches m where m.edition_id = e.id and m.draft order by m.id)
                  as draft_match_ids,
+               (select count(*)::int from matches m where m.edition_id = e.id) as match_count,
                coalesce(s.status = 'closed', false) as season_closed
         from editions e
         left join seasons s on s.id = e.season_id
@@ -104,6 +110,9 @@ function postgresEditions(tx: TransactionSql): EditionRepository {
           closedAt: toIso(edition.closed_at),
           draftMatchIds: edition.draft_match_ids,
           seasonClosed: edition.season_closed,
+          type: edition.type,
+          archived: edition.archived,
+          matchCount: edition.match_count,
         }
       );
     },
@@ -111,6 +120,29 @@ function postgresEditions(tx: TransactionSql): EditionRepository {
       const newVersion = await bumpVersion(tx, organizationId, editionId, version);
       await tx`
         update editions set closed_at = ${closedAt}
+        where organization_id = ${organizationId} and id = ${editionId}`;
+      return newVersion;
+    },
+    async create(organizationId, edition) {
+      const [created] = await tx<{ id: string }[]>`
+        insert into editions ${tx(editionColumns(organizationId, edition))}
+        returning id`;
+      if (!created) throw new Error(`Édition ${edition.name} : écriture impossible.`);
+      await setParticipants(tx, organizationId, created.id, edition.participantIds);
+      return created.id;
+    },
+    async update(organizationId, editionId, edition, version) {
+      const newVersion = await bumpVersion(tx, organizationId, editionId, version);
+      await tx`
+        update editions set ${tx(editionColumns(organizationId, edition))}
+        where organization_id = ${organizationId} and id = ${editionId}`;
+      await setParticipants(tx, organizationId, editionId, edition.participantIds);
+      return newVersion;
+    },
+    async archive(organizationId, editionId, archivedAt, version) {
+      const newVersion = await bumpVersion(tx, organizationId, editionId, version);
+      await tx`
+        update editions set archived_at = ${archivedAt}
         where organization_id = ${organizationId} and id = ${editionId}`;
       return newVersion;
     },
@@ -127,6 +159,44 @@ function postgresEditions(tx: TransactionSql): EditionRepository {
       return { publicationId: publication.id, version: newVersion };
     },
   };
+}
+
+/** Les colonnes d'une édition que saisit un admin. */
+function editionColumns(
+  organizationId: string,
+  e: EditionDetails,
+): Record<string, string | boolean | null> {
+  return {
+    organization_id: organizationId,
+    name: e.name,
+    type: e.type,
+    date: e.date,
+    season_id: e.seasonId,
+    prestige: e.prestige,
+    location: e.location,
+    url: e.url,
+    description: e.description,
+    arrakis_won: e.arrakisWon,
+  };
+}
+
+/** Remplace les participants d'une édition. */
+async function setParticipants(
+  tx: TransactionSql,
+  organizationId: string,
+  editionId: string,
+  playerIds: readonly string[],
+): Promise<void> {
+  await tx`delete from edition_participants where edition_id = ${editionId}`;
+  if (playerIds.length === 0) return;
+  await tx`
+    insert into edition_participants ${tx(
+      playerIds.map((playerId) => ({
+        organization_id: organizationId,
+        edition_id: editionId,
+        player_id: playerId,
+      })),
+    )}`;
 }
 
 /**

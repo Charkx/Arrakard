@@ -1,6 +1,6 @@
 import { AuthClient, type Session } from '@supabase/auth-js';
 import { PostgrestClient } from '@supabase/postgrest-js';
-import type { Division, EditionType } from '@arrakis/backend/domain';
+import type { Division, EditionType, Prestige } from '@arrakis/backend/domain';
 import type { AdminEdition, SeasonStatus } from '../features/admin/admin.ts';
 import type { RosterStatus } from '../features/admin/teams.ts';
 import { CommandFailed, type AdminSource } from './admin-source.ts';
@@ -131,8 +131,8 @@ export function supabaseSession(
     return data.session.access_token;
   }
 
-  /** Envoie une commande à son Edge Function (ADR 0026). */
-  async function command(name: string, input: Record<string, unknown>): Promise<void> {
+  /** Envoie une commande à son Edge Function (ADR 0026), et rend son résultat. */
+  async function command(name: string, input: object): Promise<unknown> {
     const token = await accessToken();
     const response = await fetch(`${api}/functions/v1/${name}`, {
       method: 'POST',
@@ -150,6 +150,7 @@ export function supabaseSession(
       const body = (await response.json().catch(() => ({}))) as { message?: string };
       throw new CommandFailed(body.message ?? String(response.status));
     }
+    return response.json();
   }
 
   const admin: AdminSource = {
@@ -172,8 +173,12 @@ export function supabaseSession(
       if (error) throw error;
       return data;
     },
-    openSeason: (name, year) => command('open-season', { name, year }),
-    closeSeason: (seasonId) => command('close-season', { seasonId }),
+    openSeason: async (name, year) => {
+      await command('open-season', { name, year });
+    },
+    closeSeason: async (seasonId) => {
+      await command('close-season', { seasonId });
+    },
     async rosters() {
       // Les équipes et les passages sont publics (ADR 0031) : l'API ordinaire.
       const db = rest(await accessToken());
@@ -217,9 +222,15 @@ export function supabaseSession(
         players: players.data.map((p) => ({ ...p, place: places.get(p.id) ?? null })),
       };
     },
-    createTeam: (tag, name, divisions) => command('create-team', { tag, name, divisions }),
-    transferPlayer: (playerId, to) => command('transfer-player', { playerId, to }),
-    archiveTeam: (teamId) => command('archive-team', { teamId }),
+    createTeam: async (tag, name, divisions) => {
+      await command('create-team', { tag, name, divisions });
+    },
+    transferPlayer: async (playerId, to) => {
+      await command('transfer-player', { playerId, to });
+    },
+    archiveTeam: async (teamId) => {
+      await command('archive-team', { teamId });
+    },
     async profiles() {
       // Le compte Discord n'est pas public : une fonction réservée aux admins (ADR 0034).
       const db = rest(await accessToken());
@@ -235,9 +246,86 @@ export function supabaseSession(
         }[]
       ).map((p) => ({ id: p.player_id, nickname: p.nickname, discordUserId: p.discord_user_id }));
     },
-    mergePlayers: (absorbedId, keptId) => command('merge-players', { absorbedId, keptId }),
-    linkDiscordAccount: (playerId, discordUserId) =>
-      command('link-discord-account', { playerId, discordUserId }),
+    mergePlayers: async (absorbedId, keptId) => {
+      await command('merge-players', { absorbedId, keptId });
+    },
+    linkDiscordAccount: async (playerId, discordUserId) => {
+      await command('link-discord-account', { playerId, discordUserId });
+    },
+    async editionForm(editionId) {
+      // Les éditions, les saisons et les joueurs sont publics (ADR 0031).
+      const db = rest(await accessToken());
+      const organization = await organizationId(db, organizationSlug);
+      const [seasons, players, edition, participants] = await Promise.all([
+        db
+          .from('seasons')
+          .select('id, name, status')
+          .eq('organization_id', organization)
+          .order('start_date', { ascending: false })
+          .overrideTypes<{ id: string; name: string; status: SeasonStatus }[], { merge: false }>(),
+        db
+          .from('players')
+          .select('id, nickname')
+          .eq('organization_id', organization)
+          .is('merged_into', null)
+          .order('nickname')
+          .overrideTypes<{ id: string; nickname: string }[], { merge: false }>(),
+        editionId === null
+          ? Promise.resolve({ data: null, error: null })
+          : db
+              .from('editions')
+              .select(
+                'name, type, date, season_id, prestige, location, url, description, arrakis_won, version, closed_at',
+              )
+              .eq('organization_id', organization)
+              .eq('id', editionId)
+              .maybeSingle<EditionRow>(),
+        editionId === null
+          ? Promise.resolve({ data: [], error: null })
+          : db
+              .from('edition_participants')
+              .select('player_id')
+              .eq('edition_id', editionId)
+              .overrideTypes<{ player_id: string }[], { merge: false }>(),
+      ]);
+      for (const result of [seasons, players, edition, participants]) {
+        if (result.error) throw result.error;
+      }
+      const e = edition.data;
+      return {
+        seasons: seasons.data ?? [],
+        players: players.data ?? [],
+        edition:
+          e === null
+            ? null
+            : {
+                name: e.name,
+                type: e.type,
+                date: e.date,
+                seasonId: e.season_id,
+                prestige: e.prestige,
+                location: e.location,
+                url: e.url,
+                description: e.description,
+                arrakisWon: e.arrakis_won,
+                participantIds: (participants.data ?? []).map((p) => p.player_id),
+                version: e.version,
+                closedAt: e.closed_at,
+              },
+      };
+    },
+    async createEdition(details) {
+      return ((await command('create-edition', details)) as { editionId: string }).editionId;
+    },
+    async updateEdition(editionId, version, details) {
+      await command('update-edition', { editionId, version, ...details });
+    },
+    async closeEdition(editionId, version) {
+      await command('close-edition', { editionId, version });
+    },
+    async archiveEdition(editionId, version) {
+      await command('archive-edition', { editionId, version });
+    },
   };
 
   return { auth, admin };
@@ -253,7 +341,22 @@ function displayName({ user }: Session): string {
   return metadata.custom_claims?.global_name ?? metadata.full_name ?? metadata.name ?? '';
 }
 
-/** Une ligne de `admin_editions` (migration 20261122050000_admin_editions.sql). */
+/** Une ligne de `editions`, telle que le formulaire la lit. */
+interface EditionRow {
+  readonly name: string;
+  readonly type: EditionType;
+  readonly date: string;
+  readonly season_id: string | null;
+  readonly prestige: Prestige;
+  readonly location: string | null;
+  readonly url: string | null;
+  readonly description: string | null;
+  readonly arrakis_won: boolean | null;
+  readonly version: number;
+  readonly closed_at: string | null;
+}
+
+/** Une ligne de `admin_editions` (migrations 20261122050000_admin_editions.sql et 20261122070000_archived_editions.sql). */
 interface AdminEditionRow {
   readonly edition_id: string;
   readonly name: string;

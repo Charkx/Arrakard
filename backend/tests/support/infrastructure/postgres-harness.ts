@@ -1,4 +1,9 @@
-import type { CommandLogEntry, RosterStatus, SeasonStatus } from '#application/index.ts';
+import type {
+  CommandLogEntry,
+  EditionDetails,
+  RosterStatus,
+  SeasonStatus,
+} from '#application/index.ts';
 import type { Division } from '#domain/index.ts';
 import { V1_RATING_RULES } from '#domain/index.ts';
 import { postgresUnitOfWork } from '#infrastructure/commands.ts';
@@ -71,6 +76,43 @@ export function postgresCommandHarness(sql: Sql, names: PostgresHarnessNames): C
         where organization_id = ${organizationId} and id = ${editionId}`;
       return (
         edition && { version: edition.version, closedAt: edition.closed_at?.toISOString() ?? null }
+      );
+    },
+    async editionRecord(organizationId, editionId) {
+      const [e] = await sql<
+        {
+          name: string;
+          type: EditionDetails['type'];
+          date: string;
+          season_id: string | null;
+          prestige: EditionDetails['prestige'];
+          location: string | null;
+          url: string | null;
+          description: string | null;
+          arrakis_won: boolean | null;
+          participant_ids: string[];
+          archived: boolean;
+        }[]
+      >`
+        select name, type, date::text, season_id, prestige, location, url, description,
+               arrakis_won, archived_at is not null as archived,
+               array(select player_id from edition_participants p
+                     where p.edition_id = e.id order by player_id) as participant_ids
+        from editions e where organization_id = ${organizationId} and id = ${editionId}`;
+      return (
+        e && {
+          name: e.name,
+          type: e.type,
+          date: e.date,
+          seasonId: e.season_id,
+          prestige: e.prestige,
+          location: e.location,
+          url: e.url,
+          description: e.description,
+          arrakisWon: e.arrakis_won,
+          participantIds: e.participant_ids,
+          archived: e.archived,
+        }
       );
     },
     async commandLog(organizationId) {
