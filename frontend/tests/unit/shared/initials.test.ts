@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { initialsOf } from '#src/data/leaderboard.ts';
+import { initialsOf } from '#src/shared/initials.ts';
 
 describe('initialsOf', () => {
   it.each([

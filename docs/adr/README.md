@@ -48,3 +48,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0026](0026-la-chaine-http-des-commandes.md)            | La chaîne HTTP des commandes                         | Accepté |
 | [0027](0027-statut-calcule-a-l-affichage.md)            | Le statut d'une édition se calcule à l'affichage     | Accepté |
 | [0028](0028-brouillons-caches-par-les-droits.md)        | Les brouillons, cachés par les droits d'accès        | Accepté |
+| [0029](0029-le-site-par-fonctionnalite.md)              | Le site rangé par fonctionnalité                     | Accepté |

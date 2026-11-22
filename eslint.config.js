@@ -55,6 +55,33 @@ const imports = (...patterns) => ({
   'no-restricted-imports': ['error', { patterns: [...patterns, EXTENSION_REQUIRED] }],
 });
 
+/**
+ * Les règles d'import du site, avec en plus celles d'un dossier. Sans
+ * l'extension obligatoire : le site n'est pas lu par Deno.
+ */
+const siteImports = (...extra) => ({
+  'no-restricted-imports': [
+    'error',
+    {
+      patterns: [
+        {
+          group: [
+            '@arrakis/backend/application',
+            '@arrakis/backend/application/*',
+            '@arrakis/backend/infrastructure',
+            '@arrakis/migrate-v1',
+            '@arrakis/migrate-v1/*',
+          ],
+          message: 'Le site n’utilise du back que le domaine (ADR 0019, ADR 0025).',
+        },
+        refuse('^\\.{1,2}/.*/backend/', 'Le site importe le back par `@arrakis/backend/domain`.'),
+        NOT_TESTS,
+        ...extra,
+      ],
+    },
+  ],
+});
+
 export default defineConfig([
   globalIgnores(['**/dist', '**/coverage', '**/node_modules']),
   js.configs.recommended,
@@ -152,32 +179,29 @@ export default defineConfig([
     rules: { 'no-restricted-imports': ['error', { patterns: [NOT_TESTS] }] },
   },
   // Le site lit par `DataSource` (ADR 0019) : du back, il n'utilise que le domaine.
+  // Il est rangé par fonctionnalité (ADR 0029) : une page n'importe
+  // pas une autre, et `shared/` ne dépend d'aucune page.
   {
     files: ['frontend/src/**/*.{ts,tsx}'],
-    rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: [
-                '@arrakis/backend/application',
-                '@arrakis/backend/application/*',
-                '@arrakis/backend/infrastructure',
-                '@arrakis/migrate-v1',
-                '@arrakis/migrate-v1/*',
-              ],
-              message: 'Le site n’utilise du back que le domaine (ADR 0019, ADR 0025).',
-            },
-            refuse(
-              '^\\.{1,2}/.*/backend/',
-              'Le site importe le back par `@arrakis/backend/domain`.',
-            ),
-            NOT_TESTS,
-          ],
-        },
-      ],
-    },
+    rules: siteImports(),
+  },
+  {
+    files: ['frontend/src/features/**/*.{ts,tsx}'],
+    rules: siteImports(
+      refuse(
+        '^\\.\\./(?!\\.\\./)|/features/',
+        'Une fonctionnalité n’importe pas une autre : ce qui sert à deux pages va dans `shared/`.',
+      ),
+    ),
+  },
+  {
+    files: ['frontend/src/shared/**/*.{ts,tsx}'],
+    rules: siteImports(
+      refuse(
+        '/(features|data)/',
+        '`shared/` sert à toutes les pages : il ne dépend ni d’une page, ni de la source de données.',
+      ),
+    ),
   },
   // Le site : les règles des hooks React. La v1 a connu un appel conditionnel
   // de hook qu'aucun outil ne signalait (ADR 0006).

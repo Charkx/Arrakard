@@ -1,6 +1,6 @@
 import type { Role, Tier } from '@arrakis/backend/domain';
 import { useEffect, useRef, useState } from 'react';
-import { championIconUrl } from '../data/champions.ts';
+import { championIconUrl } from '../champions.ts';
 import { useI18n } from '../i18n/i18n.tsx';
 
 /**

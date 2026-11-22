@@ -1,6 +1,6 @@
 import type { RatingBreakdown, Role } from '@arrakis/backend/domain';
-import type { TextKey } from '../i18n/dictionary.ts';
-import { useI18n } from '../i18n/i18n.tsx';
+import type { TextKey } from '../../shared/i18n/dictionary.ts';
+import { useI18n } from '../../shared/i18n/i18n.tsx';
 
 /**
  * « Pourquoi cette note » (cas d'usage V10) : l'explication de note calculée

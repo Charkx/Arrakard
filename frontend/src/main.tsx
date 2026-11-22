@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App.tsx';
 import { DataProvider } from './data/DataContext.tsx';
 import { supabaseSource } from './data/supabase-source.ts';
-import { I18nProvider } from './i18n/i18n.tsx';
+import { I18nProvider } from './shared/i18n/i18n.tsx';
 import './styles.css';
 
 const root = document.getElementById('root');

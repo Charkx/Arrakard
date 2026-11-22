@@ -376,9 +376,10 @@ enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
 # `per_worker` (default) — enables hot reload during local development.
 # `oneshot` — fallback mode if hot reload causes issues (e.g. in large repos or with symlinks).
-# Le moteur local ne voit que les fichiers du back présents à son démarrage :
-# après en avoir ajouté un, relancer `supabase stop && pnpm db:start`, sinon
-# les fonctions répondent 503 (« Module not found »).
+# Le moteur local suit les fichiers du back tels qu'au démarrage : un fichier
+# ajouté, ou remplacé par git (changement de branche), lui échappe. Relancer
+# alors `supabase stop && pnpm db:start`, sinon les fonctions répondent 503
+# (« Module not found »).
 policy = "per_worker"
 # Port to attach the Chrome inspector for debugging edge functions.
 inspector_port = 8083

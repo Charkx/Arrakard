@@ -1,5 +1,5 @@
 import type { Tier } from '@arrakis/backend/domain';
-import { useI18n } from '../i18n/i18n.tsx';
+import { useI18n } from '../../shared/i18n/i18n.tsx';
 
 /** Pastille de palier, reprise de la v1. */
 export function TierPill({ tier }: { readonly tier: Tier }) {

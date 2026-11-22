@@ -3,10 +3,11 @@ import { render } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { App } from '#src/App.tsx';
 import { DataProvider } from '#src/data/DataContext.tsx';
-import type { DataSource, LeaderboardData, LeaderboardEntry } from '#src/data/leaderboard.ts';
-import type { EditionPageData } from '#src/data/edition.ts';
-import type { PlayedMatch, PlayerPageData, PlayerProfile } from '#src/data/player.ts';
-import { I18nProvider } from '#src/i18n/i18n.tsx';
+import type { DataSource } from '#src/data/data-source.ts';
+import type { LeaderboardData, LeaderboardEntry } from '#src/features/leaderboard/leaderboard.ts';
+import type { EditionPageData } from '#src/features/edition/edition.ts';
+import type { PlayedMatch, PlayerPageData, PlayerProfile } from '#src/features/player/player.ts';
+import { I18nProvider } from '#src/shared/i18n/i18n.tsx';
 
 /** Un joueur du classement : chaque test ne précise que ce qui compte pour lui. */
 export function anEntry(overrides: Partial<LeaderboardEntry> = {}): LeaderboardEntry {

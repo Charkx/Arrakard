@@ -1,9 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { Navbar } from './components/Navbar.tsx';
-import { useI18n } from './i18n/i18n.tsx';
-import { EditionPage } from './pages/EditionPage.tsx';
-import { LeaderboardPage } from './pages/LeaderboardPage.tsx';
-import { PlayerPage } from './pages/PlayerPage.tsx';
+import { Navbar } from './shared/components/Navbar.tsx';
+import { useI18n } from './shared/i18n/i18n.tsx';
+import { EditionPage } from './features/edition/EditionPage.tsx';
+import { LeaderboardPage } from './features/leaderboard/LeaderboardPage.tsx';
+import { PlayerPage } from './features/player/PlayerPage.tsx';
 
 /** Le site : la barre de navigation, puis la page de l'adresse. Adresses de la v1. */
 export function App() {

@@ -1,8 +1,9 @@
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { PlayerCard } from '../components/PlayerCard.tsx';
-import { WhyThisRating } from '../components/WhyThisRating.tsx';
-import { useLoaded } from '../data/DataContext.tsx';
-import { initialsOf, type DataSource } from '../data/leaderboard.ts';
+import { PlayerCard } from '../../shared/components/PlayerCard.tsx';
+import { WhyThisRating } from './WhyThisRating.tsx';
+import { useLoaded } from '../../data/DataContext.tsx';
+import type { DataSource } from '../../data/data-source.ts';
+import { initialsOf } from '../../shared/initials.ts';
 import {
   byEdition,
   type MergedPlayer,
@@ -11,8 +12,8 @@ import {
   type PlayerPageData,
   type PlayerProfile,
   type SeasonRatingView,
-} from '../data/player.ts';
-import { useI18n } from '../i18n/i18n.tsx';
+} from './player.ts';
+import { useI18n } from '../../shared/i18n/i18n.tsx';
 
 const loadPlayer = (
   source: DataSource,

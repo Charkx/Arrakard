@@ -6,8 +6,8 @@ import {
 } from '@arrakis/backend/domain';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { championIconUrl } from '../data/champions.ts';
-import { useLoaded } from '../data/DataContext.tsx';
+import { championIconUrl } from '../../shared/champions.ts';
+import { useLoaded } from '../../data/DataContext.tsx';
 import {
   byMatchday,
   formatDuration,
@@ -16,9 +16,9 @@ import {
   type MatchPlayer,
   todayInParis,
   type StandingRow,
-} from '../data/edition.ts';
-import type { DataSource } from '../data/leaderboard.ts';
-import { useI18n } from '../i18n/i18n.tsx';
+} from './edition.ts';
+import type { DataSource } from '../../data/data-source.ts';
+import { useI18n } from '../../shared/i18n/i18n.tsx';
 
 const loadEdition = (source: DataSource, editionId: string): Promise<EditionPageData | null> =>
   source.loadEdition(editionId);

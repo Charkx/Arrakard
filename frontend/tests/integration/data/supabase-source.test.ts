@@ -3,7 +3,7 @@ import { project, rankLeaderboard, V1_RATING_RULES } from '@arrakis/backend/doma
 import { planMigration } from '@arrakis/migrate-v1/src/plan.ts';
 import { demoBackup } from '@arrakis/migrate-v1/tests/support/demo-backup.ts';
 import { describe, expect, it } from 'vitest';
-import type { PlayerPageData } from '#src/data/player.ts';
+import type { PlayerPageData } from '#src/features/player/player.ts';
 import { supabaseSource } from '#src/data/supabase-source.ts';
 
 /** Le profil chargé, ou une erreur claire s'il manque. */
