@@ -202,6 +202,27 @@ n'a pas besoin d'être redéployé.
 Si une migration a été fusionnée depuis le dernier rechargement, lance
 d'abord `supabase db push --remote`.
 
+## Remplir l'organisation d'essai
+
+Les admins répètent l'import et la publication dans l'organisation
+`arrakis-essai`, que le site public ne lit pas
+([ADR 0021](../adr/0021-staging-jusqu-a-la-bascule.md)). Elle se remplit avec
+la même sauvegarde que l'organisation `arrakis`, juste après la commande `load`
+ci-dessus, dans le même terminal :
+
+```sh
+corepack pnpm --filter @arrakis/migrate-v1 load "$BACKUP" --organization=arrakis-essai --replace --confirm-hosted
+```
+
+Les identifiants y sont réécrits : charger l'une ne touche jamais l'autre. Pour
+effacer les essais des admins et repartir de la dernière sauvegarde, relance la
+même commande : `--replace` vide l'organisation d'essai, et elle seule. Écris
+bien `--organization=arrakis-essai`, avec le `=` : sans lui, la commande
+s'arrête sans rien charger.
+
+Les admins y seront ajoutés avec la connexion Discord (ticket #41) : charger la
+sauvegarde ne crée aucun admin.
+
 **Base en pause.** Un projet gratuit sans activité pendant 7 jours se met en
 pause, et le site n'affiche plus rien. Tableau de bord Supabase, projet
 `arrakard`, **Restore project**.

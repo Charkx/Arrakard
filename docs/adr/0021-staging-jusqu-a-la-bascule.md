@@ -57,3 +57,9 @@ dans la v2 n'est encore la vérité.
   premier ticket qui en a besoin donne à `load` l'organisation en option, et
   réécrit les identifiants pour l'organisation d'essai, comme le fait déjà
   `demoBackupCopy` pour les tests.
+
+> **Réalisé au ticket #40.** `load --organization=arrakis-essai` charge la
+> sauvegarde dans l'organisation d'essai : chaque identifiant y est remplacé par
+> un UUID stable tiré du slug et de l'identifiant d'origine (`stableUuid`),
+> plutôt que par le remplacement de texte de `demoBackupCopy`, qui ne vaut que
+> pour les identifiants de la démonstration.
