@@ -7,7 +7,6 @@ describe('lazyAuthSource', () => {
       currentUser: () => Promise.resolve({ name: 'Kinox', role: 'admin', adminExpired: false }),
       signIn: () => Promise.resolve(),
       signOut: () => Promise.resolve(),
-      adminEditions: () => Promise.resolve([]),
     };
     const load = vi.fn(() => Promise.resolve(real));
     const auth = lazyAuthSource(load);
@@ -16,7 +15,6 @@ describe('lazyAuthSource', () => {
     expect(await auth.currentUser()).toEqual({ name: 'Kinox', role: 'admin', adminExpired: false });
     await auth.signIn();
     await auth.signOut();
-    expect(await auth.adminEditions()).toEqual([]);
     expect(load).toHaveBeenCalledOnce();
   });
 });

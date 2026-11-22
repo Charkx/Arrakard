@@ -23,6 +23,10 @@ et leurs brouillons comptés.
 Les tables et les vues gardent leurs droits : les brouillons y restent
 invisibles, pour tout le monde.
 
+Côté site, ces lectures passent par une source à part, `AdminSource`, à côté
+de `DataSource` (les pages publiques) et d'`AuthSource` (la connexion). Elle
+est chargée à la demande avec la connexion, dont elle partage la session.
+
 ## Options écartées
 
 - **Une politique qui montre les brouillons aux admins** : toutes les vues

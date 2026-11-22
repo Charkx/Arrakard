@@ -1,5 +1,3 @@
-import type { AdminEdition } from '../features/admin/admin.ts';
-
 /** Le rôle d'un utilisateur dans l'organisation (ADR 0008). */
 export type MemberRole = 'admin' | 'member';
 
@@ -21,8 +19,6 @@ export interface AuthSource {
   /** Part se connecter chez Discord ; le site revient ensuite sur `/login`. */
   signIn(): Promise<void>;
   signOut(): Promise<void>;
-  /** Les éditions de l'organisation, brouillons comptés. Réservé aux admins (ticket #42). */
-  adminEditions(): Promise<AdminEdition[]>;
 }
 
 /**
@@ -36,6 +32,5 @@ export function lazyAuthSource(load: () => Promise<AuthSource>): AuthSource {
     currentUser: async () => (await source()).currentUser(),
     signIn: async () => (await source()).signIn(),
     signOut: async () => (await source()).signOut(),
-    adminEditions: async () => (await source()).adminEditions(),
   };
 }

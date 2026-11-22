@@ -58,6 +58,10 @@
   color: var(--violet-lt);
 }
 
+.admin-type-under {
+  display: none;
+}
+
 .admin-status.ongoing {
   color: var(--teal-lt);
 }
@@ -76,11 +80,19 @@
   font-size: 11px;
 }
 
-/* Sur téléphone : le type passe sous le nom, et le tableau tient dans l'écran. */
+/* Sur téléphone, chaque ligne passe sur deux lignes : le type sous le nom,
+   les brouillons sous le statut. Le tableau tient ainsi dans l'écran. */
 @media (max-width: 560px) {
   .admin-table th:nth-child(2),
   .admin-table td:nth-child(2) {
     display: none;
+  }
+
+  .admin-type-under {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--text-tertiary);
   }
 
   .admin-table td,

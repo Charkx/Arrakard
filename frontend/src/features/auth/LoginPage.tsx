@@ -4,7 +4,6 @@ import { useAuthSource } from '../../data/DataContext.tsx';
 import type { SignedInUser } from '../../data/auth-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
 import type { TextKey } from '../../shared/i18n/dictionary.ts';
-import './auth.css';
 
 type State =
   | { readonly status: 'loading' }

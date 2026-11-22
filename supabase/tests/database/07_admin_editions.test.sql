@@ -1,5 +1,5 @@
 -- La liste des éditions de l'espace admin (ticket #42) : brouillons comptés,
--- lisible par les seuls admins de l'organisation (ADR 0008, ADR 0030).
+-- lisible par les seuls admins de l'organisation (ADR 0008, ADR 0030, ADR 0031).
 begin;
 select plan(8);
 
@@ -29,7 +29,7 @@ insert into matches (id, organization_id, edition_id, match_number, winner_team,
 set local role authenticated;
 set local request.jwt.claims = '{"sub": "70000000-0000-0000-0000-000000000001", "role": "authenticated"}';
 select results_eq(
-  $$ select edition_id, season_name, season_status, has_results, draft_count
+  $$ select edition_id, season_name, season_status, has_published_results, draft_count
      from admin_editions('00000000-0000-0000-0000-00000000000a') $$,
   $$ values ('20000000-0000-0000-0000-000000000001'::uuid, 'Saison 3'::text, 'open'::text, true, 2) $$,
   'un admin voit ses éditions, avec la saison et ses brouillons comptés');

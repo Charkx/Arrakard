@@ -7,9 +7,7 @@ function anEdition(overrides: Partial<AdminEdition> = {}): AdminEdition {
     name: 'In House #12',
     type: 'inhouse',
     date: '2026-11-02',
-    seasonId: 's-3',
-    seasonName: 'Saison 3',
-    seasonStatus: 'open',
+    season: { id: 's-3', name: 'Saison 3', status: 'open' },
     closedAt: null,
     hasPublishedResults: true,
     hasPublishedFinal: false,
@@ -28,25 +26,20 @@ describe('bySeason', () => {
       [
         anEdition({
           editionId: 'ancienne',
-          seasonId: 's-1',
-          seasonName: 'Saison 1',
-          seasonStatus: 'closed',
+          season: { id: 's-1', name: 'Saison 1', status: 'closed' },
           date: '2025-03-01',
         }),
         anEdition({ editionId: 'en-cours', date: '2026-11-02' }),
         anEdition({
           editionId: 'precedente',
-          seasonId: 's-2',
-          seasonName: 'Saison 2',
-          seasonStatus: 'closed',
+          season: { id: 's-2', name: 'Saison 2', status: 'closed' },
           date: '2026-06-14',
         }),
       ],
       '2026-11-22',
     );
 
-    expect(sections.map((s) => s.seasonName)).toEqual(['Saison 3', 'Saison 2', 'Saison 1']);
-    expect(sections[0]?.open).toBe(true);
+    expect(sections.map((s) => s.season?.name)).toEqual(['Saison 3', 'Saison 2', 'Saison 1']);
   });
 
   it('met les éditions hors saison à la fin', () => {
@@ -54,9 +47,7 @@ describe('bySeason', () => {
       [
         anEdition({
           editionId: 'hors',
-          seasonId: null,
-          seasonName: null,
-          seasonStatus: null,
+          season: null,
           date: '2026-12-01',
         }),
         anEdition(),
@@ -64,7 +55,7 @@ describe('bySeason', () => {
       '2026-11-22',
     );
 
-    expect(sections.map((s) => s.seasonName)).toEqual(['Saison 3', null]);
+    expect(sections.map((s) => s.season?.name ?? null)).toEqual(['Saison 3', null]);
   });
 
   it('montre dans une saison la plus récente édition en haut, avec son statut déduit', () => {

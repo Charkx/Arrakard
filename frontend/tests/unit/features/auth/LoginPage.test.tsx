@@ -21,7 +21,6 @@ function fakeAuth(user: SignedInUser | null | 'fails') {
     ),
     signIn: vi.fn(() => Promise.resolve()),
     signOut: vi.fn(() => Promise.resolve()),
-    adminEditions: vi.fn(() => Promise.resolve([])),
   } satisfies AuthSource;
   return auth;
 }

@@ -1,7 +1,8 @@
 import { AuthClient, type Session } from '@supabase/auth-js';
 import { PostgrestClient } from '@supabase/postgrest-js';
 import type { EditionType } from '@arrakis/backend/domain';
-import type { AdminEdition } from '../features/admin/admin.ts';
+import type { AdminEdition, SeasonStatus } from '../features/admin/admin.ts';
+import type { AdminSource } from './admin-source.ts';
 import type { AuthSource, MemberRole, SignedInUser } from './auth-source.ts';
 import { supabaseConfig } from './supabase-config.ts';
 import { organizationId } from './supabase-source.ts';
@@ -12,11 +13,19 @@ import { organizationId } from './supabase-source.ts';
  */
 const DISCORD_SCOPES = 'identify guilds.members.read';
 
+/** La connexion, et ce qu'un admin lit avec sa session (ADR 0031). */
+export interface SupabaseSession {
+  readonly auth: AuthSource;
+  readonly admin: AdminSource;
+}
+
 /**
  * La connexion par Supabase Auth et Discord. Ce module n'est chargé qu'au
  * premier usage (`lazyAuthSource`), avec `@supabase/auth-js`.
  */
-export function supabaseAuth({ api, key, organizationSlug } = supabaseConfig()): AuthSource {
+export function supabaseSession(
+  { api, key, organizationSlug } = supabaseConfig(),
+): SupabaseSession {
   // À lire avant que la bibliothèque ne nettoie l'adresse : revient-on de Discord ?
   const params = new URLSearchParams(window.location.search);
   const refusal = params.get('error_description') ?? params.get('error');
@@ -90,7 +99,7 @@ export function supabaseAuth({ api, key, organizationSlug } = supabaseConfig()):
     return { name: displayName(session), ...role };
   }
 
-  return {
+  const auth: AuthSource = {
     currentUser() {
       if (refusal !== null) return Promise.reject(new Error(refusal));
       // En développement, React lance deux fois l'affichage : les deux attendent
@@ -105,7 +114,16 @@ export function supabaseAuth({ api, key, organizationSlug } = supabaseConfig()):
       });
       if (error) throw error;
     },
-    async adminEditions() {
+    async signOut() {
+      returningFromDiscord = false;
+      synced = undefined;
+      const { error } = await client.signOut();
+      if (error) throw error;
+    },
+  };
+
+  const admin: AdminSource = {
+    async editions() {
       const { data, error } = await client.getSession();
       if (error) throw error;
       if (!data.session) throw new Error('Personne n’est connecté.');
@@ -116,13 +134,9 @@ export function supabaseAuth({ api, key, organizationSlug } = supabaseConfig()):
       if (rows.error) throw rows.error;
       return (rows.data as readonly AdminEditionRow[]).map(toAdminEdition);
     },
-    async signOut() {
-      returningFromDiscord = false;
-      synced = undefined;
-      const { error } = await client.signOut();
-      if (error) throw error;
-    },
   };
+
+  return { auth, admin };
 }
 
 /** Le nom que Discord donne au compte : le nom affiché, sinon le pseudo. */
@@ -143,10 +157,10 @@ interface AdminEditionRow {
   readonly date: string;
   readonly season_id: string | null;
   readonly season_name: string | null;
-  readonly season_status: 'open' | 'closed' | null;
+  readonly season_status: SeasonStatus | null;
   readonly closed_at: string | null;
-  readonly has_results: boolean;
-  readonly has_final: boolean;
+  readonly has_published_results: boolean;
+  readonly has_published_final: boolean;
   readonly draft_count: number;
 }
 
@@ -155,11 +169,12 @@ const toAdminEdition = (r: AdminEditionRow): AdminEdition => ({
   name: r.name,
   type: r.type,
   date: r.date,
-  seasonId: r.season_id,
-  seasonName: r.season_name,
-  seasonStatus: r.season_status,
+  season:
+    r.season_id === null || r.season_name === null || r.season_status === null
+      ? null
+      : { id: r.season_id, name: r.season_name, status: r.season_status },
   closedAt: r.closed_at,
-  hasPublishedResults: r.has_results,
-  hasPublishedFinal: r.has_final,
+  hasPublishedResults: r.has_published_results,
+  hasPublishedFinal: r.has_published_final,
   draftCount: r.draft_count,
 });

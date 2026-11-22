@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { useAuthSource } from '../../data/DataContext.tsx';
+import { useAdminSource, useAuthSource } from '../../data/DataContext.tsx';
+import type { AdminSource } from '../../data/admin-source.ts';
 import type { AuthSource } from '../../data/auth-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
 import { todayInParis } from '../../shared/today.ts';
 import { bySeason, type AdminEdition, type AdminSeasonSection } from './admin.ts';
-import './admin.css';
 
 type State =
   | { readonly status: 'loading' }
@@ -14,21 +14,22 @@ type State =
   | { readonly status: 'ready'; readonly name: string; readonly editions: AdminEdition[] };
 
 /** Un admin à jour, puis ses éditions ; sinon, un refus (ADR 0030). */
-async function loadAdmin(auth: AuthSource): Promise<State> {
+async function loadAdmin(auth: AuthSource, admin: AdminSource): Promise<State> {
   const user = await auth.currentUser();
   if (user?.role !== 'admin' || user.adminExpired) return { status: 'refused' };
-  return { status: 'ready', name: user.name, editions: await auth.adminEditions() };
+  return { status: 'ready', name: user.name, editions: await admin.editions() };
 }
 
 /** L'espace admin : les éditions de l'organisation, par saison (ticket #42). */
 export function AdminPage() {
   const { t } = useI18n();
   const auth = useAuthSource();
+  const admin = useAdminSource();
   const [state, setState] = useState<State>({ status: 'loading' });
 
   useEffect(() => {
     let current = true;
-    loadAdmin(auth).then(
+    loadAdmin(auth, admin).then(
       (loaded) => {
         if (current) setState(loaded);
       },
@@ -39,7 +40,7 @@ export function AdminPage() {
     return () => {
       current = false;
     };
-  }, [auth]);
+  }, [auth, admin]);
 
   if (state.status === 'refused') return <Navigate to="/login" replace />;
 
@@ -55,7 +56,7 @@ export function AdminPage() {
             <p>{t('admin.empty')}</p>
           ) : (
             bySeason(state.editions, todayInParis()).map((section) => (
-              <SeasonSection key={section.seasonId ?? 'none'} section={section} />
+              <SeasonSection key={section.season?.id ?? 'none'} section={section} />
             ))
           )}
         </>
@@ -72,11 +73,12 @@ function SeasonSection({ section }: { readonly section: AdminSeasonSection }) {
     year: 'numeric',
     timeZone: 'UTC',
   });
+  const { season } = section;
   const title =
-    section.seasonName === null
+    season === null
       ? t('admin.season.none')
-      : t(section.open ? 'admin.season.open' : 'admin.season.closed', {
-          season: section.seasonName,
+      : t(season.status === 'open' ? 'admin.season.open' : 'admin.season.closed', {
+          season: season.name,
         });
 
   return (
@@ -96,6 +98,10 @@ function SeasonSection({ section }: { readonly section: AdminSeasonSection }) {
             <tr key={edition.editionId}>
               <td className="admin-edition-name">
                 <Link to={`/event/${edition.editionId}`}>{edition.name}</Link>
+                {/* Sur téléphone, la colonne Type disparaît : le type passe ici, sous le nom. */}
+                <span className="admin-type-under" aria-hidden="true">
+                  {t(`edition.type.${edition.type}`)}
+                </span>
               </td>
               <td>{t(`edition.type.${edition.type}`)}</td>
               <td>{date.format(new Date(edition.date))}</td>

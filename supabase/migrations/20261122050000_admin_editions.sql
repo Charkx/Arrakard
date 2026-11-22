@@ -15,8 +15,8 @@ returns table (
   season_name   text,
   season_status text,
   closed_at     timestamptz,
-  has_results   boolean,
-  has_final     boolean,
+  has_published_results boolean,
+  has_published_final   boolean,
   draft_count   int
 )
 language plpgsql stable security definer set search_path = '' as $$
@@ -27,11 +27,17 @@ begin
   return query
   select
     e.id, e.name, e.type, e.date, e.season_id, s.name, s.status, e.closed_at,
-    exists (select 1 from public.matches m where m.edition_id = e.id and not m.draft),
-    exists (select 1 from public.matches m where m.edition_id = e.id and not m.draft and m.is_final),
-    (select count(*)::int from public.matches m where m.edition_id = e.id and m.draft)
+    coalesce(m.published, false), coalesce(m.published_final, false), coalesce(m.drafts, 0)
   from public.editions e
   left join public.seasons s on s.id = e.season_id
+  left join lateral (
+    select
+      bool_or(not x.draft) as published,
+      bool_or(not x.draft and x.is_final) as published_final,
+      (count(*) filter (where x.draft))::int as drafts
+    from public.matches x
+    where x.edition_id = e.id
+  ) m on true
   where e.organization_id = org;
 end;
 $$;
