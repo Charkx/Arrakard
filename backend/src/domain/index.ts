@@ -93,3 +93,5 @@ export type {
 } from './identity/merge.ts';
 export { editionStatus, isExternal } from './edition/status.ts';
 export type { EditionStatus, EditionStatusFacts } from './edition/status.ts';
+export { matchEntryProblems } from './match/entry.ts';
+export type { EntryLine, EntrySide, MatchEntry, MatchEntryProblem, Side } from './match/entry.ts';

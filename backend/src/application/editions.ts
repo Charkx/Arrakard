@@ -1,4 +1,4 @@
-import type { EditionType, Prestige } from '../domain/index.ts';
+import type { EditionType, MatchEntry, Prestige } from '../domain/index.ts';
 
 /** Ce qu'une commande change d'une édition, hors faits de jeu. */
 export interface EditionState {
@@ -66,6 +66,17 @@ export interface EditionRepository {
     publication: Publication,
     version: number,
   ): Promise<{ readonly publicationId: string; readonly version: number }>;
+  /**
+   * Enregistre ce match en brouillon (ADR 0012), après les autres matchs de
+   * l'édition, si elle est encore à `version`. Rend le match, son numéro et la
+   * nouvelle version.
+   */
+  recordDraftMatch(
+    organizationId: string,
+    editionId: string,
+    match: MatchEntry,
+    version: number,
+  ): Promise<{ readonly matchId: string; readonly matchNumber: number; readonly version: number }>;
   /** Crée l'édition, à la version 1, et rend son identifiant. */
   create(organizationId: string, edition: EditionDetails): Promise<string>;
   /** Remplace ce qu'un admin saisit, si l'édition est encore à `version` ; rend la nouvelle version. */

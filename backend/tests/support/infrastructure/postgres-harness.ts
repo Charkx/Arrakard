@@ -4,7 +4,7 @@ import type {
   RosterStatus,
   SeasonStatus,
 } from '#application/index.ts';
-import type { Division } from '#domain/index.ts';
+import type { Division, Role } from '#domain/index.ts';
 import { V1_RATING_RULES } from '#domain/index.ts';
 import { postgresUnitOfWork } from '#infrastructure/commands.ts';
 import { readFacts } from '#infrastructure/read.ts';
@@ -197,6 +197,56 @@ export function postgresCommandHarness(sql: Sql, names: PostgresHarnessNames): C
         where organization_id = ${organizationId} and player_id = ${playerId}
         order by match_id`;
       return rows.map((r) => r.match_id);
+    },
+    async addPlayers(organizationId, count) {
+      const rows = await sql<{ id: string }[]>`
+        insert into players ${sql(
+          Array.from({ length: count }, (_, i) => ({
+            organization_id: organizationId,
+            nickname: `Joueur ${String(i + 1)}`,
+          })),
+        )}
+        returning id`;
+      return rows.map((r) => r.id);
+    },
+    async recordedMatch(organizationId, matchId) {
+      const [match] = await sql<
+        {
+          edition_id: string;
+          match_number: number;
+          winner_team: string;
+          duration_seconds: number;
+          draft: boolean;
+        }[]
+      >`
+        select edition_id, match_number, winner_team, duration_seconds, draft from matches
+        where organization_id = ${organizationId} and id = ${matchId}`;
+      if (!match) return undefined;
+      const performances = await sql<
+        {
+          line: number;
+          side: 'A' | 'B';
+          player_id: string;
+          team: string;
+          role: Role;
+          champion: string;
+          result: 'win' | 'loss';
+          kills: number;
+          deaths: number;
+          assists: number;
+          gold: number;
+        }[]
+      >`
+        select line, side, player_id, team, role, champion, result, kills, deaths, assists, gold
+        from performances where match_id = ${matchId} order by line, side`;
+      return {
+        editionId: match.edition_id,
+        matchNumber: match.match_number,
+        winnerTeam: match.winner_team,
+        durationSeconds: match.duration_seconds,
+        draft: match.draft,
+        performances: performances.map(({ player_id: playerId, ...p }) => ({ ...p, playerId })),
+      };
     },
     async markMerged(organizationId, absorbedId, keptId) {
       await sql`

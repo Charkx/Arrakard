@@ -9,6 +9,7 @@ import {
 import type { DiscordConfig, MemberRole, Publication, SeasonStatus } from '#application/index.ts';
 import type {
   EditionRecord,
+  RecordedMatch,
   EditionSnapshot,
   ProfileRecord,
   SeasonRecord,
@@ -97,6 +98,10 @@ export interface InMemoryStore extends RecomputePorts {
   profileOf(organizationId: string, playerId: string): ProfileRecord | undefined;
   /** Les matchs où le joueur a une performance, publiée ou en brouillon. */
   performanceMatchIdsOf(organizationId: string, playerId: string): readonly string[];
+  /** Ajoute des joueurs aux faits, sans match. */
+  addPlayers(organizationId: string, players: readonly { id: string; nickname: string }[]): void;
+  /** Un match de l'organisation, brouillon ou publié. */
+  recordedMatchOf(organizationId: string, matchId: string): RecordedMatch | undefined;
   /** Marque un profil comme fusionné dans un autre. */
   markMerged(organizationId: string, absorbedId: string, keptId: string): void;
   /** Ce qu'un admin a saisi d'une édition de l'organisation. */
@@ -201,6 +206,50 @@ export function inMemoryStore(): InMemoryStore {
         return Promise.resolve().then(() =>
           bump(find(organizationId), editionId, version, { closedAt }),
         );
+      },
+      recordDraftMatch(organizationId, editionId, entry, version) {
+        return Promise.resolve().then(() => {
+          const organization = find(organizationId);
+          const newVersion = bump(organization, editionId, version);
+          const numbers = [
+            ...organization.facts.matches,
+            ...[...organization.drafts.values()].map((d) => d.match),
+          ]
+            .filter((m) => m.editionId === editionId)
+            .map((m) => m.matchNumber);
+          const matchNumber = Math.max(0, ...numbers) + 1;
+          const matchId = crypto.randomUUID();
+          const [teamA, teamB] = entry.teams;
+          organization.drafts.set(matchId, {
+            match: {
+              id: matchId,
+              editionId,
+              matchNumber,
+              winnerTeam: entry.winner === 'A' ? teamA : teamB,
+              durationSeconds: entry.durationSeconds,
+            },
+            performances: entry.lines.flatMap(({ role, sides }, line) =>
+              sides.map((s, i) => {
+                const side = i === 0 ? 'A' : 'B';
+                return {
+                  matchId,
+                  line,
+                  side,
+                  playerId: s.playerId,
+                  team: side === 'A' ? teamA : teamB,
+                  role,
+                  champion: s.champion,
+                  result: side === entry.winner ? 'win' : 'loss',
+                  kills: s.kills,
+                  deaths: s.deaths,
+                  assists: s.assists,
+                  gold: s.gold,
+                } as const;
+              }),
+            ),
+          });
+          return { matchId, matchNumber, version: newVersion };
+        });
       },
       create(organizationId, edition) {
         const organization = find(organizationId);
@@ -550,6 +599,33 @@ export function inMemoryStore(): InMemoryStore {
     editionRecordOf(organizationId, editionId) {
       const record = organizations.get(organizationId)?.editionRecords.get(editionId);
       return record && { ...record, participantIds: [...record.participantIds].sort() };
+    },
+    addPlayers(organizationId, players) {
+      const organization = find(organizationId);
+      organization.facts = {
+        ...organization.facts,
+        players: [...organization.facts.players, ...players],
+      };
+    },
+    recordedMatchOf(organizationId, matchId) {
+      const organization = organizations.get(organizationId);
+      if (!organization) return undefined;
+      const draft = organization.drafts.get(matchId);
+      const match = draft?.match ?? organization.facts.matches.find((m) => m.id === matchId);
+      if (!match) return undefined;
+      const performances = (
+        draft?.performances ?? organization.facts.performances.filter((p) => p.matchId === matchId)
+      )
+        .map(({ matchId: _id, ...p }) => p)
+        .sort((x, y) => x.line - y.line || x.side.localeCompare(y.side));
+      return {
+        editionId: match.editionId,
+        matchNumber: match.matchNumber,
+        winnerTeam: match.winnerTeam,
+        durationSeconds: match.durationSeconds,
+        draft: draft !== undefined,
+        performances,
+      };
     },
     markMerged(organizationId, absorbedId, keptId) {
       find(organizationId).mergedInto.set(absorbedId, keptId);

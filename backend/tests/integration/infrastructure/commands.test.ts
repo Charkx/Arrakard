@@ -14,6 +14,7 @@ import { describeSeasonContract } from '#support/application/season-contract.ts'
 import { describeTeamContract } from '#support/application/team-contract.ts';
 import { describePlayerContract } from '#support/application/player-contract.ts';
 import { describeEditionContract } from '#support/application/edition-contract.ts';
+import { describeRecordMatchContract } from '#support/application/record-match-contract.ts';
 import {
   postgresCommandHarness,
   resetPostgresHarness,
@@ -46,6 +47,7 @@ describeSeasonContract('Postgres', () => harness);
 describeTeamContract('Postgres', () => harness);
 describePlayerContract('Postgres', () => harness);
 describeEditionContract('Postgres', () => harness);
+describeRecordMatchContract('Postgres', () => harness);
 
 describe('deux commandes en même temps (ADR 0009)', () => {
   it('la seconde attend la première, lit la nouvelle version, et répond par un conflit', async () => {
