@@ -6,7 +6,9 @@ import {
   type IdentityRepository,
   type MembershipRepository,
   type SeasonRepository,
+  type RosterStatus,
   type SeasonStatus,
+  type TeamRepository,
   type UnitOfWork,
 } from '../application/index.ts';
 import type { Sql, TransactionSql } from 'postgres';
@@ -32,6 +34,7 @@ export function postgresUnitOfWork(sql: Sql): UnitOfWork {
           identities: postgresIdentities(tx),
           editions: postgresEditions(tx),
           seasons: postgresSeasons(tx),
+          teams: postgresTeams(tx),
           commandLog: postgresCommandLog(tx),
         });
       })) as Awaited<ReturnType<typeof work>>;
@@ -172,6 +175,56 @@ function postgresSeasons(tx: TransactionSql): SeasonRepository {
       await tx`
         update seasons set status = 'closed', end_date = ${endDate}
         where organization_id = ${organizationId} and id = ${seasonId}`;
+    },
+  };
+}
+
+function postgresTeams(tx: TransactionSql): TeamRepository {
+  return {
+    async find(organizationId, teamId) {
+      const [team] = await tx<{ archived: boolean }[]>`
+        select archived_at is not null as archived from teams
+        where organization_id = ${organizationId} and id = ${teamId}`;
+      return team && { archived: team.archived };
+    },
+    async tagTaken(organizationId, tag) {
+      const [team] = await tx`
+        select 1 from teams where organization_id = ${organizationId} and tag = ${tag}`;
+      return team !== undefined;
+    },
+    async create(organizationId, { tag, name, divisions }) {
+      const [team] = await tx<{ id: string }[]>`
+        insert into teams (organization_id, tag, name, divisions)
+        values (${organizationId}, ${tag}, ${name}, ${divisions as string[]}::text[])
+        returning id`;
+      if (!team) throw new Error(`Équipe ${tag} : écriture impossible.`);
+      return team.id;
+    },
+    async archive(organizationId, teamId, archivedAt, on) {
+      await tx`
+        update teams set archived_at = ${archivedAt}
+        where organization_id = ${organizationId} and id = ${teamId}`;
+      await tx`
+        update team_memberships set left_on = ${on}
+        where organization_id = ${organizationId} and team_id = ${teamId} and left_on is null`;
+    },
+    async playerPlace(organizationId, playerId) {
+      const [player] = await tx<{ team_id: string | null; status: RosterStatus | null }[]>`
+        select m.team_id, m.status from players p
+        left join team_memberships m on m.player_id = p.id and m.left_on is null
+        where p.organization_id = ${organizationId} and p.id = ${playerId} and p.merged_into is null`;
+      if (!player) return undefined;
+      const { team_id: teamId, status } = player;
+      return { place: teamId === null || status === null ? null : { teamId, status } };
+    },
+    async transfer(organizationId, playerId, to, on) {
+      await tx`
+        update team_memberships set left_on = ${on}
+        where organization_id = ${organizationId} and player_id = ${playerId} and left_on is null`;
+      if (to === null) return;
+      await tx`
+        insert into team_memberships (organization_id, player_id, team_id, status, joined_on)
+        values (${organizationId}, ${playerId}, ${to.teamId}, ${to.status}, ${on})`;
     },
   };
 }

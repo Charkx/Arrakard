@@ -3,6 +3,12 @@ import {
   type EditionStatus,
   type EditionStatusFacts,
 } from '@arrakis/backend/domain';
+import type { SignedInUser } from '../../data/auth-source.ts';
+
+/** Un admin dont le rôle a été revérifié depuis moins de 7 jours (ADR 0030). */
+export function isFreshAdmin(user: SignedInUser | null): user is SignedInUser {
+  return user?.role === 'admin' && !user.adminExpired;
+}
 
 /** Ouverte (la saison active) ou clôturée. */
 export type SeasonStatus = 'open' | 'closed';

@@ -7,7 +7,7 @@ import {
   type UnitOfWork,
 } from '#application/index.ts';
 import type { DiscordConfig, MemberRole, Publication, SeasonStatus } from '#application/index.ts';
-import type { EditionSnapshot, SeasonRecord } from './command-harness.ts';
+import type { EditionSnapshot, SeasonRecord, StintRecord, TeamRecord } from './command-harness.ts';
 
 /** Un match en brouillon : enregistré, mais pas encore dans les faits que lit le recalcul. */
 interface DraftMatch {
@@ -32,6 +32,11 @@ interface StoredOrganization {
   readonly editions: Map<string, EditionSnapshot>;
   readonly drafts: Map<string, DraftMatch>;
   readonly seasons: Map<string, StoredSeason>;
+  readonly teams: Map<string, TeamRecord>;
+  /** Les passages, par joueur, du plus ancien au plus récent. */
+  readonly stints: Map<string, StintRecord[]>;
+  /** Les profils fusionnés : absorbé → conservé. */
+  readonly mergedInto: Map<string, string>;
   readonly commandLog: CommandLogEntry[];
   readonly publications: Publication[];
   projections?: Projections;
@@ -67,6 +72,12 @@ export interface InMemoryStore extends RecomputePorts {
   projectionsOf(organizationId: string): Projections | undefined;
   /** L'état d'une saison de l'organisation. */
   seasonOf(organizationId: string, seasonId: string): SeasonRecord | undefined;
+  /** Une équipe de l'organisation. */
+  teamOf(organizationId: string, teamId: string): TeamRecord | undefined;
+  /** Marque un profil comme fusionné dans un autre. */
+  markMerged(organizationId: string, absorbedId: string, keptId: string): void;
+  /** Les passages d'un joueur de l'organisation. */
+  stintsOf(organizationId: string, playerId: string): readonly StintRecord[];
   /** La version et la clôture d'une édition de l'organisation. */
   editionOf(organizationId: string, editionId: string): EditionSnapshot | undefined;
   /** Les lignes du journal des commandes de l'organisation. */
@@ -211,6 +222,56 @@ export function inMemoryStore(): InMemoryStore {
         });
       },
     },
+    teams: {
+      find(organizationId, teamId) {
+        const team = organizations.get(organizationId)?.teams.get(teamId);
+        return Promise.resolve(team && { archived: team.archivedAt !== null });
+      },
+      tagTaken(organizationId, tag) {
+        return Promise.resolve([...find(organizationId).teams.values()].some((t) => t.tag === tag));
+      },
+      create(organizationId, { tag, name, divisions }) {
+        const teamId = crypto.randomUUID();
+        find(organizationId).teams.set(teamId, { tag, name, divisions, archivedAt: null });
+        return Promise.resolve(teamId);
+      },
+      archive(organizationId, teamId, archivedAt, on) {
+        return Promise.resolve().then(() => {
+          const organization = find(organizationId);
+          const team = organization.teams.get(teamId);
+          if (!team) throw new Error(`Équipe ${teamId} introuvable.`);
+          organization.teams.set(teamId, { ...team, archivedAt });
+          for (const stints of organization.stints.values()) {
+            const current = stints.at(-1);
+            if (current?.teamId === teamId && current.leftOn === null) {
+              stints[stints.length - 1] = { ...current, leftOn: on };
+            }
+          }
+        });
+      },
+      playerPlace(organizationId, playerId) {
+        const organization = organizations.get(organizationId);
+        if (
+          !organization?.facts.players.some((p) => p.id === playerId) ||
+          organization.mergedInto.has(playerId)
+        ) {
+          return Promise.resolve(undefined);
+        }
+        const current = organization.stints.get(playerId)?.find((s) => s.leftOn === null);
+        return Promise.resolve({
+          place: current ? { teamId: current.teamId, status: current.status } : null,
+        });
+      },
+      transfer(organizationId, playerId, to, on) {
+        return Promise.resolve().then(() => {
+          const organization = find(organizationId);
+          const stints = organization.stints.get(playerId) ?? [];
+          const ended = stints.map((s) => (s.leftOn === null ? { ...s, leftOn: on } : s));
+          if (to) ended.push({ ...to, joinedOn: on, leftOn: null });
+          organization.stints.set(playerId, ended);
+        });
+      },
+    },
     commandLog: {
       append(entry) {
         return Promise.resolve().then(() => {
@@ -236,6 +297,9 @@ export function inMemoryStore(): InMemoryStore {
             { name: `Saison ${String(i + 1)}`, status: 'open', endDate: null },
           ]),
         ),
+        teams: new Map(),
+        stints: new Map(),
+        mergedInto: new Map(),
         commandLog: [],
         publications: [],
       });
@@ -256,6 +320,12 @@ export function inMemoryStore(): InMemoryStore {
     projectionsOf: (organizationId) => organizations.get(organizationId)?.projections,
     seasonOf: (organizationId, seasonId) =>
       organizations.get(organizationId)?.seasons.get(seasonId),
+    teamOf: (organizationId, teamId) => organizations.get(organizationId)?.teams.get(teamId),
+    markMerged(organizationId, absorbedId, keptId) {
+      find(organizationId).mergedInto.set(absorbedId, keptId);
+    },
+    stintsOf: (organizationId, playerId) =>
+      organizations.get(organizationId)?.stints.get(playerId) ?? [],
     editionOf: (organizationId, editionId) =>
       organizations.get(organizationId)?.editions.get(editionId),
     commandLogOf: (organizationId) => organizations.get(organizationId)?.commandLog ?? [],

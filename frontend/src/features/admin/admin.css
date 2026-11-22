@@ -145,3 +145,72 @@
   font: inherit;
   min-width: 0;
 }
+
+.admin-form select {
+  padding: 8px 10px;
+  border: 0.5px solid var(--border-med);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-primary);
+  font: inherit;
+  max-width: 100%;
+}
+
+.admin-checks {
+  display: flex;
+  gap: 12px;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+}
+
+.admin-checks legend {
+  margin-bottom: 4px;
+}
+
+.admin-checks label {
+  flex-direction: row;
+  align-items: center;
+}
+
+.admin-back {
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.admin-back:hover {
+  color: var(--violet-lt);
+}
+
+.admin-teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+}
+
+.admin-roster {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-roster li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.admin-roster-status {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.admin-archive {
+  align-self: flex-start;
+}

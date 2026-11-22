@@ -5,7 +5,7 @@ import type { ActiveSeason, AdminSource } from '../../data/admin-source.ts';
 import type { AuthSource } from '../../data/auth-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
 import { todayInParis } from '../../shared/today.ts';
-import { bySeason, type AdminEdition, type AdminSeasonSection } from './admin.ts';
+import { bySeason, isFreshAdmin, type AdminEdition, type AdminSeasonSection } from './admin.ts';
 import { SeasonPanel } from './SeasonPanel.tsx';
 
 type State =
@@ -22,7 +22,7 @@ type State =
 /** Un admin à jour, puis ses éditions ; sinon, un refus (ADR 0030). */
 async function loadAdmin(auth: AuthSource, admin: AdminSource): Promise<State> {
   const user = await auth.currentUser();
-  if (user?.role !== 'admin' || user.adminExpired) return { status: 'refused' };
+  if (!isFreshAdmin(user)) return { status: 'refused' };
   const [editions, activeSeason] = await Promise.all([admin.editions(), admin.activeSeason()]);
   return { status: 'ready', name: user.name, editions, activeSeason };
 }
@@ -61,6 +61,9 @@ export function AdminPage() {
       {state.status === 'ready' && (
         <>
           <p className="admin-who">{t('admin.signedInAs', { name: state.name })}</p>
+          <Link className="admin-back" to="/admin/teams">
+            {t('admin.teams.link')}
+          </Link>
           <SeasonPanel
             activeSeason={state.activeSeason}
             onChanged={() => {

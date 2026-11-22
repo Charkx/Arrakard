@@ -1,6 +1,7 @@
 import type { EditionRepository } from './editions.ts';
 import type { IdentityRepository, MembershipRepository } from './memberships.ts';
 import type { SeasonRepository } from './seasons.ts';
+import type { TeamRepository } from './teams.ts';
 import { recomputeProjections, type RecomputePorts } from './recompute.ts';
 
 /** L'utilisateur qui exécute une commande, et l'organisation où il agit. */
@@ -33,6 +34,7 @@ export interface CommandLog {
 export interface Repositories {
   readonly editions: EditionRepository;
   readonly seasons: SeasonRepository;
+  readonly teams: TeamRepository;
 }
 
 /** Tout ce qu'une transaction donne : les entrepôts, les adhésions, le journal et le recalcul. */

@@ -2,8 +2,10 @@ import type {
   CommandLogEntry,
   CommandServices,
   Publication,
+  RosterStatus,
   SeasonStatus,
 } from '#application/index.ts';
+import type { Division } from '#domain/index.ts';
 
 /** L'heure que donne l'horloge des tests. */
 export const NOW = new Date('2026-11-22T20:00:00.000Z');
@@ -38,6 +40,12 @@ export interface CommandHarness {
   readonly hasProjections: (organizationId: string) => Promise<boolean>;
   /** Ajoute à l'édition un match en brouillon, Zéphyr contre Sirocco, et rend son identifiant. */
   readonly addDraftMatch: (organizationId: string, editionId: string) => Promise<string>;
+  /** Marque le profil `absorbedId` comme fusionné dans `keptId`, sans rien déplacer. */
+  readonly markMerged: (
+    organizationId: string,
+    absorbedId: string,
+    keptId: string,
+  ) => Promise<void>;
   /** Les matchs que lit le recalcul : les publiés seulement. */
   readonly publishedMatchIds: (organizationId: string) => Promise<readonly string[]>;
   /** Les publications de l'organisation. */
@@ -49,6 +57,27 @@ export interface CommandHarness {
     organizationId: string,
     seasonId: string,
   ) => Promise<ReadonlyMap<string, number>>;
+  /** Une équipe telle qu'écrite. */
+  readonly team: (organizationId: string, teamId: string) => Promise<TeamRecord | undefined>;
+  /** Les passages du joueur dans des équipes, du plus ancien au plus récent. */
+  readonly stints: (organizationId: string, playerId: string) => Promise<readonly StintRecord[]>;
+}
+
+/** Une équipe telle qu'une commande la laisse. */
+export interface TeamRecord {
+  readonly tag: string;
+  readonly name: string;
+  readonly divisions: readonly Division[];
+  /** Instant ISO de son archivage, ou null. */
+  readonly archivedAt: string | null;
+}
+
+/** Un passage d'un joueur dans une équipe : dates ISO (AAAA-MM-JJ), départ null s'il est en cours. */
+export interface StintRecord {
+  readonly teamId: string;
+  readonly status: RosterStatus;
+  readonly joinedOn: string;
+  readonly leftOn: string | null;
 }
 
 /** Une saison telle qu'une commande la laisse. */

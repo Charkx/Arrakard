@@ -442,3 +442,12 @@ verify_jwt = false
 
 [functions.close-season]
 verify_jwt = false
+
+[functions.create-team]
+verify_jwt = false
+
+[functions.transfer-player]
+verify_jwt = false
+
+[functions.archive-team]
+verify_jwt = false

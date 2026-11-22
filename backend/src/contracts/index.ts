@@ -8,3 +8,5 @@ export { syncDiscordRoleRequest } from './sync-discord-role.ts';
 export type { SyncDiscordRoleRequest } from './sync-discord-role.ts';
 export { closeSeasonRequest, openSeasonRequest } from './season.ts';
 export type { CloseSeasonRequest, OpenSeasonRequest } from './season.ts';
+export { archiveTeamRequest, createTeamRequest, transferPlayerRequest } from './team.ts';
+export type { ArchiveTeamRequest, CreateTeamRequest, TransferPlayerRequest } from './team.ts';

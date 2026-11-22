@@ -6,7 +6,10 @@ export type {
   EditionSnapshot,
   SeasonRecord,
   SeededOrganizations,
+  StintRecord,
+  TeamRecord,
 } from './command-harness.ts';
+export { describeTeamContract } from './team-contract.ts';
 export { describeSeasonContract } from './season-contract.ts';
 export { inMemoryCommandHarness } from './in-memory-harness.ts';
 export { describePublishEditionContract } from './publish-edition-contract.ts';
