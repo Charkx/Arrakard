@@ -13,7 +13,14 @@ export type {
   TransactionPorts,
   UnitOfWork,
 } from './command.ts';
-export type { EditionRepository, EditionState, Publication } from './editions.ts';
+export { EXTERNAL_TYPES } from './editions.ts';
+export type { EditionDetails, EditionRepository, EditionState, Publication } from './editions.ts';
+export { createEdition } from './commands/create-edition.ts';
+export type { CreateEditionInput, CreateEditionOutcome } from './commands/create-edition.ts';
+export { updateEdition } from './commands/update-edition.ts';
+export type { UpdateEditionInput, UpdateEditionOutcome } from './commands/update-edition.ts';
+export { archiveEdition } from './commands/archive-edition.ts';
+export type { ArchiveEditionInput, ArchiveEditionOutcome } from './commands/archive-edition.ts';
 export { closeEdition } from './commands/close-edition.ts';
 export type { CloseEditionInput, CloseEditionOutcome } from './commands/close-edition.ts';
 export { publishEdition } from './commands/publish-edition.ts';

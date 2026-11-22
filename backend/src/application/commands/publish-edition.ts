@@ -1,4 +1,5 @@
 import { CommandRejected, type Command } from '../command.ts';
+import { checkVersion } from './edition-details.ts';
 
 export interface PublishEditionInput {
   readonly editionId: string;
@@ -26,12 +27,7 @@ export const publishEdition: Command<PublishEditionInput, PublishEditionOutcome>
     if (!edition) {
       throw new CommandRejected('not_found', `Édition ${editionId} introuvable.`);
     }
-    if (edition.version !== version) {
-      throw new CommandRejected(
-        'conflict',
-        `L’édition a changé depuis votre lecture (version ${edition.version}, et non ${version}).`,
-      );
-    }
+    checkVersion(edition.version, version);
     if (edition.seasonClosed) {
       throw new CommandRejected(
         'season_closed',

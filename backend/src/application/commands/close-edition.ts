@@ -1,4 +1,5 @@
 import { CommandRejected, type Command } from '../command.ts';
+import { checkVersion } from './edition-details.ts';
 
 export interface CloseEditionInput {
   readonly editionId: string;
@@ -23,12 +24,7 @@ export const closeEdition: Command<CloseEditionInput, CloseEditionOutcome> = {
     if (!edition) {
       throw new CommandRejected('not_found', `Édition ${editionId} introuvable.`);
     }
-    if (edition.version !== version) {
-      throw new CommandRejected(
-        'conflict',
-        `L’édition a changé depuis votre lecture (version ${edition.version}, et non ${version}).`,
-      );
-    }
+    checkVersion(edition.version, version);
     if (edition.closedAt !== null) {
       throw new CommandRejected('already_done', 'Cette édition est déjà clôturée.');
     }
