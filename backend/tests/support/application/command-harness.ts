@@ -40,6 +40,25 @@ export interface CommandHarness {
   readonly hasProjections: (organizationId: string) => Promise<boolean>;
   /** Ajoute à l'édition un match en brouillon, Zéphyr contre Sirocco, et rend son identifiant. */
   readonly addDraftMatch: (organizationId: string, editionId: string) => Promise<string>;
+  /**
+   * Ajoute à l'édition un match publié où ce joueur seul gagne, au MID, et
+   * rend son identifiant. Rien n'est recalculé.
+   */
+  readonly addPublishedMatch: (
+    organizationId: string,
+    editionId: string,
+    playerId: string,
+  ) => Promise<string>;
+  /** Un profil tel qu'écrit : son renvoi, son compte Discord, ses alias triés. */
+  readonly profile: (
+    organizationId: string,
+    playerId: string,
+  ) => Promise<ProfileRecord | undefined>;
+  /** Les performances du joueur, publiées ou en brouillon : leurs matchs, triés. */
+  readonly performanceMatchIds: (
+    organizationId: string,
+    playerId: string,
+  ) => Promise<readonly string[]>;
   /** Marque le profil `absorbedId` comme fusionné dans `keptId`, sans rien déplacer. */
   readonly markMerged: (
     organizationId: string,
@@ -62,6 +81,16 @@ export interface CommandHarness {
   /** Les passages du joueur dans des équipes, du plus ancien au plus récent. */
   readonly stints: (organizationId: string, playerId: string) => Promise<readonly StintRecord[]>;
 }
+
+/** Un profil de joueur tel qu'une commande le laisse. */
+export interface ProfileRecord {
+  readonly mergedInto: string | null;
+  readonly discordUserId: string | null;
+  readonly aliases: readonly string[];
+}
+
+/** Le numéro du match qu'ajoute `addPublishedMatch`. */
+export const PUBLISHED_MATCH_NUMBER = 3;
 
 /** Une équipe telle qu'une commande la laisse. */
 export interface TeamRecord {

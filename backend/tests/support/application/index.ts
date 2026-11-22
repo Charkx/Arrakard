@@ -4,12 +4,14 @@ export { DRAFT_MATCH_NUMBER, NOW } from './command-harness.ts';
 export type {
   CommandHarness,
   EditionSnapshot,
+  ProfileRecord,
   SeasonRecord,
   SeededOrganizations,
   StintRecord,
   TeamRecord,
 } from './command-harness.ts';
 export { describeTeamContract } from './team-contract.ts';
+export { describePlayerContract } from './player-contract.ts';
 export { describeSeasonContract } from './season-contract.ts';
 export { inMemoryCommandHarness } from './in-memory-harness.ts';
 export { describePublishEditionContract } from './publish-edition-contract.ts';

@@ -50,3 +50,6 @@ passages par l'API ordinaire, car ils sont publics (ADR 0031).
   vient.
 - La fusion de profils (#52) devra dire ce que deviennent les passages du
   profil absorbé.
+
+> **Complété par [0034](0034-fusionner-deux-profils.md)** : la fusion termine
+> le passage en cours de l'absorbé, et le conservé sans équipe prend sa place.

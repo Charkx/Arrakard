@@ -214,3 +214,9 @@
 .admin-archive {
   align-self: flex-start;
 }
+
+.admin-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}

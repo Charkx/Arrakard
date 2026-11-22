@@ -53,3 +53,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0031](0031-lectures-admin-par-fonctions.md)             | L’espace admin lit par des fonctions réservées                    | Accepté |
 | [0032](0032-une-saison-close-ne-recoit-plus-de-match.md) | Une saison clôturée ne reçoit plus de match                       | Accepté |
 | [0033](0033-transferts-dates-du-jour.md)                 | Les transferts sont datés du jour, l'archivage libère les joueurs | Accepté |
+| [0034](0034-fusionner-deux-profils.md)                   | Fusionner deux profils, lier une carte à Discord                  | Accepté |

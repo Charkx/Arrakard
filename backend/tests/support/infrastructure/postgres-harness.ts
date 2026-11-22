@@ -4,7 +4,12 @@ import { V1_RATING_RULES } from '#domain/index.ts';
 import { postgresUnitOfWork } from '#infrastructure/commands.ts';
 import { readFacts } from '#infrastructure/read.ts';
 import type { Sql } from 'postgres';
-import { DRAFT_MATCH_NUMBER, NOW, type CommandHarness } from '../application/command-harness.ts';
+import {
+  DRAFT_MATCH_NUMBER,
+  NOW,
+  PUBLISHED_MATCH_NUMBER,
+  type CommandHarness,
+} from '../application/command-harness.ts';
 import { FIXTURE_ROWS, SIROCCO_ID, ZEPHYR_ID } from '../application/fixture.ts';
 import {
   createOrganization,
@@ -114,6 +119,42 @@ export function postgresCommandHarness(sql: Sql, names: PostgresHarnessNames): C
         select status, end_date::text from seasons
         where organization_id = ${organizationId} and id = ${seasonId}`;
       return season && { status: season.status, endDate: season.end_date };
+    },
+    async addPublishedMatch(organizationId, editionId, playerId) {
+      const [match] = await sql<{ id: string }[]>`
+        insert into matches (organization_id, edition_id, match_number, winner_team, duration_seconds)
+        values (${organizationId}, ${editionId}, ${PUBLISHED_MATCH_NUMBER}, 'ARK', 1600)
+        returning id`;
+      if (!match) throw new Error('Match : écriture impossible.');
+      await sql`
+        insert into performances (organization_id, match_id, line, side, player_id, team, role,
+                                  champion, result, kills, deaths, assists, gold)
+        values (${organizationId}, ${match.id}, 2, 'A', ${playerId}, 'ARK', 'MID',
+                'Ahri', 'win', 5, 2, 6, 11000)`;
+      return match.id;
+    },
+    async profile(organizationId, playerId) {
+      const [player] = await sql<
+        { merged_into: string | null; discord_user_id: string | null; aliases: string[] }[]
+      >`
+        select merged_into, discord_user_id,
+               array(select alias from player_aliases a
+                     where a.player_id = p.id order by alias) as aliases
+        from players p where organization_id = ${organizationId} and id = ${playerId}`;
+      return (
+        player && {
+          mergedInto: player.merged_into,
+          discordUserId: player.discord_user_id,
+          aliases: player.aliases,
+        }
+      );
+    },
+    async performanceMatchIds(organizationId, playerId) {
+      const rows = await sql<{ match_id: string }[]>`
+        select match_id from performances
+        where organization_id = ${organizationId} and player_id = ${playerId}
+        order by match_id`;
+      return rows.map((r) => r.match_id);
     },
     async markMerged(organizationId, absorbedId, keptId) {
       await sql`

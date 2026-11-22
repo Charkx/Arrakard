@@ -220,6 +220,24 @@ export function supabaseSession(
     createTeam: (tag, name, divisions) => command('create-team', { tag, name, divisions }),
     transferPlayer: (playerId, to) => command('transfer-player', { playerId, to }),
     archiveTeam: (teamId) => command('archive-team', { teamId }),
+    async profiles() {
+      // Le compte Discord n'est pas public : une fonction réservée aux admins (ADR 0034).
+      const db = rest(await accessToken());
+      const rows = await db.rpc('admin_profiles', {
+        org: await organizationId(db, organizationSlug),
+      });
+      if (rows.error) throw rows.error;
+      return (
+        rows.data as readonly {
+          player_id: string;
+          nickname: string;
+          discord_user_id: string | null;
+        }[]
+      ).map((p) => ({ id: p.player_id, nickname: p.nickname, discordUserId: p.discord_user_id }));
+    },
+    mergePlayers: (absorbedId, keptId) => command('merge-players', { absorbedId, keptId }),
+    linkDiscordAccount: (playerId, discordUserId) =>
+      command('link-discord-account', { playerId, discordUserId }),
   };
 
   return { auth, admin };

@@ -1,5 +1,6 @@
 import type { Division } from '@arrakis/backend/domain';
 import type { AdminEdition } from '../features/admin/admin.ts';
+import type { AdminProfile } from '../features/admin/profiles.ts';
 import type { RosterPlace, Rosters } from '../features/admin/teams.ts';
 
 /** La saison ouverte de l'organisation (ADR 0014). */
@@ -37,6 +38,12 @@ export interface AdminSource {
   transferPlayer(playerId: string, to: RosterPlace | null): Promise<void>;
   /** Archive une équipe : ses joueurs la quittent. */
   archiveTeam(teamId: string): Promise<void>;
+  /** Les profils non fusionnés, par pseudo, avec leur compte Discord. */
+  profiles(): Promise<AdminProfile[]>;
+  /** Fusionne le profil en double dans celui qui reste. */
+  mergePlayers(absorbedId: string, keptId: string): Promise<void>;
+  /** Lie la carte à ce compte Discord, ou la délie (null). */
+  linkDiscordAccount(playerId: string, discordUserId: string | null): Promise<void>;
 }
 
 /** Une source chargée au premier usage, avec la connexion (ADR 0024). */
@@ -52,5 +59,9 @@ export function lazyAdminSource(load: () => Promise<AdminSource>): AdminSource {
     createTeam: async (tag, name, divisions) => (await source()).createTeam(tag, name, divisions),
     transferPlayer: async (playerId, to) => (await source()).transferPlayer(playerId, to),
     archiveTeam: async (teamId) => (await source()).archiveTeam(teamId),
+    profiles: async () => (await source()).profiles(),
+    mergePlayers: async (absorbedId, keptId) => (await source()).mergePlayers(absorbedId, keptId),
+    linkDiscordAccount: async (playerId, discordUserId) =>
+      (await source()).linkDiscordAccount(playerId, discordUserId),
   };
 }

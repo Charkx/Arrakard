@@ -5,6 +5,7 @@ import {
   type EditionRepository,
   type IdentityRepository,
   type MembershipRepository,
+  type PlayerRepository,
   type SeasonRepository,
   type RosterStatus,
   type SeasonStatus,
@@ -35,6 +36,7 @@ export function postgresUnitOfWork(sql: Sql): UnitOfWork {
           editions: postgresEditions(tx),
           seasons: postgresSeasons(tx),
           teams: postgresTeams(tx),
+          players: postgresPlayers(tx),
           commandLog: postgresCommandLog(tx),
         });
       })) as Awaited<ReturnType<typeof work>>;
@@ -225,6 +227,94 @@ function postgresTeams(tx: TransactionSql): TeamRepository {
       await tx`
         insert into team_memberships (organization_id, player_id, team_id, status, joined_on)
         values (${organizationId}, ${playerId}, ${to.teamId}, ${to.status}, ${on})`;
+    },
+  };
+}
+
+function postgresPlayers(tx: TransactionSql): PlayerRepository {
+  return {
+    async find(organizationId, playerId) {
+      const [player] = await tx<{ discord_user_id: string | null }[]>`
+        select discord_user_id from players
+        where organization_id = ${organizationId} and id = ${playerId} and merged_into is null`;
+      return player && { discordUserId: player.discord_user_id };
+    },
+    async playedTogether(organizationId, a, b) {
+      const [shared] = await tx`
+        select 1 from performances x join performances y on y.match_id = x.match_id
+        where x.organization_id = ${organizationId} and x.player_id = ${a} and y.player_id = ${b}
+        limit 1`;
+      return shared !== undefined;
+    },
+    async merge(organizationId, absorbedId, keptId, on) {
+      const moved = await tx`
+        update performances set player_id = ${keptId}
+        where organization_id = ${organizationId} and player_id = ${absorbedId}`;
+      await tx`
+        update matches set mvp_player_id = ${keptId}
+        where organization_id = ${organizationId} and mvp_player_id = ${absorbedId}`;
+      await tx`
+        update editions set event_mvp_player_id = ${keptId}
+        where organization_id = ${organizationId} and event_mvp_player_id = ${absorbedId}`;
+      await tx`
+        insert into edition_participants (organization_id, edition_id, player_id)
+        select organization_id, edition_id, ${keptId}::uuid from edition_participants
+        where organization_id = ${organizationId} and player_id = ${absorbedId}
+        on conflict do nothing`;
+      await tx`
+        delete from edition_participants
+        where organization_id = ${organizationId} and player_id = ${absorbedId}`;
+      // Le pseudo et les alias de l'absorbé rattachent les prochains imports au conservé (ADR 0004).
+      await tx`
+        insert into player_aliases (organization_id, player_id, alias)
+        select ${organizationId}::uuid, ${keptId}::uuid, alias from player_aliases
+        where organization_id = ${organizationId} and player_id = ${absorbedId}
+        union
+        select ${organizationId}::uuid, ${keptId}::uuid, lower(nickname) from players
+        where organization_id = ${organizationId} and id = ${absorbedId}
+        on conflict do nothing`;
+      await tx`
+        delete from player_aliases
+        where organization_id = ${organizationId} and player_id = ${absorbedId}`;
+      const ended = await tx<{ team_id: string; status: RosterStatus }[]>`
+        update team_memberships set left_on = ${on}
+        where organization_id = ${organizationId} and player_id = ${absorbedId} and left_on is null
+        returning team_id, status`;
+      const [place] = ended;
+      if (place) {
+        // Le vrai joueur garde sa place, si le conservé n'en a pas (ADR 0034).
+        await tx`
+          insert into team_memberships (organization_id, player_id, team_id, status, joined_on)
+          select ${organizationId}, ${keptId}, ${place.team_id}, ${place.status}, ${on}
+          where not exists (
+            select 1 from team_memberships
+            where player_id = ${keptId} and left_on is null)`;
+      }
+      const [absorbed] = await tx<{ discord_user_id: string | null }[]>`
+        update players p set discord_user_id = null, merged_into = ${keptId}
+        from players old
+        where old.id = p.id and p.organization_id = ${organizationId} and p.id = ${absorbedId}
+        returning old.discord_user_id`;
+      if (absorbed?.discord_user_id != null) {
+        await tx`
+          update players set discord_user_id = ${absorbed.discord_user_id}
+          where organization_id = ${organizationId} and id = ${keptId}`;
+      }
+      await tx`
+        update players set merged_into = ${keptId}
+        where organization_id = ${organizationId} and merged_into = ${absorbedId}`;
+      return { movedPerformances: moved.count };
+    },
+    async discordOwner(organizationId, discordUserId) {
+      const [player] = await tx<{ id: string }[]>`
+        select id from players
+        where organization_id = ${organizationId} and discord_user_id = ${discordUserId}`;
+      return player?.id;
+    },
+    async linkDiscord(organizationId, playerId, discordUserId) {
+      await tx`
+        update players set discord_user_id = ${discordUserId}
+        where organization_id = ${organizationId} and id = ${playerId}`;
     },
   };
 }

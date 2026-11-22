@@ -1,6 +1,7 @@
 import type { EditionRepository } from './editions.ts';
 import type { IdentityRepository, MembershipRepository } from './memberships.ts';
 import type { SeasonRepository } from './seasons.ts';
+import type { PlayerRepository } from './players.ts';
 import type { TeamRepository } from './teams.ts';
 import { recomputeProjections, type RecomputePorts } from './recompute.ts';
 
@@ -35,6 +36,7 @@ export interface Repositories {
   readonly editions: EditionRepository;
   readonly seasons: SeasonRepository;
   readonly teams: TeamRepository;
+  readonly players: PlayerRepository;
 }
 
 /** Tout ce qu'une transaction donne : les entrepôts, les adhésions, le journal et le recalcul. */

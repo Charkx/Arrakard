@@ -13,6 +13,9 @@ describe('lazyAdminSource', () => {
         createTeam: () => Promise.resolve(),
         transferPlayer: () => Promise.resolve(),
         archiveTeam: () => Promise.resolve(),
+        profiles: () => Promise.resolve([]),
+        mergePlayers: () => Promise.resolve(),
+        linkDiscordAccount: () => Promise.resolve(),
       }),
     );
     const admin = lazyAdminSource(load);
@@ -26,6 +29,9 @@ describe('lazyAdminSource', () => {
     await admin.createTeam('ARK', 'Arrakis', ['div1']);
     await admin.transferPlayer('p-1', null);
     await admin.archiveTeam('t-1');
+    expect(await admin.profiles()).toEqual([]);
+    await admin.mergePlayers('p-1', 'p-2');
+    await admin.linkDiscordAccount('p-1', null);
     expect(load).toHaveBeenCalledOnce();
   });
 });

@@ -21,6 +21,14 @@ export { openSeason } from './commands/open-season.ts';
 export type { OpenSeasonInput, OpenSeasonOutcome } from './commands/open-season.ts';
 export { closeSeason } from './commands/close-season.ts';
 export type { CloseSeasonInput, CloseSeasonOutcome } from './commands/close-season.ts';
+export { mergePlayers } from './commands/merge-players.ts';
+export type { MergePlayersInput, MergePlayersOutcome } from './commands/merge-players.ts';
+export { linkDiscordAccount } from './commands/link-discord-account.ts';
+export type {
+  LinkDiscordAccountInput,
+  LinkDiscordAccountOutcome,
+} from './commands/link-discord-account.ts';
+export type { MergeResult, PlayerRepository, PlayerState } from './players.ts';
 export { createTeam } from './commands/create-team.ts';
 export type { CreateTeamInput, CreateTeamOutcome } from './commands/create-team.ts';
 export { transferPlayer } from './commands/transfer-player.ts';
