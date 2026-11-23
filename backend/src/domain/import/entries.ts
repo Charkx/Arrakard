@@ -51,7 +51,9 @@ function entryOf(
   }
   const lines = ROLES.flatMap((role): RoleLine[] => {
     const [first, second] = match.performances.filter((p) => p.role === role);
-    return first && second ? [{ role, sides: [sideOf(first, newPlayerIds), sideOf(second, newPlayerIds)] }] : [];
+    return first && second
+      ? [{ role, sides: [sideOf(first, newPlayerIds), sideOf(second, newPlayerIds)] }]
+      : [];
   });
   return { durationSeconds: match.durationSeconds, winner, teams, lines };
 }
@@ -82,7 +84,10 @@ function sideOf(
   { player, champion, kills, deaths, assists, gold }: PlannedPerformance,
   newPlayerIds: Readonly<Record<string, string>>,
 ) {
-  const playerId = player.kind === 'existing' ? player.playerId : newPlayerIds[player.key];
+  if (player.kind === 'existing') {
+    return { playerId: player.playerId, champion, kills, deaths, assists, gold };
+  }
+  const playerId = newPlayerIds[player.key];
   // La commande crée chaque nouveau joueur du plan avant d'en faire des feuilles.
   if (playerId === undefined) {
     throw new Error(`Le nouveau joueur « ${player.key} » n'a pas d'identifiant.`);

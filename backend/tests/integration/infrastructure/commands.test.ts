@@ -16,6 +16,7 @@ import { describePlayerContract } from '#support/application/player-contract.ts'
 import { describeEditionContract } from '#support/application/edition-contract.ts';
 import { describeRecordMatchContract } from '#support/application/record-match-contract.ts';
 import { describeImportEditionContract } from '#support/application/import-edition-contract.ts';
+import { describeImportDecisionsContract } from '#support/application/import-decisions-contract.ts';
 import {
   postgresCommandHarness,
   resetPostgresHarness,
@@ -50,6 +51,7 @@ describePlayerContract('Postgres', () => harness);
 describeEditionContract('Postgres', () => harness);
 describeRecordMatchContract('Postgres', () => harness);
 describeImportEditionContract('Postgres', () => harness);
+describeImportDecisionsContract('Postgres', () => harness);
 
 describe('deux commandes en même temps (ADR 0009)', () => {
   it('la seconde attend la première, lit la nouvelle version, et répond par un conflit', async () => {

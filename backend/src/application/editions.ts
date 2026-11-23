@@ -77,6 +77,16 @@ export interface EditionRepository {
     match: MatchEntry,
     version: number,
   ): Promise<{ readonly matchId: string; readonly matchNumber: number; readonly version: number }>;
+  /**
+   * L'édition où ce fichier a déjà été importé, s'il l'a été. `file` est le
+   * contenu lu du fichier ; l'entrepôt n'en garde qu'une empreinte.
+   */
+  importOf(
+    organizationId: string,
+    file: string,
+  ): Promise<{ readonly editionId: string; readonly editionName: string } | undefined>;
+  /** Retient que ce fichier a été importé dans cette édition. */
+  recordImport(organizationId: string, editionId: string, file: string): Promise<void>;
   /** Crée l'édition, à la version 1, et rend son identifiant. */
   create(organizationId: string, edition: EditionDetails): Promise<string>;
   /** Remplace ce qu'un admin saisit, si l'édition est encore à `version` ; rend la nouvelle version. */

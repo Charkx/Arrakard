@@ -6,49 +6,10 @@ import {
   importEdition,
   recordMatch,
 } from '#application/index.ts';
-import type { NumberedRow, RoleLine } from '#domain/index.ts';
+import type { RoleLine } from '#domain/index.ts';
 import type { CommandHarness } from './command-harness.ts';
 import { LEAGUE_ID, OFF_SEASON_ID, SEASON_ID } from './fixture.ts';
-
-const ROLES = ['TOP', 'JGL', 'MID', 'ADC', 'SUP'] as const;
-
-/**
- * Les cinq lignes d'un match de la feuille LIGUE1_STATS : « Joueur 1 » à
- * « Joueur 5 » pour l'équipe A, « Joueur 6 » à « Joueur 10 » pour l'équipe B,
- * qui gagne. Le fichier a une ligne parasite puis l'en-tête : les données
- * commencent à la ligne 3.
- */
-function sheetMatch(
-  matchNumber: number,
-  { teams = ['Noxus', 'Ionia'], names = (i: number) => `Joueur ${String(i)}` } = {},
-): NumberedRow[] {
-  return ROLES.map((role, i) => ({
-    line: 3 + (matchNumber - 1) * 5 + i,
-    cells: {
-      MATCH: matchNumber,
-      GAGNANT: teams[1],
-      DURÉE: 32.1,
-      EQUIPE: teams[0],
-      'WIN/LOSE': 'LOSE',
-      POSTE: role,
-      'NOM DU JOUEUR': names(i + 1),
-      CHAMPION: 'Ornn',
-      K: i,
-      D: 2,
-      A: 5,
-      GOLD: 9500,
-      'EQUIPE.1': teams[1],
-      'WIN/LOSE.1': 'WIN',
-      'POSTE.1': role,
-      'NOM DU JOUEUR.1': names(i + 6),
-      'CHAMPION.1': 'Sion',
-      'K.1': i + 1,
-      'D.1': 2,
-      'A.1': 5,
-      'GOLD.1': 9500,
-    },
-  }));
-}
+import { ROLES, sheetMatch } from './sheet-rows.ts';
 
 /**
  * Importer le fichier Excel d'une édition, cas simple (cas d'usage A1,
@@ -129,7 +90,7 @@ export function describeImportEditionContract(name: string, harness: () => Comma
       expect(outcome.matchIds).toHaveLength(1);
     });
 
-    it('un pseudo inconnu refuse l’import, et rien n’est écrit', async () => {
+    it('sans décision, un pseudo inconnu refuse l’import, et rien n’est écrit', async () => {
       const { services, seed, addPlayers, edition } = harness();
       const { organizationId, adminId } = await seed();
       await addPlayers(organizationId, 9);
@@ -204,7 +165,7 @@ export function describeImportEditionContract(name: string, harness: () => Comma
       });
     });
 
-    it('dans une ligue, une équipe inconnue refuse l’import', async () => {
+    it('dans une ligue, une équipe inconnue sans décision refuse l’import', async () => {
       const { services, seed, addPlayers } = harness();
       const { organizationId, adminId } = await seed();
       const actor = { userId: adminId, organizationId };

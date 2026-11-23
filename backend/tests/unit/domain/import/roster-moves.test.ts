@@ -47,7 +47,9 @@ describe('rosterMoves', () => {
       ],
     };
 
-    expect(rosterMoves(plan, [player('meta', 'ARK', 'sub'), player('zed', 'BLB', 'starter')])).toEqual([
+    expect(
+      rosterMoves(plan, [player('meta', 'ARK', 'sub'), player('zed', 'BLB', 'starter')]),
+    ).toEqual([
       { player: { kind: 'existing', playerId: 'meta' }, to: { teamTag: 'BLB', status: 'sub' } },
       { player: { kind: 'existing', playerId: 'zed' }, to: { teamTag: 'ARK', status: 'starter' } },
     ]);

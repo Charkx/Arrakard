@@ -10,7 +10,24 @@ const cell = z.union([z.string().max(200), z.number(), z.boolean(), z.null()]);
  * un fichier démesuré ; ce que veulent dire les colonnes se lit dans le
  * domaine (`parseNumberedStatsSheet`).
  */
+/** Ce que l'admin a décidé des cas que l'import ne reconnaît pas seul (ADR 0039). */
+const decisions = z.strictObject({
+  /** Par clé de pseudo : le relier à un joueur existant, ou créer un joueur. */
+  names: z.record(
+    z.string().max(80),
+    z.discriminatedUnion('kind', [
+      z.strictObject({ kind: z.literal('existing'), playerId: z.guid() }),
+      z.strictObject({ kind: z.literal('new') }),
+    ]),
+  ),
+  /** Par tag : créer l'équipe, ou l'ignorer. */
+  unknownTeams: z.record(z.string().max(16), z.enum(['create', 'ignore'])),
+  /** Par joueur : appliquer son transfert, ou l'ignorer. */
+  transfers: z.record(z.guid(), z.enum(['apply', 'ignore'])),
+});
+
 export const importEditionRequest = editionAtVersion.extend({
+  decisions: decisions.optional(),
   rows: z
     .array(
       z.strictObject({
