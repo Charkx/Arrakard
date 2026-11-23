@@ -16,6 +16,12 @@ export type {
 export type { EditionDetails, EditionRepository, EditionState, Publication } from './editions.ts';
 export { recordMatch } from './commands/record-match.ts';
 export type { RecordMatchInput, RecordMatchOutcome } from './commands/record-match.ts';
+export { importEdition } from './commands/import-edition.ts';
+export type {
+  ImportedRow,
+  ImportEditionInput,
+  ImportEditionOutcome,
+} from './commands/import-edition.ts';
 export { createEdition } from './commands/create-edition.ts';
 export type { CreateEditionInput, CreateEditionOutcome } from './commands/create-edition.ts';
 export { updateEdition } from './commands/update-edition.ts';
@@ -36,7 +42,7 @@ export type {
   LinkDiscordAccountInput,
   LinkDiscordAccountOutcome,
 } from './commands/link-discord-account.ts';
-export type { PlayerRepository, PlayerState } from './players.ts';
+export type { ImportDirectory, PlayerRepository, PlayerState } from './players.ts';
 export { createTeam } from './commands/create-team.ts';
 export type { CreateTeamInput, CreateTeamOutcome } from './commands/create-team.ts';
 export { transferPlayer } from './commands/transfer-player.ts';

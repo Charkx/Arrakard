@@ -95,7 +95,9 @@ describe('planImport', () => {
     it('exigent une décision, qui nomme le joueur et ses deux équipes', () => {
       expect(plan(sheet)).toEqual({
         ok: false,
-        errors: ['Décision manquante pour le joueur « Newbie ».'],
+        errors: [
+          'Décision manquante pour le joueur « Newbie » : aucun joueur connu ne porte ce pseudo.',
+        ],
       });
     });
 
@@ -150,7 +152,10 @@ describe('planImport', () => {
     };
     const sheet = oneLineSheet(['ARK', 'ARK Meta'], ['BLB', 'BLB Zed']);
 
-    expect(plan(sheet, noDecision, ctx)).toMatchObject({ ok: false });
+    expect(plan(sheet, noDecision, ctx)).toEqual({
+      ok: false,
+      errors: ['Décision manquante pour le joueur « Meta » : plusieurs joueurs portent ce pseudo.'],
+    });
     expect(
       plan(
         sheet,
@@ -169,7 +174,9 @@ describe('planImport', () => {
     it('exigent une décision, qui nomme le joueur et ses deux équipes', () => {
       expect(plan(sheet, { ...noDecision, names })).toEqual({
         ok: false,
-        errors: ['Décision manquante pour l’équipe « NKR ».'],
+        errors: [
+          'Décision manquante pour l’équipe « NKR » : aucune équipe connue ne porte ce tag.',
+        ],
       });
     });
 

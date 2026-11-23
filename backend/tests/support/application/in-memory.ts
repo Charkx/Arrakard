@@ -469,6 +469,25 @@ export function inMemoryStore(): InMemoryStore {
           organization.mergedInto.set(absorbedId, keptId);
         });
       },
+      importDirectory(organizationId) {
+        const organization = find(organizationId);
+        return Promise.resolve({
+          // La mémoire n'archive pas les joueurs.
+          players: organization.facts.players
+            .filter((p) => !organization.mergedInto.has(p.id))
+            .map((p) => {
+              const current = organization.stints.get(p.id)?.find((s) => s.leftOn === null);
+              return {
+                playerId: p.id,
+                aliases: [p.nickname, ...(organization.aliases.get(p.id) ?? [])],
+                teamTag: current ? (organization.teams.get(current.teamId)?.tag ?? null) : null,
+                archived: false,
+                status: current?.status ?? null,
+              };
+            }),
+          teamTags: [...organization.teams.values()].map((t) => t.tag),
+        });
+      },
       discordOwner(organizationId, discordUserId) {
         const owner = [...find(organizationId).discordLinks].find(([, d]) => d === discordUserId);
         return Promise.resolve(owner?.[0]);

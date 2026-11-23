@@ -462,6 +462,40 @@ function postgresPlayers(tx: TransactionSql): PlayerRepository {
         update players set merged_into = ${keepId}
         where organization_id = ${organizationId} and merged_into = ${absorbId}`;
     },
+    async importDirectory(organizationId) {
+      const players = await tx<
+        {
+          id: string;
+          nickname: string;
+          archived: boolean;
+          aliases: string[];
+          team_tag: string | null;
+          status: RosterStatus | null;
+        }[]
+      >`
+        select p.id, p.nickname, p.archived,
+               coalesce(array_agg(a.alias) filter (where a.alias is not null), '{}') as aliases,
+               t.tag as team_tag, m.status
+        from players p
+        left join player_aliases a on a.organization_id = p.organization_id and a.player_id = p.id
+        left join team_memberships m
+          on m.organization_id = p.organization_id and m.player_id = p.id and m.left_on is null
+        left join teams t on t.organization_id = m.organization_id and t.id = m.team_id
+        where p.organization_id = ${organizationId} and p.merged_into is null
+        group by p.id, t.tag, m.status`;
+      const teams = await tx<{ tag: string }[]>`
+        select tag from teams where organization_id = ${organizationId}`;
+      return {
+        players: players.map((p) => ({
+          playerId: p.id,
+          aliases: [p.nickname, ...p.aliases],
+          teamTag: p.team_tag,
+          archived: p.archived,
+          status: p.status,
+        })),
+        teamTags: teams.map((t) => t.tag),
+      };
+    },
     async discordOwner(organizationId, discordUserId) {
       const [player] = await tx<{ id: string }[]>`
         select id from players

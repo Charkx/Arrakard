@@ -72,7 +72,9 @@ export function planImport(
   // 2. Équipes inconnues.
   for (const { teamTag } of analysis.unknownTeams) {
     if (decisions.unknownTeams[teamTag] === undefined) {
-      errors.push(`Décision manquante pour l’équipe « ${teamTag} ».`);
+      errors.push(
+        `Décision manquante pour l’équipe « ${teamTag} » : aucune équipe connue ne porte ce tag.`,
+      );
     }
   }
   const newTeams = analysis.unknownTeams
@@ -160,7 +162,11 @@ function refFor(
     if (name.resolution.kind === 'matched') {
       return { kind: 'existing', playerId: name.resolution.playerId };
     }
-    errors.push(`Décision manquante pour le joueur « ${name.nickname} ».`);
+    const why =
+      name.resolution.kind === 'ambiguous'
+        ? 'plusieurs joueurs portent ce pseudo'
+        : 'aucun joueur connu ne porte ce pseudo';
+    errors.push(`Décision manquante pour le joueur « ${name.nickname} » : ${why}.`);
     return undefined;
   }
   if (decision.kind === 'new') return { kind: 'new', key: normalizeAlias(name.nickname) };

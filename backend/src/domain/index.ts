@@ -47,7 +47,7 @@ export type {
   ImportPlayer,
   RosterStatus,
 } from './import/analyze.ts';
-export { nameOf } from './import/analyze.ts';
+export { nameOf, teamsAreRosters } from './import/analyze.ts';
 export { planImport } from './import/plan.ts';
 export type {
   ImportDecisions,

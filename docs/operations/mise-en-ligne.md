@@ -248,7 +248,7 @@ dépôt, ni dans une conversation.
 
    ```sh
    supabase db push --remote
-   supabase functions deploy sync-discord-role open-season close-season close-edition publish-edition create-team transfer-player archive-team merge-players link-discord-account create-edition update-edition archive-edition record-match
+   supabase functions deploy sync-discord-role open-season close-season close-edition publish-edition create-team transfer-player archive-team merge-players link-discord-account create-edition update-edition archive-edition record-match import-edition
    ```
 
    Chaque commande ajoutée plus tard a sa fonction : la liste est celle des

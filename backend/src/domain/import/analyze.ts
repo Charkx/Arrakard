@@ -1,12 +1,14 @@
 import { normalizeAlias, splitTeamTag } from '../identity/names.ts';
 import { resolvePlayer, type DirectoryPlayer, type Resolution } from '../identity/resolve.ts';
+import type { EditionType } from '../facts.ts';
 import type { StatsSheet } from './stats-sheet.ts';
 
 export type RosterStatus = 'starter' | 'sub' | 'coach';
 
 /** Un joueur connu, avec ce dont l'analyse d'import a besoin. */
 export interface ImportPlayer extends DirectoryPlayer {
-  readonly status: RosterStatus;
+  /** Son statut dans son équipe actuelle ; null s'il est sans équipe. */
+  readonly status: RosterStatus | null;
 }
 
 export interface ImportContext {
@@ -45,6 +47,13 @@ export interface ImportAnalysis {
     readonly startersAfter: number;
   }[];
 }
+
+/**
+ * Les équipes de la feuille sont-elles des rosters ? Oui pour une ligue ou un
+ * tournoi ; non pour une In House ou une LAN, où elles se forment le soir même.
+ */
+export const teamsAreRosters = (type: EditionType): boolean =>
+  type === 'league_div1' || type === 'league_div2' || type === 'tournament';
 
 const collator = new Intl.Collator('fr', { sensitivity: 'base' });
 
