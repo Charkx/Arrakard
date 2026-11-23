@@ -123,6 +123,36 @@ export function describeImportDecisionsContract(name: string, harness: () => Com
       ]);
     });
 
+    it('une équipe inconnue reliée à une équipe connue reçoit ses nouveaux joueurs, sans être créée', async () => {
+      const { services, seed, addPlayers, stints } = harness();
+      const { organizationId, adminId } = await seed();
+      const actor = { userId: adminId, organizationId };
+      await addPlayers(organizationId, 9);
+      const { teamId: ion } = await executeCommand(services, actor, createTeam, {
+        tag: 'ION',
+        name: 'Ionia',
+        divisions: ['div1'],
+      });
+      const editionId = await aLeagueDay(services, actor);
+
+      // « IONN » est une faute de frappe pour ION.
+      const outcome = await executeCommand(services, actor, importEdition, {
+        editionId,
+        version: 1,
+        rows: sheetMatch(1, { teams: ['NOX', 'IONN'] }),
+        decisions: {
+          names: { 'joueur 10': { kind: 'new' } },
+          unknownTeams: { NOX: 'ignore', IONN: { linkTo: 'ION' } },
+          transfers: {},
+        },
+      });
+
+      expect(outcome.createdTeamIds).toEqual([]);
+      expect((await stints(organizationId, outcome.createdPlayerIds[0] ?? '')).at(-1)?.teamId).toBe(
+        ion,
+      );
+    });
+
     it('un transfert appliqué change l’équipe du joueur, en gardant son statut ; ignoré, rien ne change', async () => {
       const { services, seed, addPlayers, stints } = harness();
       const { organizationId, adminId } = await seed();

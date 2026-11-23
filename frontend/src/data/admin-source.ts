@@ -58,6 +58,8 @@ export interface AdminSource {
   recordMatch(editionId: string, version: number, match: MatchEntry): Promise<number>;
   /** Les joueurs et les équipes connus, pour montrer ce qu'un import devra décider. */
   importDirectory(): Promise<ImportDirectoryView>;
+  /** Le nom de l'édition où ces lignes ont déjà été importées, ou null (ADR 0039). */
+  importedIn(rows: readonly NumberedRow[]): Promise<string | null>;
   /** Importe les lignes du fichier Excel d'une édition sans match, avec les décisions de l'admin. */
   importEdition(
     editionId: string,
@@ -94,6 +96,7 @@ export function lazyAdminSource(load: () => Promise<AdminSource>): AdminSource {
     recordMatch: async (editionId, version, match) =>
       (await source()).recordMatch(editionId, version, match),
     importDirectory: async () => (await source()).importDirectory(),
+    importedIn: async (rows) => (await source()).importedIn(rows),
     importEdition: async (editionId, version, rows, decisions) =>
       (await source()).importEdition(editionId, version, rows, decisions),
     archiveEdition: async (editionId, version) =>

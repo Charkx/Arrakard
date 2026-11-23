@@ -11,7 +11,8 @@ select
   p.id as player_id,
   p.nickname,
   p.archived,
-  coalesce(array_agg(a.alias order by a.alias) filter (where a.alias is not null), '{}') as aliases,
+  -- Le pseudo d'abord, puis les graphies rencontrées (ADR 0004).
+  array[p.nickname] || coalesce(array_agg(a.alias order by a.alias) filter (where a.alias is not null), '{}') as aliases,
   t.tag as team_tag,
   m.status
 from players p

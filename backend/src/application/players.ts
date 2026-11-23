@@ -47,9 +47,12 @@ export interface ImportDirectory {
   /** Les joueurs non fusionnés ; leurs alias commencent par leur pseudo. */
   readonly players: readonly ImportPlayer[];
   /** Toutes les équipes, archivées comprises. */
-  readonly teams: readonly {
-    readonly id: string;
-    readonly tag: string;
-    readonly archived: boolean;
-  }[];
+  readonly teams: readonly DirectoryTeam[];
+}
+
+/** Une équipe, telle que l'import la voit. */
+export interface DirectoryTeam {
+  readonly id: string;
+  readonly tag: string;
+  readonly archived: boolean;
 }

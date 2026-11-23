@@ -78,15 +78,13 @@ export interface EditionRepository {
     version: number,
   ): Promise<{ readonly matchId: string; readonly matchNumber: number; readonly version: number }>;
   /**
-   * L'édition où ce fichier a déjà été importé, s'il l'a été. `file` est le
-   * contenu lu du fichier ; l'entrepôt n'en garde qu'une empreinte.
+   * L'édition où ce fichier a déjà été importé, s'il l'a été. `readRows` sont
+   * les lignes lues du fichier, sérialisées ; l'entrepôt n'en garde qu'une
+   * empreinte.
    */
-  importOf(
-    organizationId: string,
-    file: string,
-  ): Promise<{ readonly editionId: string; readonly editionName: string } | undefined>;
+  importOf(organizationId: string, readRows: string): Promise<ImportedIn | undefined>;
   /** Retient que ce fichier a été importé dans cette édition. */
-  recordImport(organizationId: string, editionId: string, file: string): Promise<void>;
+  recordImport(organizationId: string, editionId: string, readRows: string): Promise<void>;
   /** Crée l'édition, à la version 1, et rend son identifiant. */
   create(organizationId: string, edition: EditionDetails): Promise<string>;
   /** Remplace ce qu'un admin saisit, si l'édition est encore à `version` ; rend la nouvelle version. */
@@ -103,4 +101,10 @@ export interface EditionRepository {
     archivedAt: string,
     version: number,
   ): Promise<number>;
+}
+
+/** L'édition où un fichier a été importé. */
+export interface ImportedIn {
+  readonly editionId: string;
+  readonly editionName: string;
 }

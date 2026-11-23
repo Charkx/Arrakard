@@ -58,7 +58,7 @@ interface StoredOrganization {
   readonly discordLinks: Map<string, string>;
   /** Les alias, par joueur. */
   readonly aliases: Map<string, Set<string>>;
-  /** Les fichiers importés : contenu lu → édition. */
+  /** Les fichiers importés : lignes lues → édition. */
   readonly imports: Map<string, string>;
   readonly commandLog: CommandLogEntry[];
   readonly publications: Publication[];
@@ -216,15 +216,15 @@ export function inMemoryStore(): InMemoryStore {
           bump(find(organizationId), editionId, version, { closedAt }),
         );
       },
-      importOf(organizationId, file) {
+      importOf(organizationId, readRows) {
         const organization = find(organizationId);
-        const editionId = organization.imports.get(file);
+        const editionId = organization.imports.get(readRows);
         if (editionId === undefined) return Promise.resolve(undefined);
         const editionName = organization.editionRecords.get(editionId)?.name ?? editionId;
         return Promise.resolve({ editionId, editionName });
       },
-      recordImport(organizationId, editionId, file) {
-        find(organizationId).imports.set(file, editionId);
+      recordImport(organizationId, editionId, readRows) {
+        find(organizationId).imports.set(readRows, editionId);
         return Promise.resolve();
       },
       recordDraftMatch(organizationId, editionId, entry, version) {

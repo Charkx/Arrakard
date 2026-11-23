@@ -2,6 +2,9 @@ import type { MatchEntry, RoleLine, Side } from '../match/entry.ts';
 import { ROLES } from '../performance.ts';
 import type { PlannedMatch, PlannedPerformance } from './plan.ts';
 
+/** L'identifiant donné à chaque nouveau joueur d'un import, par sa clé de nom. */
+export type NewPlayerIds = Readonly<Record<string, string>>;
+
 /** La feuille de match d'un match importé, et son numéro dans le fichier. */
 export interface PlannedEntry {
   readonly matchNumber: number;
@@ -23,7 +26,7 @@ export type PlannedEntriesResult =
  */
 export function plannedMatchEntries(
   matches: readonly PlannedMatch[],
-  newPlayerIds: Readonly<Record<string, string>> = {},
+  newPlayerIds: NewPlayerIds = {},
 ): PlannedEntriesResult {
   const errors: string[] = [];
   const entries = matches.flatMap((match) => {
@@ -35,7 +38,7 @@ export function plannedMatchEntries(
 
 function entryOf(
   match: PlannedMatch,
-  newPlayerIds: Readonly<Record<string, string>>,
+  newPlayerIds: NewPlayerIds,
   errors: string[],
 ): MatchEntry | undefined {
   const a = sideTeam(match, 'A', errors);
@@ -82,7 +85,7 @@ function winnerOf(winnerTeam: string, teams: readonly [string, string]): Side | 
 
 function sideOf(
   { player, champion, kills, deaths, assists, gold }: PlannedPerformance,
-  newPlayerIds: Readonly<Record<string, string>>,
+  newPlayerIds: NewPlayerIds,
 ) {
   if (player.kind === 'existing') {
     return { playerId: player.playerId, champion, kills, deaths, assists, gold };

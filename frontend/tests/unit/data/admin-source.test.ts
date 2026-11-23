@@ -24,6 +24,7 @@ describe('lazyAdminSource', () => {
         closeEdition: () => Promise.resolve(),
         recordMatch: () => Promise.resolve(2),
         importDirectory: () => Promise.resolve({ players: [], teamTags: [] }),
+        importedIn: () => Promise.resolve(null),
         importEdition: () =>
           Promise.resolve({ matches: 3, createdPlayers: 0, createdTeams: 0, transfers: 0 }),
       }),
@@ -72,6 +73,7 @@ describe('lazyAdminSource', () => {
     await admin.closeEdition('e-1', 2);
     expect(await admin.recordMatch('e-1', 2, blankMatch())).toBe(2);
     expect((await admin.importDirectory()).players).toEqual([]);
+    expect(await admin.importedIn([])).toBeNull();
     expect(
       (await admin.importEdition('e-1', 1, [], { names: {}, unknownTeams: {}, transfers: {} }))
         .matches,

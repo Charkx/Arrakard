@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { analyzeImport, type ImportContext, type ImportPlayer } from '#domain/import/analyze.ts';
-import { planImport, type ImportDecisions } from '#domain/import/plan.ts';
+import { planImport, transfersToDecide, type ImportDecisions } from '#domain/import/plan.ts';
 import type { SheetSide, StatsSheet } from '#domain/import/stats-sheet.ts';
 
 const side = (team: string, rawName: string, result: 'win' | 'loss'): SheetSide => ({
@@ -198,6 +198,58 @@ describe('planImport', () => {
       expect(result.plan.newPlayers).toEqual([
         { key: 'baited', nickname: 'Baited', teamTag: null },
       ]);
+    });
+
+    it('« relier » rattache ses nouveaux joueurs à une équipe connue, sans en créer', () => {
+      const result = plan(sheet, {
+        ...noDecision,
+        names,
+        unknownTeams: { NKR: { linkTo: 'BLB' } },
+      });
+
+      if (!result.ok) throw new Error(result.errors.join());
+      expect(result.plan.newTeams).toEqual([]);
+      expect(result.plan.newPlayers).toEqual([
+        { key: 'baited', nickname: 'Baited', teamTag: 'BLB' },
+      ]);
+    });
+
+    it('« relier » à une équipe inconnue est refusé', () => {
+      expect(
+        plan(sheet, { ...noDecision, names, unknownTeams: { NKR: { linkTo: 'XYZ' } } }),
+      ).toEqual({
+        ok: false,
+        errors: ['L’équipe « XYZ » n’existe pas (pour « NKR »).'],
+      });
+    });
+  });
+
+  describe('transferts vers une équipe inconnue', () => {
+    // Meta est à ARK et joue pour NKR, une équipe inconnue.
+    const sheet = oneLineSheet(['NKR', 'NKR Meta'], ['BLB', 'BLB Zed']);
+    const decide = (unknownTeams: ImportDecisions['unknownTeams']) =>
+      transfersToDecide(analyzeImport(sheet, context), { ...noDecision, unknownTeams }, context);
+
+    it('ne sont pas proposés tant que l’équipe n’est pas décidée, ni si elle est ignorée', () => {
+      expect(decide({})).toEqual([]);
+      expect(decide({ NKR: 'ignore' })).toEqual([]);
+      expect(plan(sheet, { ...noDecision, unknownTeams: { NKR: 'ignore' } })).toMatchObject({
+        ok: true,
+        plan: { transfers: [] },
+      });
+    });
+
+    it('vont vers l’équipe créée, ou vers celle à laquelle elle est reliée', () => {
+      expect(decide({ NKR: 'create' })).toEqual([
+        { playerId: 'meta', fromTeamTag: 'ARK', toTeamTag: 'NKR' },
+      ]);
+      expect(decide({ NKR: { linkTo: 'BLB' } })).toEqual([
+        { playerId: 'meta', fromTeamTag: 'ARK', toTeamTag: 'BLB' },
+      ]);
+    });
+
+    it('ne sont plus des transferts si l’équipe est reliée à celle du joueur', () => {
+      expect(decide({ NKR: { linkTo: 'ARK' } })).toEqual([]);
     });
   });
 

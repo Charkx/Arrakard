@@ -49,7 +49,7 @@ export type {
   RosterStatus,
 } from './import/analyze.ts';
 export { nameOf } from './import/analyze.ts';
-export { planImport } from './import/plan.ts';
+export { NO_DECISION, planImport, transfersToDecide } from './import/plan.ts';
 export type {
   ImportDecisions,
   ImportPlan,
@@ -58,11 +58,12 @@ export type {
   PlannedMatch,
   PlannedPerformance,
   PlayerRef,
+  TeamDecision,
 } from './import/plan.ts';
 export { plannedMatchEntries } from './import/entries.ts';
 export { rosterMoves } from './import/roster-moves.ts';
 export type { RosterMove } from './import/roster-moves.ts';
-export type { PlannedEntriesResult, PlannedEntry } from './import/entries.ts';
+export type { NewPlayerIds, PlannedEntriesResult, PlannedEntry } from './import/entries.ts';
 export type {
   EditionFact,
   EditionType,

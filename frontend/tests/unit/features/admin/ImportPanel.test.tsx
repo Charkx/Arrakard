@@ -69,7 +69,10 @@ const DIRECTORY = {
 
 const DONE = { matches: 1, createdPlayers: 0, createdTeams: 1, transfers: 1 };
 
-function serving(importEdition: AdminSource['importEdition'] = () => Promise.resolve(DONE)) {
+function serving(
+  importEdition: AdminSource['importEdition'] = () => Promise.resolve(DONE),
+  importedIn: string | null = null,
+) {
   const refused = () => Promise.reject(new Error('Hors sujet.'));
   return {
     editions: refused,
@@ -90,6 +93,7 @@ function serving(importEdition: AdminSource['importEdition'] = () => Promise.res
     closeEdition: refused,
     recordMatch: refused,
     importDirectory: vi.fn(() => Promise.resolve(DIRECTORY)),
+    importedIn: () => Promise.resolve(importedIn),
     importEdition: vi.fn(importEdition),
   } satisfies AdminSource;
 }
@@ -103,8 +107,7 @@ async function choose(contents: BlobPart) {
 /** Décide chaque cas du fichier de `NAMES`. */
 async function decideEverything() {
   fireEvent.change(await screen.findByLabelText(/^Zephir/), { target: { value: 'p-Zéphyr' } });
-  const team = screen.getByRole('radiogroup', { name: /^ION/ });
-  fireEvent.click(within(team).getByLabelText('Créer'));
+  fireEvent.change(screen.getByLabelText(/^ION ·/), { target: { value: 'create' } });
   const transfer = screen.getByRole('radiogroup', { name: 'Sirocco : VNT → NOX' });
   fireEvent.click(within(transfer).getByLabelText('Appliquer'));
 }
@@ -153,6 +156,28 @@ describe('l’import du fichier Excel d’une édition', () => {
 
     expect((await screen.findByRole('alert')).textContent).toBe(
       'Le fichier sera refusé :\nMatch 1 (lignes 3, 5) : 2 ligne(s) au lieu de 5.',
+    );
+    expect(screen.queryByRole('button', { name: 'Importer' })).toBeNull();
+  });
+
+  it('relie une équipe inconnue à une équipe connue, et ne propose plus le transfert vers elle', async () => {
+    const admin = serving();
+    openSite('/admin/editions/e-j3', { auth: ADMIN, admin });
+    await choose(aMatchWorkbook(NAMES));
+
+    fireEvent.change(await screen.findByLabelText(/^ION ·/), { target: { value: 'team:VNT' } });
+
+    // Sirocco joue pour NOX : son transfert reste proposé.
+    expect(screen.getByRole('radiogroup', { name: 'Sirocco : VNT → NOX' })).toBeTruthy();
+  });
+
+  it('prévient qu’un fichier a déjà été importé, sans proposer de l’importer', async () => {
+    openSite('/admin/editions/e-j3', { auth: ADMIN, admin: serving(undefined, 'IH #12') });
+
+    await choose(aMatchWorkbook(NAMES));
+
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      'Ce fichier a déjà été importé, dans l’édition « IH #12 ».',
     );
     expect(screen.queryByRole('button', { name: 'Importer' })).toBeNull();
   });

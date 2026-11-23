@@ -123,17 +123,17 @@ function postgresEditions(tx: TransactionSql): EditionRepository {
         where organization_id = ${organizationId} and id = ${editionId}`;
       return newVersion;
     },
-    async importOf(organizationId, file) {
+    async importOf(organizationId, readRows) {
       const [found] = await tx<{ id: string; name: string }[]>`
         select id, name from editions
         where organization_id = ${organizationId}
-          and source_file_hash = encode(sha256(convert_to(${file}, 'UTF8')), 'hex')`;
+          and source_file_hash = encode(sha256(convert_to(${readRows}, 'UTF8')), 'hex')`;
       return found && { editionId: found.id, editionName: found.name };
     },
-    async recordImport(organizationId, editionId, file) {
+    async recordImport(organizationId, editionId, readRows) {
       await tx`
         -- L'empreinte SHA-256 des lignes lues (ADR 0039) ; la v1 hachait le fichier même.
-        update editions set source_file_hash = encode(sha256(convert_to(${file}, 'UTF8')), 'hex')
+        update editions set source_file_hash = encode(sha256(convert_to(${readRows}, 'UTF8')), 'hex')
         where organization_id = ${organizationId} and id = ${editionId}`;
     },
     async recordDraftMatch(organizationId, editionId, entry, version) {
@@ -479,14 +479,13 @@ function postgresPlayers(tx: TransactionSql): PlayerRepository {
       const players = await tx<
         {
           player_id: string;
-          nickname: string;
           archived: boolean;
           aliases: string[];
           team_tag: string | null;
           status: RosterStatus | null;
         }[]
       >`
-        select player_id, nickname, archived, aliases, team_tag, status
+        select player_id, archived, aliases, team_tag, status
         from import_directory where organization_id = ${organizationId}`;
       const teams = await tx<{ id: string; tag: string; archived: boolean }[]>`
         select id, tag, archived_at is not null as archived
@@ -494,7 +493,7 @@ function postgresPlayers(tx: TransactionSql): PlayerRepository {
       return {
         players: players.map((p) => ({
           playerId: p.player_id,
-          aliases: [p.nickname, ...p.aliases],
+          aliases: p.aliases,
           teamTag: p.team_tag,
           archived: p.archived,
           status: p.status,

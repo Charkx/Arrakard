@@ -1,5 +1,6 @@
 import {
   analyzeImport,
+  NO_DECISION,
   parseNumberedStatsSheet,
   planImport,
   plannedMatchEntries,
@@ -8,10 +9,12 @@ import {
   type ImportDecisions,
   type ImportPlan,
   type NumberedRow,
+  type NewPlayerIds,
 } from '../../domain/index.ts';
 import { CommandRejected, type Command, type Repositories } from '../command.ts';
 import { checkEntries, editionTakingMatches } from '../match-recording.ts';
 import type { ImportDirectory } from '../players.ts';
+import type { RosterPlace } from '../teams.ts';
 import { dayInParis } from '../seasons.ts';
 
 export interface ImportEditionInput {
@@ -38,8 +41,6 @@ export interface ImportEditionOutcome {
 const refuse = (problems: readonly string[]) =>
   new CommandRejected('conflict', `Le fichier est refusé :\n${problems.join('\n')}`);
 
-const NO_DECISION: ImportDecisions = { names: {}, unknownTeams: {}, transfers: {} };
-
 /**
  * Importe le fichier Excel d'une édition (cas d'usage A1 ; ADR 0038,
  * ADR 0039). Le serveur lit la feuille, rattache chaque pseudo et applique les
@@ -54,8 +55,8 @@ export const importEdition: Command<ImportEditionInput, ImportEditionOutcome> = 
     const { organizationId } = context;
     const edition = await editionTakingMatches(repositories, organizationId, editionId, version);
     // Les lignes lues identifient le fichier : le même fichier donne les mêmes lignes.
-    const file = JSON.stringify(rows);
-    const earlier = await repositories.editions.importOf(organizationId, file);
+    const readRows = JSON.stringify(rows);
+    const earlier = await repositories.editions.importOf(organizationId, readRows);
     if (earlier) {
       throw new CommandRejected(
         'already_done',
@@ -75,29 +76,26 @@ export const importEdition: Command<ImportEditionInput, ImportEditionOutcome> = 
     if (sheet.warnings.length > 0) throw refuse(sheet.warnings);
 
     const directory = await repositories.players.importDirectory(organizationId);
-    const importContext = {
+    const analysisContext = {
       players: directory.players,
       knownTeamTags: directory.teams.map((t) => t.tag),
       teamsAreRosters: teamsAreRosters(edition.type),
     };
     const planned = planImport(
       sheet,
-      analyzeImport(sheet, importContext),
+      analyzeImport(sheet, analysisContext),
       decisions,
-      importContext,
+      analysisContext,
     );
     if (!planned.ok) throw refuse(planned.errors);
     const { plan } = planned;
 
     const created = await writeIdentities(repositories, organizationId, plan);
-    const transferredPlayerIds = await moveRosters(
-      repositories,
-      organizationId,
-      plan,
-      directory,
-      created,
-      context.now,
-    );
+    const transferredPlayerIds: string[] = [];
+    for (const { playerId, place, transfer } of placesOf(plan, directory, created)) {
+      await repositories.teams.transfer(organizationId, playerId, place, dayInParis(context.now));
+      if (transfer) transferredPlayerIds.push(playerId);
+    }
 
     const converted = plannedMatchEntries(plan.matches, created.playerIds);
     if (!converted.ok) throw refuse(converted.errors);
@@ -121,7 +119,7 @@ export const importEdition: Command<ImportEditionInput, ImportEditionOutcome> = 
       matchIds.push(recorded.matchId);
       current = recorded.version;
     }
-    await repositories.editions.recordImport(organizationId, editionId, file);
+    await repositories.editions.recordImport(organizationId, editionId, readRows);
     return {
       editionId,
       matchIds,
@@ -133,9 +131,9 @@ export const importEdition: Command<ImportEditionInput, ImportEditionOutcome> = 
   },
 };
 
-/** Ce que l'import a créé : les identifiants, par clé de nom et par tag. */
+/** Ce que l'import a créé : les identifiants des joueurs, par clé de nom, et des équipes, par tag. */
 interface Created {
-  readonly playerIds: Readonly<Record<string, string>>;
+  readonly playerIds: NewPlayerIds;
   readonly teamIds: Readonly<Record<string, string>>;
 }
 
@@ -160,17 +158,16 @@ async function writeIdentities(
   return { playerIds, teamIds };
 }
 
-/** Applique les changements de roster du plan ; rend les joueurs existants transférés. */
-async function moveRosters(
-  { teams }: Repositories,
-  organizationId: string,
+/**
+ * Les places où l'import envoie des joueurs (`rosterMoves`), avec leurs
+ * identifiants ; `transfer` dit s'il s'agit d'un joueur existant.
+ */
+function placesOf(
   plan: ImportPlan,
   directory: ImportDirectory,
   created: Created,
-  now: string,
-): Promise<string[]> {
-  const transferred: string[] = [];
-  for (const { player, to } of rosterMoves(plan, directory.players)) {
+): { playerId: string; place: RosterPlace; transfer: boolean }[] {
+  return rosterMoves(plan, directory.players).map(({ player, to }) => {
     const known = directory.teams.find((t) => t.tag === to.teamTag);
     if (known?.archived) {
       throw refuse([`L’équipe « ${to.teamTag} » est archivée : elle ne recrute plus.`]);
@@ -181,8 +178,6 @@ async function moveRosters(
     if (teamId === undefined || playerId === undefined) {
       throw new Error(`Changement de roster impossible vers « ${to.teamTag} ».`);
     }
-    await teams.transfer(organizationId, playerId, { teamId, status: to.status }, dayInParis(now));
-    if (player.kind === 'existing') transferred.push(playerId);
-  }
-  return transferred;
+    return { playerId, place: { teamId, status: to.status }, transfer: player.kind === 'existing' };
+  });
 }

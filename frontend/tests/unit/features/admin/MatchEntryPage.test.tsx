@@ -68,6 +68,7 @@ function serving(form: EditionForm = IH) {
     closeEdition: refused,
     recordMatch: vi.fn(() => Promise.resolve(2)),
     importDirectory: refused,
+    importedIn: refused,
     importEdition: refused,
     archiveEdition: refused,
   } satisfies AdminSource;

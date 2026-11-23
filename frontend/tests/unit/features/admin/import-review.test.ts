@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { NumberedRow } from '@arrakis/backend/domain';
+import { NO_DECISION } from '@arrakis/backend/domain';
 import {
   everythingDecided,
-  NO_DECISION,
   reviewImport,
+  transfersOf,
   type DirectoryEntry,
 } from '#src/features/admin/import-review.ts';
 
@@ -89,7 +90,7 @@ describe('reviewImport', () => {
       ['Zephir', 'zephir', 'unknown'],
     ]);
     expect(review.unknownTeams.map((t) => t.teamTag)).toEqual(['ION']);
-    expect(review.transfers).toEqual([
+    expect(transfersOf(review, NO_DECISION)).toEqual([
       { playerId: 'p-Sirocco', fromTeamTag: 'VNT', toTeamTag: 'NOX' },
     ]);
   });
@@ -97,7 +98,9 @@ describe('reviewImport', () => {
   it('dans une In House, les équipes ne sont pas des rosters : ni équipe inconnue, ni transfert', () => {
     const review = reviewImport(aMatch(NAMES), DIRECTORY, 'inhouse');
 
-    expect(review).toMatchObject({ kind: 'ready', unknownTeams: [], transfers: [] });
+    if (review.kind !== 'ready') throw new Error('refusé');
+    expect(review.unknownTeams).toEqual([]);
+    expect(transfersOf(review, NO_DECISION)).toEqual([]);
   });
 });
 

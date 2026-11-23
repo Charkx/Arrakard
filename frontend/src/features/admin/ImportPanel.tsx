@@ -1,26 +1,35 @@
 import { useState, type SyntheticEvent } from 'react';
-import type { EditionType, ImportDecisions, NameDecision } from '@arrakis/backend/domain';
+import {
+  NO_DECISION,
+  type EditionType,
+  type ImportDecisions,
+  type NameDecision,
+  type NumberedRow,
+  type TeamDecision,
+} from '@arrakis/backend/domain';
 import { useAdminSource } from '../../data/DataContext.tsx';
 import type { ImportSummary } from '../../data/admin-source.ts';
 import { useI18n } from '../../shared/i18n/i18n.tsx';
 import { MissingSheet, readStatsSheet } from './excel.ts';
 import {
   everythingDecided,
-  NO_DECISION,
   reviewImport,
+  transfersOf,
   type DirectoryEntry,
+  type ImportDirectoryView,
   type ImportReview,
   type NameToDecide,
+  type ReadyReview,
 } from './import-review.ts';
 import { useCommand } from './useCommand.ts';
 
-type Ready = Extract<ImportReview, { kind: 'ready' }>;
-
-/** Le fichier choisi, lu, et ce qu'il donnerait. */
+/** Le fichier choisi, lu, et sa revue d'import. */
 interface Reviewed {
-  readonly rows: Awaited<ReturnType<typeof readStatsSheet>>;
-  readonly players: readonly DirectoryEntry[];
+  readonly rows: readonly NumberedRow[];
+  readonly directory: ImportDirectoryView;
   readonly review: ImportReview;
+  /** L'édition où ce fichier a déjà été importé, ou null. */
+  readonly importedIn: string | null;
 }
 
 /**
@@ -62,12 +71,11 @@ export function ImportPanel({
             : t('admin.import.unreadable'),
         );
       });
-      const directory = await admin.importDirectory();
-      setReviewed({
-        rows,
-        players: directory.players,
-        review: reviewImport(rows, directory, type),
-      });
+      const [directory, importedIn] = await Promise.all([
+        admin.importDirectory(),
+        admin.importedIn(rows),
+      ]);
+      setReviewed({ rows, directory, importedIn, review: reviewImport(rows, directory, type) });
     });
   };
 
@@ -84,7 +92,8 @@ export function ImportPanel({
     );
   };
 
-  const review = reviewed?.review;
+  const review = reviewed?.importedIn === null ? reviewed.review : undefined;
+  const problem = reading.failure ?? failure;
   return (
     <form className="admin-import" onSubmit={submit}>
       <h2 className="admin-import-title">{t('admin.import.title')}</h2>
@@ -99,27 +108,30 @@ export function ImportPanel({
           }}
         />
       </label>
+      {reviewed?.importedIn != null && (
+        <p role="alert">{t('admin.import.already', { edition: reviewed.importedIn })}</p>
+      )}
       {review?.kind === 'refused' && (
         <p role="alert" className="admin-import-failure">
           {[t('admin.import.refused'), ...review.problems].join('\n')}
         </p>
       )}
       {review?.kind === 'ready' && reviewed && (
-        <Decisions
-          review={review}
-          players={reviewed.players}
-          decisions={decisions}
-          onChange={setDecisions}
-        />
-      )}
-      {review?.kind === 'ready' && (
-        <button
-          type="submit"
-          className="auth-button"
-          disabled={busy || reading.busy || !everythingDecided(review, decisions)}
-        >
-          {t('admin.import.send')}
-        </button>
+        <>
+          <Decisions
+            review={review}
+            directory={reviewed.directory}
+            decisions={decisions}
+            onChange={setDecisions}
+          />
+          <button
+            type="submit"
+            className="auth-button"
+            disabled={busy || !everythingDecided(review, decisions)}
+          >
+            {t('admin.import.send')}
+          </button>
+        </>
       )}
       <div aria-live="polite">
         {summary !== null && (
@@ -132,9 +144,9 @@ export function ImportPanel({
             })}
           </p>
         )}
-        {(reading.failure ?? failure) !== null && (
+        {problem !== null && (
           <p role="alert" className="admin-import-failure">
-            {reading.failure ?? failure}
+            {problem}
           </p>
         )}
       </div>
@@ -145,18 +157,18 @@ export function ImportPanel({
 /** Les trois listes de cas à décider, une ligne par cas (maquette validée le 2026-11-23). */
 function Decisions({
   review,
-  players,
+  directory,
   decisions,
   onChange,
 }: {
-  readonly review: Ready;
-  readonly players: readonly DirectoryEntry[];
+  readonly review: ReadyReview;
+  readonly directory: ImportDirectoryView;
   readonly decisions: ImportDecisions;
   readonly onChange: (decisions: ImportDecisions) => void;
 }) {
   const { t } = useI18n();
-  const nicknameOf = (playerId: string) =>
-    players.find((p) => p.playerId === playerId)?.nickname ?? playerId;
+  const nicknameOf = nicknames(directory.players);
+  const transfers = transfersOf(review, decisions);
 
   return (
     <>
@@ -170,7 +182,7 @@ function Decisions({
             <NameChoice
               key={name.key}
               name={name}
-              players={players}
+              players={directory.players}
               chosen={decisions.names[name.key]}
               onChoose={(decision) => {
                 onChange({ ...decisions, names: { ...decisions.names, [name.key]: decision } });
@@ -182,36 +194,29 @@ function Decisions({
       {review.unknownTeams.length > 0 && (
         <fieldset className="admin-import-cases">
           <legend>{t('admin.import.teams', { count: review.unknownTeams.length })}</legend>
-          {review.unknownTeams.map(({ teamTag, nicknames }) => (
-            <TwoWay
+          {review.unknownTeams.map(({ teamTag, nicknames: names }) => (
+            <TeamChoice
               key={teamTag}
-              label={`${teamTag} · ${nicknames.join(', ')}`}
-              options={[
-                ['create', t('admin.import.create')],
-                ['ignore', t('admin.import.ignore')],
-              ]}
+              label={`${teamTag} · ${names.join(', ')}`}
+              knownTags={directory.teamTags}
               chosen={decisions.unknownTeams[teamTag]}
-              onChoose={(choice) => {
+              onChoose={(decision) => {
                 onChange({
                   ...decisions,
-                  unknownTeams: { ...decisions.unknownTeams, [teamTag]: choice },
+                  unknownTeams: { ...decisions.unknownTeams, [teamTag]: decision },
                 });
               }}
             />
           ))}
         </fieldset>
       )}
-      {review.transfers.length > 0 && (
+      {transfers.length > 0 && (
         <fieldset className="admin-import-cases">
-          <legend>{t('admin.import.transfers', { count: review.transfers.length })}</legend>
-          {review.transfers.map(({ playerId, fromTeamTag, toTeamTag }) => (
-            <TwoWay
+          <legend>{t('admin.import.transfers', { count: transfers.length })}</legend>
+          {transfers.map(({ playerId, fromTeamTag, toTeamTag }) => (
+            <TransferChoice
               key={playerId}
               label={`${nicknameOf(playerId)} : ${fromTeamTag} → ${toTeamTag}`}
-              options={[
-                ['apply', t('admin.import.apply')],
-                ['ignore', t('admin.import.ignore')],
-              ]}
               chosen={decisions.transfers[playerId]}
               onChoose={(choice) => {
                 onChange({
@@ -227,6 +232,10 @@ function Decisions({
   );
 }
 
+/** Le pseudo d'un joueur connu, par son identifiant. */
+const nicknames = (players: readonly DirectoryEntry[]) => (playerId: string) =>
+  players.find((p) => p.playerId === playerId)?.nickname ?? playerId;
+
 /** Un pseudo non reconnu : le relier à un joueur (les plus proches d'abord), ou en créer un. */
 function NameChoice({
   name,
@@ -240,6 +249,7 @@ function NameChoice({
   readonly onChoose: (decision: NameDecision) => void;
 }) {
   const { t } = useI18n();
+  const nicknameOf = nicknames(players);
   const close =
     name.resolution.kind === 'ambiguous'
       ? name.resolution.candidates.map((playerId) => ({ playerId, similarity: null }))
@@ -247,8 +257,6 @@ function NameChoice({
         ? name.resolution.suggestions
         : [];
   const others = players.filter((p) => !close.some((c) => c.playerId === p.playerId));
-  const nicknameOf = (playerId: string) =>
-    players.find((p) => p.playerId === playerId)?.nickname ?? playerId;
   const value = chosen === undefined ? '' : chosen.kind === 'new' ? 'new' : chosen.playerId;
 
   return (
@@ -271,16 +279,16 @@ function NameChoice({
         {close.map(({ playerId, similarity }) => (
           <option key={playerId} value={playerId}>
             {similarity === null
-              ? t('admin.import.link', { nickname: nicknameOf(playerId) })
+              ? t('admin.import.link', { name: nicknameOf(playerId) })
               : t('admin.import.linkClose', {
-                  nickname: nicknameOf(playerId),
+                  name: nicknameOf(playerId),
                   percent: Math.round(similarity * 100),
                 })}
           </option>
         ))}
         {others.map((p) => (
           <option key={p.playerId} value={p.playerId}>
-            {t('admin.import.link', { nickname: p.nickname })}
+            {t('admin.import.link', { name: p.nickname })}
           </option>
         ))}
       </select>
@@ -288,22 +296,60 @@ function NameChoice({
   );
 }
 
-/** Un cas à deux choix, en boutons radio. */
-function TwoWay<Choice extends string>({
+/** Une équipe inconnue : la créer, l'ignorer, ou la relier à une équipe connue. */
+function TeamChoice({
   label,
-  options,
+  knownTags,
   chosen,
   onChoose,
 }: {
   readonly label: string;
-  readonly options: readonly (readonly [Choice, string])[];
-  readonly chosen: Choice | undefined;
-  readonly onChoose: (choice: Choice) => void;
+  readonly knownTags: readonly string[];
+  readonly chosen: TeamDecision | undefined;
+  readonly onChoose: (decision: TeamDecision) => void;
 }) {
+  const { t } = useI18n();
+  const value =
+    chosen === undefined ? '' : typeof chosen === 'string' ? chosen : `team:${chosen.linkTo}`;
+  return (
+    <label className="admin-import-case">
+      {label}
+      <select
+        value={value}
+        onChange={(event) => {
+          const choice = event.target.value;
+          if (choice === 'create' || choice === 'ignore') onChoose(choice);
+          else if (choice.startsWith('team:')) onChoose({ linkTo: choice.slice(5) });
+        }}
+      >
+        <option value="">{t('admin.import.choose')}</option>
+        <option value="create">{t('admin.import.create')}</option>
+        <option value="ignore">{t('admin.import.ignore')}</option>
+        {knownTags.map((tag) => (
+          <option key={tag} value={`team:${tag}`}>
+            {t('admin.import.link', { name: tag })}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+/** Un transfert détecté : l'appliquer ou l'ignorer, en boutons radio. */
+function TransferChoice({
+  label,
+  chosen,
+  onChoose,
+}: {
+  readonly label: string;
+  readonly chosen: 'apply' | 'ignore' | undefined;
+  readonly onChoose: (choice: 'apply' | 'ignore') => void;
+}) {
+  const { t } = useI18n();
   return (
     <div className="admin-import-case" role="radiogroup" aria-label={label}>
       <span>{label}</span>
-      {options.map(([choice, text]) => (
+      {(['apply', 'ignore'] as const).map((choice) => (
         <label key={choice}>
           <input
             type="radio"
@@ -312,7 +358,7 @@ function TwoWay<Choice extends string>({
               onChoose(choice);
             }}
           />
-          {text}
+          {t(choice === 'apply' ? 'admin.import.apply' : 'admin.import.ignore')}
         </label>
       ))}
     </div>

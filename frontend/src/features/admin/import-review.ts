@@ -3,8 +3,10 @@ import {
   normalizeAlias,
   parseNumberedStatsSheet,
   teamsAreRosters,
+  transfersToDecide,
   type EditionType,
   type ImportAnalysis,
+  type ImportContext,
   type ImportDecisions,
   type ImportName,
   type ImportPlayer,
@@ -27,18 +29,22 @@ export interface NameToDecide extends ImportName {
   readonly key: string;
 }
 
-/** Ce que le fichier donnerait, montré avant l'import (ADR 0039). */
+/** Une revue d'import prête : ce que l'admin doit décider avant d'importer. */
+export interface ReadyReview {
+  readonly kind: 'ready';
+  readonly matchCount: number;
+  /** Les pseudos reconnus sans hésitation. */
+  readonly recognized: number;
+  readonly names: readonly NameToDecide[];
+  readonly unknownTeams: ImportAnalysis['unknownTeams'];
+  /** L'analyse et son contexte, d'où se déduisent les transferts à trancher. */
+  readonly analysis: ImportAnalysis;
+  readonly context: ImportContext;
+}
+
+/** La revue d'import (ADR 0039) : ce que le fichier donnerait, montré avant d'importer. */
 export type ImportReview =
-  | { readonly kind: 'refused'; readonly problems: readonly string[] }
-  | {
-      readonly kind: 'ready';
-      readonly matchCount: number;
-      /** Les pseudos reconnus sans hésitation. */
-      readonly recognized: number;
-      readonly names: readonly NameToDecide[];
-      readonly unknownTeams: ImportAnalysis['unknownTeams'];
-      readonly transfers: ImportAnalysis['transfers'];
-    };
+  { readonly kind: 'refused'; readonly problems: readonly string[] } | ReadyReview;
 
 /**
  * Lit les lignes comme le serveur les lira, et liste ce que l'admin doit
@@ -53,11 +59,12 @@ export function reviewImport(
   if (!parsed.ok) return { kind: 'refused', problems: [parsed.error] };
   const { sheet } = parsed;
   if (sheet.warnings.length > 0) return { kind: 'refused', problems: sheet.warnings };
-  const analysis = analyzeImport(sheet, {
+  const context = {
     players: directory.players,
     knownTeamTags: directory.teamTags,
     teamsAreRosters: teamsAreRosters(type),
-  });
+  };
+  const analysis = analyzeImport(sheet, context);
   const names = analysis.names
     .filter((n) => n.resolution.kind !== 'matched')
     .map((n) => ({ ...n, key: normalizeAlias(n.nickname) }));
@@ -67,21 +74,20 @@ export function reviewImport(
     recognized: analysis.names.length - names.length,
     names,
     unknownTeams: analysis.unknownTeams,
-    transfers: analysis.transfers,
+    analysis,
+    context,
   };
 }
 
-/** Les décisions d'un import qui n'a encore rien décidé. */
-export const NO_DECISION: ImportDecisions = { names: {}, unknownTeams: {}, transfers: {} };
+/** Les transferts à trancher, selon ce que l'admin a décidé des équipes (`transfersToDecide`). */
+export const transfersOf = (review: ReadyReview, decisions: ImportDecisions) =>
+  transfersToDecide(review.analysis, decisions, review.context);
 
-/** L'admin a-t-il décidé chaque cas de l'aperçu ? */
-export function everythingDecided(
-  review: Extract<ImportReview, { kind: 'ready' }>,
-  decisions: ImportDecisions,
-): boolean {
+/** L'admin a-t-il décidé chaque cas de la revue d'import ? */
+export function everythingDecided(review: ReadyReview, decisions: ImportDecisions): boolean {
   return (
     review.names.every((n) => decisions.names[n.key] !== undefined) &&
     review.unknownTeams.every((t) => decisions.unknownTeams[t.teamTag] !== undefined) &&
-    review.transfers.every((t) => decisions.transfers[t.playerId] !== undefined)
+    transfersOf(review, decisions).every((t) => decisions.transfers[t.playerId] !== undefined)
   );
 }

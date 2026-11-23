@@ -346,7 +346,7 @@ export function supabaseSession(
               archived: boolean;
               aliases: string[];
               team_tag: string | null;
-              status: 'starter' | 'sub' | 'coach' | null;
+              status: RosterStatus | null;
             }[],
             { merge: false }
           >(),
@@ -362,13 +362,32 @@ export function supabaseSession(
         players: players.data.map((p) => ({
           playerId: p.player_id,
           nickname: p.nickname,
-          aliases: [p.nickname, ...p.aliases],
+          aliases: p.aliases,
           teamTag: p.team_tag,
           archived: p.archived,
           status: p.status,
         })),
         teamTags: teams.data.map((t) => t.tag),
       };
+    },
+    async importedIn(rows) {
+      // La même empreinte que le serveur : SHA-256 des lignes lues, sérialisées (ADR 0039).
+      const digest = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(JSON.stringify(rows)),
+      );
+      const fingerprint = [...new Uint8Array(digest)]
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('');
+      const db = rest(await accessToken());
+      const { data, error } = await db
+        .from('editions')
+        .select('name')
+        .eq('organization_id', await organizationId(db, organizationSlug))
+        .eq('source_file_hash', fingerprint)
+        .maybeSingle<{ name: string }>();
+      if (error) throw error;
+      return data?.name ?? null;
     },
     async importEdition(editionId, version, rows, decisions) {
       const outcome = (await command('import-edition', {
