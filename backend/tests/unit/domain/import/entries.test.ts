@@ -37,7 +37,9 @@ describe('plannedMatchEntries', () => {
     const result = plannedMatchEntries([aMatch()]);
 
     if (!result.ok) throw new Error(result.errors.join());
-    const [entry] = result.entries;
+    const [first] = result.entries;
+    expect(first?.matchNumber).toBe(1);
+    const entry = first?.entry;
     expect(entry).toMatchObject({ durationSeconds: 1800, winner: 'A', teams: ['ARK', 'BLB'] });
     expect(entry?.lines.map((l) => l.role)).toEqual(ROLES);
     expect(entry?.lines[2]).toEqual({
@@ -53,7 +55,7 @@ describe('plannedMatchEntries', () => {
     const result = plannedMatchEntries([aMatch({ winnerTeam: 'blb' })]);
 
     if (!result.ok) throw new Error(result.errors.join());
-    expect(result.entries[0]?.winner).toBe('B');
+    expect(result.entries[0]?.entry.winner).toBe('B');
   });
 
   it('refuse un gagnant qui n’est aucune des deux équipes', () => {

@@ -169,6 +169,43 @@ export function describeImportEditionContract(name: string, harness: () => Comma
       });
     });
 
+    it('une feuille sans les colonnes attendues est refusée, en les nommant', async () => {
+      const { services, seed } = harness();
+      const { organizationId, adminId } = await seed();
+
+      await expect(
+        executeCommand(services, { userId: adminId, organizationId }, importEdition, {
+          editionId: OFF_SEASON_ID,
+          version: 1,
+          rows: [{ line: 3, cells: { MATCH: 1, JOUEUR: 'Zéphyr' } }],
+        }),
+      ).rejects.toMatchObject({
+        reason: 'conflict',
+        message: expect.stringContaining('colonne(s) manquante(s)') as string,
+      });
+    });
+
+    it('un gagnant qui n’est aucune des deux équipes refuse l’import', async () => {
+      const { services, seed, addPlayers } = harness();
+      const { organizationId, adminId } = await seed();
+      await addPlayers(organizationId, 10);
+      const rows = sheetMatch(1).map((row) => ({
+        ...row,
+        cells: { ...row.cells, GAGNANT: 'Demacia' },
+      }));
+
+      await expect(
+        executeCommand(services, { userId: adminId, organizationId }, importEdition, {
+          editionId: OFF_SEASON_ID,
+          version: 1,
+          rows,
+        }),
+      ).rejects.toMatchObject({
+        reason: 'conflict',
+        message: expect.stringContaining('Match 1 : le gagnant « Demacia »') as string,
+      });
+    });
+
     it('dans une ligue, une équipe inconnue refuse l’import', async () => {
       const { services, seed, addPlayers } = harness();
       const { organizationId, adminId } = await seed();
@@ -214,6 +251,20 @@ export function describeImportEditionContract(name: string, harness: () => Comma
         reason: 'conflict',
         message: expect.stringContaining('déjà des matchs') as string,
       });
+    });
+
+    it('l’édition d’une autre organisation est introuvable', async () => {
+      const { services, seed } = harness();
+      const { otherOrganizationId, otherAdminId } = await seed();
+
+      await expect(
+        executeCommand(
+          services,
+          { userId: otherAdminId, organizationId: otherOrganizationId },
+          importEdition,
+          { editionId: OFF_SEASON_ID, version: 1, rows: sheetMatch(1) },
+        ),
+      ).rejects.toMatchObject({ reason: 'not_found' });
     });
 
     it('un simple membre n’importe pas', async () => {

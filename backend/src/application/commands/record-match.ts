@@ -1,6 +1,6 @@
 import type { MatchEntry } from '../../domain/index.ts';
 import type { Command } from '../command.ts';
-import { editionTakingMatches, recordDraftMatches } from '../match-recording.ts';
+import { checkEntries, editionTakingMatches } from '../match-recording.ts';
 
 export interface RecordMatchInput extends MatchEntry {
   readonly editionId: string;
@@ -23,16 +23,13 @@ export const recordMatch: Command<RecordMatchInput, RecordMatchOutcome> = {
   name: 'recordMatch',
   async run(repositories, { organizationId }, { editionId, version, ...entry }) {
     await editionTakingMatches(repositories, organizationId, editionId, version);
-    const recorded = await recordDraftMatches(
-      repositories,
+    await checkEntries(repositories, organizationId, [{ name: 'La feuille de match', entry }]);
+    const recorded = await repositories.editions.recordDraftMatch(
       organizationId,
       editionId,
-      [{ name: 'La feuille de match', entry }],
+      entry,
       version,
     );
-    const [match] = recorded.matches;
-    // Une feuille donnée, un match écrit.
-    if (!match) throw new Error('Aucun match écrit.');
-    return { editionId, ...match, version: recorded.version };
+    return { editionId, ...recorded };
   },
 };

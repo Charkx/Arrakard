@@ -133,6 +133,7 @@ const REFUSED: AdminSource = {
   archiveEdition: refused,
   closeEdition: refused,
   recordMatch: refused,
+  importEdition: refused,
 };
 
 /** Une source qui sert des données en mémoire, ou qui échoue. */

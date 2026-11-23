@@ -4,7 +4,7 @@
 //
 // Seuls comptent les fichiers que cite index.html. Les autres sont chargés à la
 // demande, comme la connexion (ADR 0024) : ce script vérifie aussi qu'elle
-// n'est pas dans les fichiers de l'ouverture.
+// n'est pas dans les fichiers de l'ouverture, ni la bibliothèque Excel (ADR 0038).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
@@ -12,6 +12,8 @@ import { gzipSync } from 'node:zlib';
 const LIMIT_KB = 250;
 /** Une méthode de `@supabase/auth-js` : sa présence trahit la bibliothèque de connexion. */
 const AUTH_LIBRARY_MARK = 'signInWithOAuth';
+/** Une fonction de SheetJS que le site n'appelle pas : sa présence trahit la bibliothèque Excel. */
+const EXCEL_LIBRARY_MARK = 'sheet_add_aoa';
 const dist = join(import.meta.dirname, '../dist');
 
 const html = readFileSync(join(dist, 'index.html'), 'utf8');
@@ -26,6 +28,10 @@ for (const path of files) {
   const code = readFileSync(join(dist, path));
   if (code.includes(AUTH_LIBRARY_MARK)) {
     console.error(`${path} contient la bibliothèque de connexion : elle doit être chargée à part.`);
+    process.exit(1);
+  }
+  if (code.includes(EXCEL_LIBRARY_MARK)) {
+    console.error(`${path} contient la bibliothèque Excel : elle doit être chargée à part.`);
     process.exit(1);
   }
   const size = gzipSync(code).length;

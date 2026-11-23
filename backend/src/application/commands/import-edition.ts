@@ -7,7 +7,7 @@ import {
   type SheetRow,
 } from '../../domain/index.ts';
 import { CommandRejected, type Command } from '../command.ts';
-import { editionTakingMatches, recordDraftMatches } from '../match-recording.ts';
+import { checkEntries, editionTakingMatches } from '../match-recording.ts';
 
 /** Une ligne de la feuille LIGUE1_STATS, et son numéro dans le fichier Excel. */
 export interface ImportedRow {
@@ -70,21 +70,27 @@ export const importEdition: Command<ImportEditionInput, ImportEditionOutcome> = 
     const converted = plannedMatchEntries(planned.plan.matches);
     if (!converted.ok) throw refuse(converted.errors);
 
-    const recorded = await recordDraftMatches(
+    await checkEntries(
       repositories,
       organizationId,
-      editionId,
-      converted.entries.map((entry, i) => ({
-        name: `La feuille du match ${String(planned.plan.matches[i]?.matchNumber ?? i + 1)}`,
+      converted.entries.map(({ matchNumber, entry }) => ({
+        name: `La feuille du match ${String(matchNumber)}`,
         entry,
       })),
-      version,
     );
-    return {
-      editionId,
-      matchIds: recorded.matches.map((m) => m.matchId),
-      version: recorded.version,
-    };
+    const matchIds: string[] = [];
+    let current = version;
+    for (const { entry } of converted.entries) {
+      const recorded = await repositories.editions.recordDraftMatch(
+        organizationId,
+        editionId,
+        entry,
+        current,
+      );
+      matchIds.push(recorded.matchId);
+      current = recorded.version;
+    }
+    return { editionId, matchIds, version: current };
   },
 };
 

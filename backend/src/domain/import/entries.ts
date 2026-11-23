@@ -2,8 +2,14 @@ import type { MatchEntry, RoleLine, Side } from '../match/entry.ts';
 import { ROLES } from '../performance.ts';
 import type { PlannedMatch, PlannedPerformance } from './plan.ts';
 
+/** La feuille d'un match importé, et son numéro dans le fichier. */
+export interface PlannedEntry {
+  readonly matchNumber: number;
+  readonly entry: MatchEntry;
+}
+
 export type PlannedEntriesResult =
-  | { readonly ok: true; readonly entries: readonly MatchEntry[] }
+  | { readonly ok: true; readonly entries: readonly PlannedEntry[] }
   | { readonly ok: false; readonly errors: readonly string[] };
 
 /**
@@ -17,7 +23,7 @@ export function plannedMatchEntries(matches: readonly PlannedMatch[]): PlannedEn
   const errors: string[] = [];
   const entries = matches.flatMap((match) => {
     const entry = entryOf(match, errors);
-    return entry ? [entry] : [];
+    return entry ? [{ matchNumber: match.matchNumber, entry }] : [];
   });
   return errors.length > 0 ? { ok: false, errors } : { ok: true, entries };
 }

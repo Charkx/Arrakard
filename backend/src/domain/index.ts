@@ -59,7 +59,7 @@ export type {
   PlayerRef,
 } from './import/plan.ts';
 export { plannedMatchEntries } from './import/entries.ts';
-export type { PlannedEntriesResult } from './import/entries.ts';
+export type { PlannedEntriesResult, PlannedEntry } from './import/entries.ts';
 export type {
   EditionFact,
   EditionType,

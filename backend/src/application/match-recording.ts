@@ -39,22 +39,17 @@ export async function editionTakingMatches(
 }
 
 /**
- * Enregistre ces feuilles en brouillon (ADR 0012), dans l'ordre, après les
- * matchs de l'édition. C'est la seule écriture de matchs : la saisie à la main
- * et l'import y passent tous deux (ADR 0022, ADR 0038). Toutes les feuilles
- * sont vérifiées avant la première écriture ; une seule refusée, et rien
- * n'est écrit.
+ * Vérifie ces feuilles avant toute écriture : chacune est cohérente
+ * (`matchEntryProblems`) et ne cite que des joueurs non fusionnés de
+ * l'organisation. La saisie à la main et l'import y passent tous deux, puis
+ * écrivent chaque match par la même écriture (`recordDraftMatch`) : ils
+ * produisent les mêmes faits (ADR 0022, ADR 0038).
  */
-export async function recordDraftMatches(
-  { editions, players }: Repositories,
+export async function checkEntries(
+  { players }: Repositories,
   organizationId: string,
-  editionId: string,
   entries: readonly NamedEntry[],
-  version: number,
-): Promise<{
-  readonly matches: readonly { readonly matchId: string; readonly matchNumber: number }[];
-  readonly version: number;
-}> {
+): Promise<void> {
   for (const { name, entry } of entries) {
     const problems = matchEntryProblems(entry);
     if (problems.length > 0) {
@@ -74,12 +69,4 @@ export async function recordDraftMatches(
       throw new CommandRejected('not_found', `Joueur ${playerId} introuvable.`);
     }
   }
-  const matches: { matchId: string; matchNumber: number }[] = [];
-  let current = version;
-  for (const { entry } of entries) {
-    const recorded = await editions.recordDraftMatch(organizationId, editionId, entry, current);
-    matches.push({ matchId: recorded.matchId, matchNumber: recorded.matchNumber });
-    current = recorded.version;
-  }
-  return { matches, version: current };
 }
