@@ -47,12 +47,13 @@ décrire la v1, et dans les ADR antérieurs, qui ne se réécrivent pas.
 
 Voir l'[ADR 0012](../adr/0012-publier-les-resultats.md).
 
-| Terme           | Code                 | Définition                                                                                                                                                  |
-| --------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Brouillon**   | `draft`              | Résultat saisi ou importé, pas encore publié : enregistré, mais invisible du public et ignoré par tout ce qu'il voit.                                       |
-| **Publication** | `Publication`        | Acte par lequel un admin rend publics les brouillons d'une édition. _Fait_ : quelle édition, quels matchs, quand, par qui.                                  |
-| **Aperçu**      | `PublicationPreview` | Ce qu'une publication changera (notes, paliers, classement, badges), montré à l'admin avant qu'il publie. _Projection, la seule qui compte les brouillons._ |
-| **Récap**       | `Recap`              | Ce qu'une publication a changé, montré à tous : qui monte, qui change de palier, le MVP, les badges gagnés. _Projection._                                   |
+| Terme               | Code                 | Définition                                                                                                                                                                                                        |
+| ------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Brouillon**       | `draft`              | Résultat saisi ou importé, pas encore publié : enregistré, mais invisible du public et ignoré par tout ce qu'il voit.                                                                                             |
+| **Saisie de match** | `recordMatch`        | Action admin qui enregistre en brouillon un match sans fichier Excel. La feuille saisie (`MatchEntry`) doit être cohérente : chaque rôle une fois, un joueur une seule fois, deux équipes (`matchEntryProblems`). |
+| **Publication**     | `Publication`        | Acte par lequel un admin rend publics les brouillons d'une édition. _Fait_ : quelle édition, quels matchs, quand, par qui.                                                                                        |
+| **Aperçu**          | `PublicationPreview` | Ce qu'une publication changera (notes, paliers, classement, badges), montré à l'admin avant qu'il publie. _Projection, la seule qui compte les brouillons._                                                       |
+| **Récap**           | `Recap`              | Ce qu'une publication a changé, montré à tous : qui monte, qui change de palier, le MVP, les badges gagnés. _Projection._                                                                                         |
 
 ## Matchs
 
