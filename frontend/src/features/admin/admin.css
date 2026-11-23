@@ -260,3 +260,90 @@
   font-weight: 400;
   color: var(--text-tertiary);
 }
+
+/* Saisie d'un match : les deux côtés face à face, empilés sur téléphone. */
+.admin-match-sides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .admin-match-sides {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.admin-match-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 0.5px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 0;
+  min-width: 0;
+}
+
+.admin-match-side legend {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.admin-match-team {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.admin-match-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-match select,
+.admin-match input {
+  padding: 6px 8px;
+  border: 0.5px solid var(--border-med);
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.admin-match-role {
+  width: 34px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+}
+
+.admin-match-line select {
+  flex: 1 1 120px;
+}
+
+.admin-match-line input:not(.admin-match-stat):not(.admin-match-gold) {
+  flex: 1 1 90px;
+}
+
+.admin-match-stat {
+  width: 52px;
+}
+
+.admin-match-gold {
+  width: 72px;
+}
+
+.admin-match-problems {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--gold-lt);
+}

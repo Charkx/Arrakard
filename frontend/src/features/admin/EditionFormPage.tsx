@@ -250,6 +250,11 @@ function EditionFields({
         </form>
         {editionId !== null && version !== undefined && (
           <div className="admin-panel-body admin-edition-actions">
+            {!isExternal(details.type) && (
+              <Link className="admin-back" to={`/admin/editions/${editionId}/match`}>
+                {t('admin.match.link')} →
+              </Link>
+            )}
             {closedAt !== null && (
               <p>{t('admin.edition.closedOn', { date: closedAt.slice(0, 10) })}</p>
             )}

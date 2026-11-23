@@ -323,6 +323,12 @@ export function supabaseSession(
     async closeEdition(editionId, version) {
       await command('close-edition', { editionId, version });
     },
+    async recordMatch(editionId, version, match) {
+      const outcome = (await command('record-match', { editionId, version, ...match })) as {
+        matchNumber: number;
+      };
+      return outcome.matchNumber;
+    },
     async archiveEdition(editionId, version) {
       await command('archive-edition', { editionId, version });
     },

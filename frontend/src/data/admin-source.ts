@@ -1,4 +1,4 @@
-import type { Division } from '@arrakis/backend/domain';
+import type { Division, MatchEntry } from '@arrakis/backend/domain';
 import type { AdminEdition } from '../features/admin/admin.ts';
 import type { EditionDetails, EditionForm } from '../features/admin/edition-form.ts';
 import type { AdminProfile } from '../features/admin/profiles.ts';
@@ -53,6 +53,8 @@ export interface AdminSource {
   updateEdition(editionId: string, version: number, details: EditionDetails): Promise<void>;
   /** Clôture une édition que les faits ne suffisent pas à terminer (ADR 0013). */
   closeEdition(editionId: string, version: number): Promise<void>;
+  /** Saisit un match en brouillon ; rend son numéro dans l'édition. */
+  recordMatch(editionId: string, version: number, match: MatchEntry): Promise<number>;
   /** Archive une édition sans match. */
   archiveEdition(editionId: string, version: number): Promise<void>;
 }
@@ -79,6 +81,8 @@ export function lazyAdminSource(load: () => Promise<AdminSource>): AdminSource {
     updateEdition: async (editionId, version, details) =>
       (await source()).updateEdition(editionId, version, details),
     closeEdition: async (editionId, version) => (await source()).closeEdition(editionId, version),
+    recordMatch: async (editionId, version, match) =>
+      (await source()).recordMatch(editionId, version, match),
     archiveEdition: async (editionId, version) =>
       (await source()).archiveEdition(editionId, version),
   };

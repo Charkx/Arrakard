@@ -50,6 +50,7 @@ function serving(profiles: AdminProfile[] = PROFILES) {
     updateEdition: () => Promise.reject(new Error('Hors sujet.')),
     archiveEdition: () => Promise.reject(new Error('Hors sujet.')),
     closeEdition: () => Promise.reject(new Error('Hors sujet.')),
+    recordMatch: () => Promise.reject(new Error('Hors sujet.')),
   } satisfies AdminSource;
 }
 
