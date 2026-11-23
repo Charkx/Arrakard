@@ -6,7 +6,7 @@ import type {
   RosterStatus,
   SeasonStatus,
 } from '#application/index.ts';
-import type { Division } from '#domain/index.ts';
+import type { Division, PerformanceFact } from '#domain/index.ts';
 
 /** L'heure que donne l'horloge des tests. */
 export const NOW = new Date('2026-11-22T20:00:00.000Z');
@@ -65,6 +65,13 @@ export interface CommandHarness {
     organizationId: string,
     playerId: string,
   ) => Promise<readonly string[]>;
+  /** Crée autant de joueurs, sans match, et rend leurs identifiants. */
+  readonly addPlayers: (organizationId: string, count: number) => Promise<readonly string[]>;
+  /** Un match tel qu'écrit, brouillon ou publié, ses performances triées par ligne puis côté. */
+  readonly recordedMatch: (
+    organizationId: string,
+    matchId: string,
+  ) => Promise<RecordedMatch | undefined>;
   /** Marque le profil `absorbedId` comme fusionné dans `keptId`, sans rien déplacer. */
   readonly markMerged: (
     organizationId: string,
@@ -91,6 +98,16 @@ export interface CommandHarness {
 /** Une édition telle qu'une commande la laisse ; participants triés. */
 export interface EditionRecord extends EditionDetails {
   readonly archived: boolean;
+}
+
+/** Un match tel qu'une commande le laisse. */
+export interface RecordedMatch {
+  readonly editionId: string;
+  readonly matchNumber: number;
+  readonly winnerTeam: string;
+  readonly durationSeconds: number;
+  readonly draft: boolean;
+  readonly performances: readonly Omit<PerformanceFact, 'matchId'>[];
 }
 
 /** Un profil de joueur tel qu'une commande le laisse. */

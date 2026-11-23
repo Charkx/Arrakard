@@ -12,6 +12,9 @@ interface I18n {
   readonly t: (key: TextKey, values?: Readonly<Record<string, string | number>>) => string;
 }
 
+/** Traduit une clé du dictionnaire. */
+export type Translate = I18n['t'];
+
 const I18nContext = createContext<I18n | null>(null);
 
 function isLanguage(value: string | null): value is Language {

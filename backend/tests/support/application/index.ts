@@ -6,6 +6,7 @@ export type {
   EditionRecord,
   EditionSnapshot,
   ProfileRecord,
+  RecordedMatch,
   SeasonRecord,
   SeededOrganizations,
   StintRecord,
@@ -14,6 +15,7 @@ export type {
 export { describeTeamContract } from './team-contract.ts';
 export { describePlayerContract } from './player-contract.ts';
 export { describeEditionContract } from './edition-contract.ts';
+export { describeRecordMatchContract } from './record-match-contract.ts';
 export { describeSeasonContract } from './season-contract.ts';
 export { inMemoryCommandHarness } from './in-memory-harness.ts';
 export { describePublishEditionContract } from './publish-edition-contract.ts';

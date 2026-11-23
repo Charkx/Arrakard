@@ -14,6 +14,8 @@ export type {
   UnitOfWork,
 } from './command.ts';
 export type { EditionDetails, EditionRepository, EditionState, Publication } from './editions.ts';
+export { recordMatch } from './commands/record-match.ts';
+export type { RecordMatchInput, RecordMatchOutcome } from './commands/record-match.ts';
 export { createEdition } from './commands/create-edition.ts';
 export type { CreateEditionInput, CreateEditionOutcome } from './commands/create-edition.ts';
 export { updateEdition } from './commands/update-edition.ts';

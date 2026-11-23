@@ -97,6 +97,16 @@ export function inMemoryCommandHarness(): CommandHarness {
       Promise.resolve(store.profileOf(organizationId, playerId)),
     performanceMatchIds: (organizationId, playerId) =>
       Promise.resolve(store.performanceMatchIdsOf(organizationId, playerId)),
+    addPlayers(organizationId, count) {
+      const players = Array.from({ length: count }, (_, i) => ({
+        id: crypto.randomUUID(),
+        nickname: `Joueur ${String(i + 1)}`,
+      }));
+      store.addPlayers(organizationId, players);
+      return Promise.resolve(players.map((p) => p.id));
+    },
+    recordedMatch: (organizationId, matchId) =>
+      Promise.resolve(store.recordedMatchOf(organizationId, matchId)),
     markMerged(organizationId, absorbedId, keptId) {
       store.markMerged(organizationId, absorbedId, keptId);
       return Promise.resolve();

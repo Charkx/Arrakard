@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { lazyAdminSource } from '#src/data/admin-source.ts';
+import { blankMatch } from '#src/features/admin/match-entry.ts';
 
 describe('lazyAdminSource', () => {
   it('ne charge la source qu’au premier usage, et une seule fois', async () => {
@@ -21,6 +22,7 @@ describe('lazyAdminSource', () => {
         updateEdition: () => Promise.resolve(),
         archiveEdition: () => Promise.resolve(),
         closeEdition: () => Promise.resolve(),
+        recordMatch: () => Promise.resolve(2),
       }),
     );
     const admin = lazyAdminSource(load);
@@ -65,6 +67,7 @@ describe('lazyAdminSource', () => {
       participantIds: [],
     });
     await admin.closeEdition('e-1', 2);
+    expect(await admin.recordMatch('e-1', 2, blankMatch())).toBe(2);
     await admin.archiveEdition('e-1', 3);
     expect(load).toHaveBeenCalledOnce();
   });

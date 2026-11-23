@@ -3,6 +3,7 @@ import { Navbar } from './shared/components/Navbar.tsx';
 import { useI18n } from './shared/i18n/i18n.tsx';
 import { AdminPage } from './features/admin/AdminPage.tsx';
 import { EditionFormPage } from './features/admin/EditionFormPage.tsx';
+import { MatchEntryPage } from './features/admin/MatchEntryPage.tsx';
 import { ProfilesPage } from './features/admin/ProfilesPage.tsx';
 import { TeamsPage } from './features/admin/TeamsPage.tsx';
 import { LoginPage } from './features/auth/LoginPage.tsx';
@@ -34,6 +35,7 @@ export function App() {
           <Route path="/admin/profiles" element={<ProfilesPage />} />
           <Route path="/admin/editions/new" element={<EditionFormPage />} />
           <Route path="/admin/editions/:editionId" element={<EditionFormPage />} />
+          <Route path="/admin/editions/:editionId/match" element={<MatchEntryPage />} />
           <Route path="*" element={<Navigate to="/leaderboard" replace />} />
         </Routes>
       </main>

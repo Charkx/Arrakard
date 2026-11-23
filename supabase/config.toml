@@ -466,3 +466,6 @@ verify_jwt = false
 
 [functions.archive-edition]
 verify_jwt = false
+
+[functions.record-match]
+verify_jwt = false

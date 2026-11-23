@@ -75,6 +75,7 @@ function serving(form: EditionForm = FORM) {
     updateEdition: vi.fn(() => Promise.resolve()),
     archiveEdition: vi.fn(() => Promise.resolve()),
     closeEdition: vi.fn(() => Promise.resolve()),
+    recordMatch: vi.fn(() => Promise.resolve(1)),
   } satisfies AdminSource;
 }
 
