@@ -60,6 +60,8 @@ export type {
   PlayerRef,
 } from './import/plan.ts';
 export { plannedMatchEntries } from './import/entries.ts';
+export { rosterMoves } from './import/roster-moves.ts';
+export type { RosterMove } from './import/roster-moves.ts';
 export type { PlannedEntriesResult, PlannedEntry } from './import/entries.ts';
 export type {
   EditionFact,
