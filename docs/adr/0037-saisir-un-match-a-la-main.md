@@ -14,13 +14,17 @@ ligne par rôle » a été validée le 2026-11-23.
 ## Décision
 
 **`recordMatch` enregistre un match en brouillon**, numéroté après les matchs
-de l'édition, à la version que l'admin a sous les yeux (ADR 0005).
+de l'édition, avec un vainqueur que l'admin choisit toujours lui-même, à la version que l'admin a sous les yeux (ADR 0005).
 
 **La cohérence d'une feuille est une règle du domaine, `matchEntryProblems`** :
 chaque rôle une fois du TOP au SUP, deux équipes aux noms distincts, un joueur
 et un champion à chaque place, un joueur une seule fois. Le formulaire s'en
 sert pour expliquer les erreurs pendant la saisie, et la commande pour refuser
-une feuille (`conflict`). Le contrat ne vérifie que la forme.
+une feuille (`conflict`). Le contrat vérifie la forme : cinq lignes, des
+nombres positifs, des textes non vides. **La traduction d'une feuille en faits
+est aussi du domaine, `matchEntryFacts`** : l'équipe gagnante est celle du
+côté vainqueur, chaque performance reçoit sa ligne, son équipe et son
+résultat. Les deux dépôts n'ont qu'à écrire ces faits.
 
 La commande refuse aussi un événement externe et une édition archivée
 (`conflict`), une saison clôturée (`season_closed`, ADR 0032), et un joueur

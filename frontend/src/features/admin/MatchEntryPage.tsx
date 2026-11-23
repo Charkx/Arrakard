@@ -73,6 +73,8 @@ function MatchSheet({
   const admin = useAdminSource();
   const [match, setMatch] = useState<MatchEntry>(blankMatch);
   const [clock, setClock] = useState('');
+  const [winner, setWinner] = useState<Side | null>(null);
+  const [tried, setTried] = useState(false);
   const [saved, setSaved] = useState<number | null>(null);
   const { busy, failure, send } = useCommand(onSaved);
   const durationSeconds = parseClock(clock);
@@ -96,11 +98,15 @@ function MatchSheet({
     }));
   };
 
+  const ready = durationSeconds !== null && winner !== null && problems.length === 0;
+
   const submit = (event: SyntheticEvent) => {
     event.preventDefault();
-    if (durationSeconds === null || problems.length > 0) return;
+    // Les erreurs ne s'affichent qu'au premier essai : une feuille vierge n'en est pas une.
+    setTried(true);
+    if (durationSeconds === null || winner === null || problems.length > 0) return;
     send(async () => {
-      setSaved(await admin.recordMatch(editionId, version, { ...match, durationSeconds }));
+      setSaved(await admin.recordMatch(editionId, version, { ...match, durationSeconds, winner }));
     });
   };
 
@@ -127,9 +133,9 @@ function MatchSheet({
                 <input
                   type="radio"
                   name="winner"
-                  checked={match.winner === side}
+                  checked={winner === side}
                   onChange={() => {
-                    setMatch((current) => ({ ...current, winner: side }));
+                    setWinner(side);
                   }}
                 />
                 {t(`admin.match.side.${side}`)}
@@ -155,6 +161,15 @@ function MatchSheet({
                   }}
                 />
               </label>
+              <div className="admin-match-line admin-match-head" aria-hidden="true">
+                <span className="admin-match-role" />
+                <span className="admin-match-head-player">{t('admin.match.player')}</span>
+                <span className="admin-match-head-champion">{t('admin.match.champion')}</span>
+                <span className="admin-match-stat">{t('admin.match.k')}</span>
+                <span className="admin-match-stat">{t('admin.match.d')}</span>
+                <span className="admin-match-stat">{t('admin.match.a')}</span>
+                <span className="admin-match-gold">{t('admin.match.gold')}</span>
+              </div>
               {match.lines.map((line, l) => {
                 const place = line.sides[s] ?? line.sides[0];
                 const label = (what: string) => `${what} ${line.role} ${side}`;
@@ -203,19 +218,20 @@ function MatchSheet({
             </fieldset>
           ))}
         </div>
-        {(problems.length > 0 || (clock !== '' && durationSeconds === null)) && (
-          <ul className="admin-match-problems" aria-label={t('admin.match.problems')}>
-            {clock !== '' && durationSeconds === null && <li>{t('admin.match.badDuration')}</li>}
+        {tried && !ready && (
+          <ul
+            className="admin-match-problems"
+            aria-label={t('admin.match.problems')}
+            aria-live="polite"
+          >
+            {durationSeconds === null && <li>{t('admin.match.badDuration')}</li>}
+            {winner === null && <li>{t('admin.match.noWinner')}</li>}
             {problems.map((problem) => (
               <li key={problemKey(problem)}>{explain(t, problem, nickname)}</li>
             ))}
           </ul>
         )}
-        <button
-          type="submit"
-          className="auth-button"
-          disabled={busy || problems.length > 0 || durationSeconds === null}
-        >
+        <button type="submit" className="auth-button" disabled={busy}>
           {t('admin.match.save')}
         </button>
         {saved !== null && <p role="status">{t('admin.match.saved', { n: saved })}</p>}

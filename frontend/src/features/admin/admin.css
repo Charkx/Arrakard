@@ -347,3 +347,22 @@
   padding-left: 18px;
   color: var(--gold-lt);
 }
+
+.admin-match-head {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.admin-match-head-player {
+  flex: 1 1 120px;
+}
+
+.admin-match-head-champion {
+  flex: 1 1 90px;
+}
+
+.admin-match-head .admin-match-stat,
+.admin-match-head .admin-match-gold {
+  text-align: center;
+}

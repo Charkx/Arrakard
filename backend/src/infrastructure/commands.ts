@@ -13,7 +13,7 @@ import {
   type TeamRepository,
   type UnitOfWork,
 } from '../application/index.ts';
-import type { EditionType } from '../domain/index.ts';
+import { matchEntryFacts, type EditionType } from '../domain/index.ts';
 import type { Sql, TransactionSql } from 'postgres';
 import { postgresRecomputePorts } from './ports.ts';
 
@@ -125,38 +125,35 @@ function postgresEditions(tx: TransactionSql): EditionRepository {
     },
     async recordDraftMatch(organizationId, editionId, entry, version) {
       const newVersion = await bumpVersion(tx, organizationId, editionId, version);
-      const [teamA, teamB] = entry.teams;
-      const [match] = await tx<{ id: string; match_number: number }[]>`
-        insert into matches (organization_id, edition_id, match_number, winner_team, duration_seconds, draft)
-        select ${organizationId}, ${editionId}, coalesce(max(match_number), 0) + 1,
-               ${entry.winner === 'A' ? teamA : teamB}, ${entry.durationSeconds}, true
-        from matches where edition_id = ${editionId}
-        returning id, match_number`;
-      if (!match) throw new Error(`Édition ${editionId} : match impossible à écrire.`);
+      const [next] = await tx<{ match_number: number }[]>`
+        select coalesce(max(match_number), 0) + 1 as match_number
+        from matches where organization_id = ${organizationId} and edition_id = ${editionId}`;
+      const matchNumber = next?.match_number ?? 1;
+      const matchId = crypto.randomUUID();
+      const { match, performances } = matchEntryFacts(entry, { matchId, editionId, matchNumber });
+      await tx`
+        insert into matches (id, organization_id, edition_id, match_number, winner_team, duration_seconds, draft)
+        values (${matchId}, ${organizationId}, ${editionId}, ${matchNumber}, ${match.winnerTeam},
+                ${match.durationSeconds}, true)`;
       await tx`
         insert into performances ${tx(
-          entry.lines.flatMap(({ role, sides }, line) =>
-            sides.map((s, i) => {
-              const side = i === 0 ? 'A' : 'B';
-              return {
-                organization_id: organizationId,
-                match_id: match.id,
-                line,
-                side,
-                player_id: s.playerId,
-                team: side === 'A' ? teamA : teamB,
-                role,
-                champion: s.champion,
-                result: side === entry.winner ? 'win' : 'loss',
-                kills: s.kills,
-                deaths: s.deaths,
-                assists: s.assists,
-                gold: s.gold,
-              };
-            }),
-          ),
+          performances.map((p) => ({
+            organization_id: organizationId,
+            match_id: matchId,
+            line: p.line,
+            side: p.side,
+            player_id: p.playerId,
+            team: p.team,
+            role: p.role,
+            champion: p.champion,
+            result: p.result,
+            kills: p.kills,
+            deaths: p.deaths,
+            assists: p.assists,
+            gold: p.gold,
+          })),
         )}`;
-      return { matchId: match.id, matchNumber: match.match_number, version: newVersion };
+      return { matchId, matchNumber, version: newVersion };
     },
     async create(organizationId, edition) {
       const [created] = await tx<{ id: string }[]>`

@@ -1,7 +1,8 @@
+import type { MatchFact, PerformanceFact } from '../facts.ts';
 import { ROLES, type Role } from '../performance.ts';
 
 /** Le côté d'un match : A, puis B. */
-export type Side = 'A' | 'B';
+export type Side = PerformanceFact['side'];
 
 /** Ce qu'un admin saisit d'un joueur dans un match. */
 export interface EntrySide {
@@ -15,7 +16,7 @@ export interface EntrySide {
 }
 
 /** Une ligne de rôle saisie : les deux joueurs qui s'y affrontent, A puis B. */
-export interface EntryLine {
+export interface RoleLine {
   readonly role: Role;
   readonly sides: readonly [EntrySide, EntrySide];
 }
@@ -26,7 +27,7 @@ export interface MatchEntry {
   readonly winner: Side;
   /** Le nom de l'équipe du côté A, puis du côté B. */
   readonly teams: readonly [string, string];
-  readonly lines: readonly EntryLine[];
+  readonly lines: readonly RoleLine[];
 }
 
 /** Ce qui ne va pas dans une saisie ; le formulaire l'explique, le serveur la refuse. */
@@ -54,16 +55,56 @@ export function matchEntryProblems(entry: MatchEntry): MatchEntryProblem[] {
   if (!a || !b || a === b) problems.push({ kind: 'teams' });
 
   const seen = new Set<string>();
-  const twice = new Set<string>();
+  const seenTwice = new Set<string>();
   for (const { role, sides } of entry.lines) {
     sides.forEach(({ playerId, champion }, i) => {
-      const side = SIDES[i] ?? 'A';
+      const side: Side = i === 0 ? 'A' : 'B';
       if (playerId === '') problems.push({ kind: 'missingPlayer', role, side });
-      else if (seen.has(playerId)) twice.add(playerId);
+      else if (seen.has(playerId)) seenTwice.add(playerId);
       else seen.add(playerId);
       if (champion.trim() === '') problems.push({ kind: 'missingChampion', role, side });
     });
   }
-  for (const playerId of twice) problems.push({ kind: 'samePlayerTwice', playerId });
+  for (const playerId of seenTwice) problems.push({ kind: 'samePlayerTwice', playerId });
   return problems;
+}
+
+/**
+ * Les faits d'une feuille saisie (ADR 0037) : le match, dont l'équipe gagnante
+ * est celle du côté vainqueur, et ses dix performances, ligne par ligne du TOP
+ * au SUP, A puis B.
+ */
+export function matchEntryFacts(
+  entry: MatchEntry,
+  { matchId, editionId, matchNumber }: { matchId: string; editionId: string; matchNumber: number },
+): { readonly match: MatchFact; readonly performances: readonly PerformanceFact[] } {
+  const teamOf = (side: Side) => (side === 'A' ? entry.teams[0] : entry.teams[1]);
+  return {
+    match: {
+      id: matchId,
+      editionId,
+      matchNumber,
+      winnerTeam: teamOf(entry.winner),
+      durationSeconds: entry.durationSeconds,
+    },
+    performances: entry.lines.flatMap(({ role, sides }, line) =>
+      SIDES.map((side, i) => {
+        const { playerId, champion, kills, deaths, assists, gold } = sides[i] ?? sides[0];
+        return {
+          matchId,
+          line,
+          side,
+          playerId,
+          team: teamOf(side),
+          role,
+          champion,
+          result: side === entry.winner ? 'win' : 'loss',
+          kills,
+          deaths,
+          assists,
+          gold,
+        };
+      }),
+    ),
+  };
 }

@@ -10,7 +10,7 @@ const emptySide = (): EntrySide => ({
   gold: 0,
 });
 
-/** Une feuille vierge : cinq lignes du TOP au SUP, le côté A vainqueur. */
+/** Une feuille vierge : cinq lignes du TOP au SUP. Le vainqueur se choisit à part. */
 export function blankMatch(): MatchEntry {
   return {
     durationSeconds: 0,
@@ -20,9 +20,10 @@ export function blankMatch(): MatchEntry {
   };
 }
 
-/** « 32:10 » en secondes, ou null si ce n'est pas une durée minutes:secondes. */
+/** « 32:10 » en secondes, ou null si ce n'est pas une durée minutes:secondes non nulle. */
 export function parseClock(text: string): number | null {
   const match = /^(\d{1,3}):([0-5]\d)$/.exec(text.trim());
   if (!match) return null;
-  return Number(match[1]) * 60 + Number(match[2]);
+  const seconds = Number(match[1]) * 60 + Number(match[2]);
+  return seconds > 0 ? seconds : null;
 }

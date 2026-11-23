@@ -1,4 +1,11 @@
-import type { Facts, MatchFact, PerformanceFact, Projections, RatingRules } from '#domain/index.ts';
+import {
+  matchEntryFacts,
+  type Facts,
+  type MatchFact,
+  type PerformanceFact,
+  type Projections,
+  type RatingRules,
+} from '#domain/index.ts';
 import {
   CommandRejected,
   type CommandLogEntry,
@@ -219,35 +226,10 @@ export function inMemoryStore(): InMemoryStore {
             .map((m) => m.matchNumber);
           const matchNumber = Math.max(0, ...numbers) + 1;
           const matchId = crypto.randomUUID();
-          const [teamA, teamB] = entry.teams;
-          organization.drafts.set(matchId, {
-            match: {
-              id: matchId,
-              editionId,
-              matchNumber,
-              winnerTeam: entry.winner === 'A' ? teamA : teamB,
-              durationSeconds: entry.durationSeconds,
-            },
-            performances: entry.lines.flatMap(({ role, sides }, line) =>
-              sides.map((s, i) => {
-                const side = i === 0 ? 'A' : 'B';
-                return {
-                  matchId,
-                  line,
-                  side,
-                  playerId: s.playerId,
-                  team: side === 'A' ? teamA : teamB,
-                  role,
-                  champion: s.champion,
-                  result: side === entry.winner ? 'win' : 'loss',
-                  kills: s.kills,
-                  deaths: s.deaths,
-                  assists: s.assists,
-                  gold: s.gold,
-                } as const;
-              }),
-            ),
-          });
+          organization.drafts.set(
+            matchId,
+            matchEntryFacts(entry, { matchId, editionId, matchNumber }),
+          );
           return { matchId, matchNumber, version: newVersion };
         });
       },

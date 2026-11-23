@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchEntryProblems, type MatchEntry } from '#domain/match/entry.ts';
+import { matchEntryFacts, matchEntryProblems, type MatchEntry } from '#domain/match/entry.ts';
 
 const side = (playerId: string, champion = 'Ahri') => ({
   playerId,
@@ -65,5 +65,53 @@ describe('matchEntryProblems', () => {
       { kind: 'teams' },
     ]);
     expect(matchEntryProblems({ ...aMatch(), teams: ['', 'Ionia'] })).toEqual([{ kind: 'teams' }]);
+  });
+});
+
+describe('matchEntryFacts', () => {
+  it('donne au match l’équipe du côté vainqueur, et à chaque performance sa ligne, son équipe et son résultat', () => {
+    const { match, performances } = matchEntryFacts(
+      { ...aMatch(), winner: 'B' },
+      { matchId: 'm-3', editionId: 'e-1', matchNumber: 3 },
+    );
+
+    expect(match).toEqual({
+      id: 'm-3',
+      editionId: 'e-1',
+      matchNumber: 3,
+      winnerTeam: 'Ionia',
+      durationSeconds: 1930,
+    });
+    expect(performances).toHaveLength(10);
+    expect(performances.slice(2, 4)).toEqual([
+      {
+        matchId: 'm-3',
+        line: 1,
+        side: 'A',
+        playerId: 'a1',
+        team: 'Noxus',
+        role: 'JGL',
+        champion: 'Ahri',
+        result: 'loss',
+        kills: 1,
+        deaths: 1,
+        assists: 1,
+        gold: 10000,
+      },
+      {
+        matchId: 'm-3',
+        line: 1,
+        side: 'B',
+        playerId: 'b1',
+        team: 'Ionia',
+        role: 'JGL',
+        champion: 'Ahri',
+        result: 'win',
+        kills: 1,
+        deaths: 1,
+        assists: 1,
+        gold: 10000,
+      },
+    ]);
   });
 });

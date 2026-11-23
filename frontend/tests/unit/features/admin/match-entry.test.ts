@@ -6,7 +6,7 @@ describe('parseClock', () => {
     expect(parseClock(' 32:10 ')).toBe(1930);
   });
 
-  it.each(['32', '32:7', '32:60', 'abc', ''])('refuse « %s »', (text) => {
+  it.each(['32', '32:7', '32:60', '0:00', 'abc', ''])('refuse « %s »', (text) => {
     expect(parseClock(text)).toBeNull();
   });
 });

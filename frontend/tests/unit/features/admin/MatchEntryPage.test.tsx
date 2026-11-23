@@ -129,6 +129,14 @@ describe('la saisie d’un match', () => {
     });
   });
 
+  it('n’affiche aucune erreur sur une feuille vierge, avant le premier essai', async () => {
+    openSite('/admin/editions/e-ih/match', { auth: authAs(ADMIN), admin: serving() });
+
+    await screen.findByRole('heading', { level: 1, name: 'Saisir un match · IH #10' });
+
+    expect(screen.queryByRole('list', { name: 'À corriger' })).toBeNull();
+  });
+
   it('explique ce qui manque, et n’envoie rien tant que la feuille est incomplète', async () => {
     const admin = serving();
     openSite('/admin/editions/e-ih/match', { auth: authAs(ADMIN), admin });
@@ -138,14 +146,13 @@ describe('la saisie d’un match', () => {
     fireEvent.change(screen.getByLabelText('Joueur MID B'), { target: { value: 'p-0' } });
     fireEvent.change(screen.getByLabelText('Champion ADC A'), { target: { value: '' } });
     fireEvent.change(screen.getByLabelText('Durée (min:s)'), { target: { value: '32' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer en brouillon' }));
 
     const problems = screen.getByRole('list', { name: 'À corriger' });
     expect(problems.textContent).toContain('La durée s’écrit en minutes et secondes');
     expect(problems.textContent).toContain('Aucun champion au ADC du côté A.');
     expect(problems.textContent).toContain('Joueur 0 est saisi deux fois.');
-    expect(
-      screen.getByRole<HTMLButtonElement>('button', { name: 'Enregistrer en brouillon' }).disabled,
-    ).toBe(true);
+    expect(problems.textContent).toContain('Choisis le côté vainqueur.');
     expect(admin.recordMatch).not.toHaveBeenCalled();
   });
 
