@@ -366,3 +366,19 @@
 .admin-match-head .admin-match-gold {
   text-align: center;
 }
+
+.admin-import {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.admin-import-title {
+  font-size: 15px;
+  margin: 0;
+}
+
+/* Le serveur nomme une ligne du fichier par ligne du message. */
+.admin-import-failure {
+  white-space: pre-line;
+}

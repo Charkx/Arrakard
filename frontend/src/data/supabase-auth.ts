@@ -329,6 +329,12 @@ export function supabaseSession(
       };
       return outcome.matchNumber;
     },
+    async importEdition(editionId, version, rows) {
+      const outcome = (await command('import-edition', { editionId, version, rows })) as {
+        matchIds: readonly string[];
+      };
+      return outcome.matchIds.length;
+    },
     async archiveEdition(editionId, version) {
       await command('archive-edition', { editionId, version });
     },

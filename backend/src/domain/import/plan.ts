@@ -72,7 +72,9 @@ export function planImport(
   // 2. Équipes inconnues.
   for (const { teamTag } of analysis.unknownTeams) {
     if (decisions.unknownTeams[teamTag] === undefined) {
-      errors.push(`Décision manquante pour l’équipe « ${teamTag} ».`);
+      errors.push(
+        `Décision manquante pour l’équipe « ${teamTag} » : aucune équipe connue ne porte ce tag.`,
+      );
     }
   }
   const newTeams = analysis.unknownTeams
@@ -84,9 +86,16 @@ export function planImport(
     [...refs.values()].flatMap((r) => (r.kind === 'existing' ? [r.playerId] : [])),
   );
   const transfers = analysis.transfers.filter((t) => stillMatched.has(t.playerId));
-  for (const { playerId } of transfers) {
+  for (const { playerId, fromTeamTag, toTeamTag } of transfers) {
     if (decisions.transfers[playerId] === undefined) {
-      errors.push(`Décision manquante pour le transfert de « ${playerId} ».`);
+      // Un transfert vient toujours d'un nom rattaché à ce joueur (`analyzeImport`).
+      const nickname =
+        analysis.names.find(
+          ({ resolution }) => resolution.kind === 'matched' && resolution.playerId === playerId,
+        )?.nickname ?? playerId;
+      errors.push(
+        `Décision manquante pour le transfert de « ${nickname} » (${fromTeamTag} → ${toTeamTag}).`,
+      );
     }
   }
 
@@ -153,7 +162,11 @@ function refFor(
     if (name.resolution.kind === 'matched') {
       return { kind: 'existing', playerId: name.resolution.playerId };
     }
-    errors.push(`Décision manquante pour le joueur « ${name.nickname} ».`);
+    const why =
+      name.resolution.kind === 'ambiguous'
+        ? 'plusieurs joueurs portent ce pseudo'
+        : 'aucun joueur connu ne porte ce pseudo';
+    errors.push(`Décision manquante pour le joueur « ${name.nickname} » : ${why}.`);
     return undefined;
   }
   if (decision.kind === 'new') return { kind: 'new', key: normalizeAlias(name.nickname) };

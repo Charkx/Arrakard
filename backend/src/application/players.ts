@@ -1,4 +1,4 @@
-import type { MergeFacts, MergePlan } from '../domain/index.ts';
+import type { ImportPlayer, MergeFacts, MergePlan } from '../domain/index.ts';
 
 /** Ce qu'une commande lit d'un profil de joueur non fusionné. */
 export interface PlayerState {
@@ -21,6 +21,13 @@ export interface PlayerRepository {
    * profil conservé, le passage clos ce jour-là (AAAA-MM-JJ), et le renvoi.
    */
   applyMerge(organizationId: string, plan: MergePlan, on: string): Promise<void>;
+  /**
+   * Ce que l'import doit savoir pour rattacher les pseudos d'un fichier
+   * (`analyzeImport`) : les joueurs non fusionnés, avec leur pseudo et leurs
+   * alias, leur équipe et leur statut actuels ; et les tags de toutes les
+   * équipes, archivées comprises.
+   */
+  importDirectory(organizationId: string): Promise<ImportDirectory>;
   /** Le profil lié à ce compte Discord, s'il y en a un, fusionné ou non (contrainte d'unicité). */
   discordOwner(organizationId: string, discordUserId: string): Promise<string | undefined>;
   /** Lie la carte à ce compte Discord, ou la délie (null). */
@@ -29,4 +36,10 @@ export interface PlayerRepository {
     playerId: string,
     discordUserId: string | null,
   ): Promise<void>;
+}
+
+/** Les joueurs et les équipes connus, tels que l'import les voit. */
+export interface ImportDirectory {
+  readonly players: readonly ImportPlayer[];
+  readonly teamTags: readonly string[];
 }

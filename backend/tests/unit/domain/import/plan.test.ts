@@ -92,10 +92,12 @@ describe('planImport', () => {
   describe('pseudos non reconnus', () => {
     const sheet = oneLineSheet(['ARK', 'ARK Newbie'], ['BLB', 'BLB Zed']);
 
-    it('exigent une décision', () => {
+    it('exigent une décision, qui dit pourquoi le pseudo n’est pas reconnu', () => {
       expect(plan(sheet)).toEqual({
         ok: false,
-        errors: ['Décision manquante pour le joueur « Newbie ».'],
+        errors: [
+          'Décision manquante pour le joueur « Newbie » : aucun joueur connu ne porte ce pseudo.',
+        ],
       });
     });
 
@@ -150,7 +152,10 @@ describe('planImport', () => {
     };
     const sheet = oneLineSheet(['ARK', 'ARK Meta'], ['BLB', 'BLB Zed']);
 
-    expect(plan(sheet, noDecision, ctx)).toMatchObject({ ok: false });
+    expect(plan(sheet, noDecision, ctx)).toEqual({
+      ok: false,
+      errors: ['Décision manquante pour le joueur « Meta » : plusieurs joueurs portent ce pseudo.'],
+    });
     expect(
       plan(
         sheet,
@@ -166,10 +171,12 @@ describe('planImport', () => {
     const sheet = oneLineSheet(['ARK', 'ARK Meta'], ['NKR', 'NKR Baited']);
     const names = { baited: { kind: 'new' } } as const;
 
-    it('exigent une décision', () => {
+    it('exigent une décision, qui dit que le tag est inconnu', () => {
       expect(plan(sheet, { ...noDecision, names })).toEqual({
         ok: false,
-        errors: ['Décision manquante pour l’équipe « NKR ».'],
+        errors: [
+          'Décision manquante pour l’équipe « NKR » : aucune équipe connue ne porte ce tag.',
+        ],
       });
     });
 
@@ -197,12 +204,12 @@ describe('planImport', () => {
   describe('transferts', () => {
     const sheet = oneLineSheet(['BLB', 'BLB Meta'], ['ARK', 'ARK Zed']);
 
-    it('exigent une décision', () => {
+    it('exigent une décision, qui nomme le joueur et ses deux équipes', () => {
       expect(plan(sheet)).toEqual({
         ok: false,
         errors: [
-          'Décision manquante pour le transfert de « meta ».',
-          'Décision manquante pour le transfert de « zed ».',
+          'Décision manquante pour le transfert de « Meta » (ARK → BLB).',
+          'Décision manquante pour le transfert de « Zed » (BLB → ARK).',
         ],
       });
     });

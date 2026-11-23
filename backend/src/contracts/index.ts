@@ -24,3 +24,5 @@ export type {
 } from './edition-details.ts';
 export { recordMatchRequest } from './record-match.ts';
 export type { RecordMatchRequest } from './record-match.ts';
+export { importEditionRequest } from './import-edition.ts';
+export type { ImportEditionRequest } from './import-edition.ts';

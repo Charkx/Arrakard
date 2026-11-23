@@ -23,6 +23,7 @@ describe('lazyAdminSource', () => {
         archiveEdition: () => Promise.resolve(),
         closeEdition: () => Promise.resolve(),
         recordMatch: () => Promise.resolve(2),
+        importEdition: () => Promise.resolve(3),
       }),
     );
     const admin = lazyAdminSource(load);
@@ -68,6 +69,7 @@ describe('lazyAdminSource', () => {
     });
     await admin.closeEdition('e-1', 2);
     expect(await admin.recordMatch('e-1', 2, blankMatch())).toBe(2);
+    expect(await admin.importEdition('e-1', 1, [])).toBe(3);
     await admin.archiveEdition('e-1', 3);
     expect(load).toHaveBeenCalledOnce();
   });

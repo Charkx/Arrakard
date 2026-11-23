@@ -6,7 +6,8 @@ export type RosterStatus = 'starter' | 'sub' | 'coach';
 
 /** Un joueur connu, avec ce dont l'analyse d'import a besoin. */
 export interface ImportPlayer extends DirectoryPlayer {
-  readonly status: RosterStatus;
+  /** Son statut dans son équipe actuelle ; null s'il est sans équipe. */
+  readonly status: RosterStatus | null;
 }
 
 export interface ImportContext {

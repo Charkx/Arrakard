@@ -57,3 +57,4 @@ demanderait « pourquoi c'est fait comme ça ? ».
 | [0035](0035-editions-saisies-par-l-admin.md)             | Les éditions saisies par l'admin, et leur archivage               | Accepté |
 | [0036](0036-la-fusion-suit-le-plan-du-domaine.md)        | La fusion suit le plan du domaine                                 | Accepté |
 | [0037](0037-saisir-un-match-a-la-main.md)                | Saisir un match à la main                                         | Accepté |
+| [0038](0038-importer-un-fichier-excel.md)                | Importer le fichier Excel d'une édition                           | Accepté |

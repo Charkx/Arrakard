@@ -20,6 +20,14 @@ export interface EditionStatusFacts {
 export const isExternal = (type: EditionType): boolean =>
   type === 'external_event' || type === 'external_lan';
 
+/**
+ * Les équipes d'une édition sont-elles des rosters (glossaire) ? Oui pour une
+ * ligue ou un tournoi ; non pour une In House ou une LAN, où elles se forment
+ * le soir même.
+ */
+export const teamsAreRosters = (type: EditionType): boolean =>
+  type === 'league_div1' || type === 'league_div2' || type === 'tournament';
+
 /** Le statut d'une édition au jour `today` (AAAA-MM-JJ), selon la règle de l'ADR 0013. */
 export function editionStatus(edition: EditionStatusFacts, today: string): EditionStatus {
   const isPast = edition.date < today;

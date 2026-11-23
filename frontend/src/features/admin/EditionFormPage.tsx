@@ -13,6 +13,7 @@ import {
   type EditionDetails,
   type EditionForm,
 } from './edition-form.ts';
+import { ImportPanel } from './ImportPanel.tsx';
 import { useAdminData } from './useAdminData.ts';
 import { useCommand } from './useCommand.ts';
 
@@ -39,12 +40,24 @@ export function EditionFormPage() {
           <p role="alert">{t('admin.edition.notFound')}</p>
         ) : (
           // Une nouvelle version recharge le formulaire avec ce que le serveur a gardé.
-          <EditionFields
-            key={state.data.edition?.version ?? 0}
-            editionId={editionId}
-            form={state.data}
-            onSaved={reload}
-          />
+          <>
+            <EditionFields
+              key={state.data.edition?.version ?? 0}
+              editionId={editionId}
+              form={state.data}
+              onSaved={reload}
+            />
+            {/* Hors du formulaire : il garde son message quand la nouvelle version le recharge. */}
+            {editionId !== null &&
+              state.data.edition !== null &&
+              !isExternal(state.data.edition.type) && (
+                <ImportPanel
+                  editionId={editionId}
+                  version={state.data.edition.version}
+                  onImported={reload}
+                />
+              )}
+          </>
         ))}
     </section>
   );

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { parseDuration, parseStatsSheet, type SheetRow } from '#domain/import/stats-sheet.ts';
+import {
+  parseDuration,
+  parseNumberedStatsSheet,
+  parseStatsSheet,
+  type SheetRow,
+} from '#domain/import/stats-sheet.ts';
 
 /** Une ligne de rôle de la feuille LIGUE1_STATS (côté A, puis côté B en « .1 »). */
 function aSheetRow(overrides: Partial<Record<string, unknown>> = {}): SheetRow {
@@ -176,9 +181,42 @@ describe('parseStatsSheet', () => {
     if (!result.ok) throw new Error(result.error);
     expect(result.sheet.matches[0]?.lines).toHaveLength(4);
     expect(result.sheet.warnings).toEqual([
-      'Match 1 : poste « COACH » inconnu, ligne ignorée.',
-      'Match 1 : 4 ligne(s) au lieu de 5.',
+      'Ligne 6 (match 1) : poste « COACH » inconnu, ligne ignorée.',
+      'Match 1 (lignes 2, 3, 4, 5, 6) : 4 ligne(s) au lieu de 5.',
     ]);
+  });
+
+  it('nomme les lignes avec les numéros donnés, ceux du fichier Excel', () => {
+    const result = parseNumberedStatsSheet([{ line: 17, cells: aSheetRow({ POSTE: 'COACH' }) }]);
+
+    if (!result.ok) throw new Error(result.error);
+    expect(result.sheet.warnings[0]).toBe(
+      'Ligne 17 (match 1) : poste « COACH » inconnu, ligne ignorée.',
+    );
+  });
+
+  it('avertit pour une statistique qui n’est pas un nombre', () => {
+    const result = parseStatsSheet([aSheetRow({ 'K.1': 'cinq' })]);
+
+    if (!result.ok) throw new Error(result.error);
+    expect(result.sheet.warnings).toContain(
+      'Ligne 2 (match 1) : « cinq » n’est pas un nombre (colonne K.1).',
+    );
+  });
+
+  it('avertit pour un joueur ou un champion manquant', () => {
+    const result = parseStatsSheet([
+      aSheetRow({ 'NOM DU JOUEUR.1': '' }),
+      aSheetRow({ POSTE: 'TOP', 'POSTE.1': 'TOP', CHAMPION: null }),
+    ]);
+
+    if (!result.ok) throw new Error(result.error);
+    expect(result.sheet.warnings).toEqual(
+      expect.arrayContaining([
+        'Ligne 2 (match 1) : nom du joueur manquant pour l’équipe B.',
+        'Ligne 3 (match 1) : champion manquant pour l’équipe A.',
+      ]),
+    );
   });
 
   it.each([null, 'abc'])('une durée %s vaut 0, sans faire échouer la lecture', (duration) => {
