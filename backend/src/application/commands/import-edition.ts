@@ -20,7 +20,7 @@ export interface ImportEditionInput {
   /** Les lignes de la feuille, telles que le navigateur les a lues du fichier. */
   readonly rows: readonly NumberedRow[];
   /** Ce que l'admin a décidé des cas que l'import ne reconnaît pas seul (ADR 0039). */
-  readonly decisions?: ImportDecisions;
+  readonly decisions?: ImportDecisions | undefined;
 }
 
 export interface ImportEditionOutcome {
