@@ -1,4 +1,4 @@
-import type { Division, MatchEntry } from '@arrakis/backend/domain';
+import type { Division, MatchEntry, NumberedRow } from '@arrakis/backend/domain';
 import type { AdminEdition } from '../features/admin/admin.ts';
 import type { EditionDetails, EditionForm } from '../features/admin/edition-form.ts';
 import type { AdminProfile } from '../features/admin/profiles.ts';
@@ -56,15 +56,9 @@ export interface AdminSource {
   /** Saisit un match en brouillon ; rend son numéro dans l'édition. */
   recordMatch(editionId: string, version: number, match: MatchEntry): Promise<number>;
   /** Importe les lignes du fichier Excel d'une édition sans match ; rend le nombre de matchs écrits. */
-  importEdition(editionId: string, version: number, rows: readonly SheetLine[]): Promise<number>;
+  importEdition(editionId: string, version: number, rows: readonly NumberedRow[]): Promise<number>;
   /** Archive une édition sans match. */
   archiveEdition(editionId: string, version: number): Promise<void>;
-}
-
-/** Une ligne de la feuille d'un fichier Excel, et son numéro dans le fichier. */
-export interface SheetLine {
-  readonly line: number;
-  readonly cells: Readonly<Record<string, string | number | boolean | null>>;
 }
 
 /** Une source chargée au premier usage, avec la connexion (ADR 0024). */

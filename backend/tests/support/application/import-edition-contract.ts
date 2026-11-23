@@ -5,9 +5,8 @@ import {
   executeCommand,
   importEdition,
   recordMatch,
-  type ImportedRow,
 } from '#application/index.ts';
-import type { RoleLine } from '#domain/index.ts';
+import type { NumberedRow, RoleLine } from '#domain/index.ts';
 import type { CommandHarness } from './command-harness.ts';
 import { LEAGUE_ID, OFF_SEASON_ID, SEASON_ID } from './fixture.ts';
 
@@ -22,7 +21,7 @@ const ROLES = ['TOP', 'JGL', 'MID', 'ADC', 'SUP'] as const;
 function sheetMatch(
   matchNumber: number,
   { teams = ['Noxus', 'Ionia'], names = (i: number) => `Joueur ${String(i)}` } = {},
-): ImportedRow[] {
+): NumberedRow[] {
   return ROLES.map((role, i) => ({
     line: 3 + (matchNumber - 1) * 5 + i,
     cells: {
@@ -99,14 +98,13 @@ export function describeImportEditionContract(name: string, harness: () => Comma
       });
 
       expect(imported.version).toBe(3);
-      expect(imported.matchIds).toHaveLength(2);
-      const [first] = imported.matchIds;
-      const fromFile = await recordedMatch(organizationId, first ?? '');
+      const [first, second] = await Promise.all(
+        imported.matchIds.map((matchId) => recordedMatch(organizationId, matchId)),
+      );
       const byHand = await recordedMatch(organizationId, typed.matchId);
-      expect(fromFile).toMatchObject({ editionId: OFF_SEASON_ID, matchNumber: 1, draft: true });
-      expect(fromFile?.winnerTeam).toBe('Ionia');
-      expect(fromFile?.durationSeconds).toBe(byHand?.durationSeconds);
-      expect(fromFile?.performances).toEqual(byHand?.performances);
+      // Mêmes faits qu'une saisie : seuls l'édition et le numéro diffèrent.
+      expect(first).toEqual({ ...byHand, editionId: OFF_SEASON_ID, matchNumber: 1 });
+      expect(second).toEqual({ ...byHand, editionId: OFF_SEASON_ID, matchNumber: 2 });
     });
 
     it('un pseudo écrit avec le tag d’une équipe connue est reconnu', async () => {

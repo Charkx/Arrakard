@@ -1,25 +1,19 @@
 import {
   analyzeImport,
-  parseStatsSheet,
+  parseNumberedStatsSheet,
   planImport,
   plannedMatchEntries,
   teamsAreRosters,
-  type SheetRow,
+  type NumberedRow,
 } from '../../domain/index.ts';
 import { CommandRejected, type Command } from '../command.ts';
 import { checkEntries, editionTakingMatches } from '../match-recording.ts';
-
-/** Une ligne de la feuille LIGUE1_STATS, et son numéro dans le fichier Excel. */
-export interface ImportedRow {
-  readonly line: number;
-  readonly cells: SheetRow;
-}
 
 export interface ImportEditionInput {
   readonly editionId: string;
   readonly version: number;
   /** Les lignes de la feuille, telles que le navigateur les a lues du fichier. */
-  readonly rows: readonly ImportedRow[];
+  readonly rows: readonly NumberedRow[];
 }
 
 export interface ImportEditionOutcome {
@@ -51,10 +45,7 @@ export const importEdition: Command<ImportEditionInput, ImportEditionOutcome> = 
       );
     }
 
-    const parsed = parseStatsSheet(
-      rows.map((row) => row.cells),
-      rows.map((row) => row.line),
-    );
+    const parsed = parseNumberedStatsSheet(rows);
     if (!parsed.ok) throw refuse([parsed.error]);
     const { sheet } = parsed;
     if (sheet.warnings.length > 0) throw refuse(sheet.warnings);

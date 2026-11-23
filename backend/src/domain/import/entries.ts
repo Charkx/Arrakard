@@ -2,7 +2,7 @@ import type { MatchEntry, RoleLine, Side } from '../match/entry.ts';
 import { ROLES } from '../performance.ts';
 import type { PlannedMatch, PlannedPerformance } from './plan.ts';
 
-/** La feuille d'un match importé, et son numéro dans le fichier. */
+/** La feuille de match d'un match importé, et son numéro dans le fichier. */
 export interface PlannedEntry {
   readonly matchNumber: number;
   readonly entry: MatchEntry;
@@ -13,10 +13,11 @@ export type PlannedEntriesResult =
   | { readonly ok: false; readonly errors: readonly string[] };
 
 /**
- * Fait des matchs d'un import les feuilles d'une saisie à la main (ADR 0022) :
+ * Fait des matchs d'un import des feuilles de match, comme une saisie à la main
+ * (ADR 0022) :
  * l'import et la saisie écrivent alors les mêmes faits, par la même écriture.
  * Le côté A est la première équipe de chaque ligne, le côté B la seconde.
- * Les problèmes de la feuille elle-même (rôles, joueurs, champions) se
+ * Les problèmes de la feuille de match (rôles, joueurs, champions) se
  * vérifient ensuite comme ceux d'une saisie (`matchEntryProblems`).
  */
 export function plannedMatchEntries(matches: readonly PlannedMatch[]): PlannedEntriesResult {

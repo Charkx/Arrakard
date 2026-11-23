@@ -92,7 +92,7 @@ describe('planImport', () => {
   describe('pseudos non reconnus', () => {
     const sheet = oneLineSheet(['ARK', 'ARK Newbie'], ['BLB', 'BLB Zed']);
 
-    it('exigent une décision, qui nomme le joueur et ses deux équipes', () => {
+    it('exigent une décision, qui dit pourquoi le pseudo n’est pas reconnu', () => {
       expect(plan(sheet)).toEqual({
         ok: false,
         errors: [
@@ -171,7 +171,7 @@ describe('planImport', () => {
     const sheet = oneLineSheet(['ARK', 'ARK Meta'], ['NKR', 'NKR Baited']);
     const names = { baited: { kind: 'new' } } as const;
 
-    it('exigent une décision, qui nomme le joueur et ses deux équipes', () => {
+    it('exigent une décision, qui dit que le tag est inconnu', () => {
       expect(plan(sheet, { ...noDecision, names })).toEqual({
         ok: false,
         errors: [

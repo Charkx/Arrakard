@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { utils, write } from 'xlsx';
-import { parseStatsSheet } from '@arrakis/backend/domain';
+import { parseNumberedStatsSheet } from '@arrakis/backend/domain';
 import { MissingSheet, readStatsSheet } from '#src/features/admin/excel.ts';
 import { aWorkbook } from '#support/workbook.ts';
 
@@ -23,13 +23,10 @@ describe('readStatsSheet', () => {
   it('donne au serveur des lignes que le domaine sait lire : un match, ses deux côtés', async () => {
     const rows = await readStatsSheet(aWorkbook());
 
-    const parsed = parseStatsSheet(
-      rows.map((r) => r.cells),
-      rows.map((r) => r.line),
-    );
+    const parsed = parseNumberedStatsSheet(rows);
 
     if (!parsed.ok) throw new Error(parsed.error);
-    expect(parsed.sheet.warnings).toEqual(['Match 1 : 2 ligne(s) au lieu de 5.']);
+    expect(parsed.sheet.warnings).toEqual(['Match 1 (lignes 3, 5) : 2 ligne(s) au lieu de 5.']);
     const [match] = parsed.sheet.matches;
     expect(match).toMatchObject({ matchNumber: 1, winnerTeam: 'Ionia', durationSeconds: 1930 });
     expect(match?.lines[1]?.sides.map((s) => [s.team, s.rawName, s.result, s.kills])).toEqual([

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { parseDuration, parseStatsSheet, type SheetRow } from '#domain/import/stats-sheet.ts';
+import {
+  parseDuration,
+  parseNumberedStatsSheet,
+  parseStatsSheet,
+  type SheetRow,
+} from '#domain/import/stats-sheet.ts';
 
 /** Une ligne de rôle de la feuille LIGUE1_STATS (côté A, puis côté B en « .1 »). */
 function aSheetRow(overrides: Partial<Record<string, unknown>> = {}): SheetRow {
@@ -177,14 +182,12 @@ describe('parseStatsSheet', () => {
     expect(result.sheet.matches[0]?.lines).toHaveLength(4);
     expect(result.sheet.warnings).toEqual([
       'Ligne 6 (match 1) : poste « COACH » inconnu, ligne ignorée.',
-      'Match 1 : 4 ligne(s) au lieu de 5.',
+      'Match 1 (lignes 2, 3, 4, 5, 6) : 4 ligne(s) au lieu de 5.',
     ]);
   });
 
   it('nomme les lignes avec les numéros donnés, ceux du fichier Excel', () => {
-    const rows = [aSheetRow({ POSTE: 'COACH' })];
-
-    const result = parseStatsSheet(rows, [17]);
+    const result = parseNumberedStatsSheet([{ line: 17, cells: aSheetRow({ POSTE: 'COACH' }) }]);
 
     if (!result.ok) throw new Error(result.error);
     expect(result.sheet.warnings[0]).toBe(

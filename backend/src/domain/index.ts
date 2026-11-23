@@ -30,8 +30,9 @@ export type { SeasonMvpEvent, SeasonMvpRow } from './standings/season-mvp.ts';
 export { normalizeAlias, similarity, splitTeamTag } from './identity/names.ts';
 export { resolvePlayer, SUGGESTION_THRESHOLD } from './identity/resolve.ts';
 export type { DirectoryPlayer, Resolution } from './identity/resolve.ts';
-export { parseDuration, parseStatsSheet } from './import/stats-sheet.ts';
+export { parseDuration, parseNumberedStatsSheet, parseStatsSheet } from './import/stats-sheet.ts';
 export type {
+  NumberedRow,
   SheetLine,
   SheetMatch,
   SheetParseResult,
@@ -47,7 +48,7 @@ export type {
   ImportPlayer,
   RosterStatus,
 } from './import/analyze.ts';
-export { nameOf, teamsAreRosters } from './import/analyze.ts';
+export { nameOf } from './import/analyze.ts';
 export { planImport } from './import/plan.ts';
 export type {
   ImportDecisions,
@@ -93,7 +94,7 @@ export type {
   MergePlanResult,
   MergePlayer,
 } from './identity/merge.ts';
-export { editionStatus, isExternal } from './edition/status.ts';
+export { editionStatus, isExternal, teamsAreRosters } from './edition/status.ts';
 export type { EditionStatus, EditionStatusFacts } from './edition/status.ts';
 export { matchEntryFacts, matchEntryProblems } from './match/entry.ts';
 export type { RoleLine, EntrySide, MatchEntry, MatchEntryProblem, Side } from './match/entry.ts';

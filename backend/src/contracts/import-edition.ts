@@ -8,7 +8,7 @@ const cell = z.union([z.string().max(200), z.number(), z.boolean(), z.null()]);
  * L'entrée d'« importer un fichier Excel » : les lignes de la feuille, chacune
  * avec son numéro dans le fichier. La forme seulement, avec des bornes contre
  * un fichier démesuré ; ce que veulent dire les colonnes se lit dans le
- * domaine (`parseStatsSheet`).
+ * domaine (`parseNumberedStatsSheet`).
  */
 export const importEditionRequest = editionAtVersion.extend({
   rows: z

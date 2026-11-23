@@ -5,11 +5,11 @@
 
 ## Contexte
 
-Les ligues et la plupart des soirées ont un fichier Excel, dont la feuille
-`LIGUE1_STATS` donne une ligne par rôle, équipe A puis équipe B. L'admin doit
+Les ligues et la plupart des soirées ont un fichier Excel, dont la feuille de
+statistiques `LIGUE1_STATS` donne une ligne par rôle, équipe A puis équipe B. L'admin doit
 pouvoir l'importer (cas d'usage A1, ticket #45), et l'ADR 0022 veut que
 l'import et la saisie à la main (ADR 0037) produisent les mêmes faits. Le
-domaine savait déjà lire la feuille (`parseStatsSheet`), rattacher les pseudos
+domaine savait déjà lire la feuille de statistiques (`parseStatsSheet`), rattacher les pseudos
 (`analyzeImport`) et appliquer les décisions de l'admin (`planImport`). Charly
 a approuvé SheetJS 0.20.3, pris sur le site de SheetJS (la version de npm,
 0.18.5, a des failles connues), et un faux fichier pour les tests.
@@ -21,11 +21,12 @@ SheetJS, comme la v1 : la feuille `LIGUE1_STATS` (ou la troisième), sans sa
 ligne de totaux. Il envoie les lignes brutes, chacune avec son numéro dans le
 fichier. SheetJS est chargé au premier import seulement, comme la connexion
 (ADR 0024) ; le contrôle du poids le vérifie. Le serveur interprète les
-colonnes : `importEdition` passe la feuille au domaine.
+colonnes : `importEdition` passe les lignes au domaine
+(`parseNumberedStatsSheet`).
 
 **L'import écrit par le même chemin que la saisie.** Chaque match du plan
-devient la feuille d'une saisie (`plannedMatchEntries`) : côté A, côté B, le
-vainqueur étant le côté de l'équipe gagnante. Les feuilles passent ensuite
+devient une feuille de match (`MatchEntry`, `plannedMatchEntries`), comme une saisie : côté A, côté B, le
+vainqueur étant le côté de l'équipe gagnante. Ces feuilles de match passent ensuite
 par les mêmes vérifications (`checkEntries`, donc `matchEntryProblems`) et la
 même écriture (`recordDraftMatch`) que `recordMatch`. Les matchs sont des
 brouillons (ADR 0012), numérotés dans l'ordre du fichier.
@@ -34,7 +35,9 @@ brouillons (ADR 0012), numérotés dans l'ordre du fichier.
 Un poste inconnu, une statistique qui n'est pas un nombre, un joueur ou un
 champion manquant : la v1 avertissait et continuait, l'import les refuse
 désormais, une ligne du fichier par ligne du message. Rien n'est écrit tant
-qu'une seule feuille est refusée.
+qu'une seule feuille de match est refusée. Le refus a la raison `conflict`,
+comme une saisie incohérente : `RejectionReason` n'a pas de raison « invalide »,
+et en ajouter une ne changerait rien pour l'admin, qui lit le message.
 
 **Le cas simple seulement.** Tout pseudo doit être reconnu sans hésitation,
 et, dans une ligue ou un tournoi, toute équipe connue et aucun transfert
@@ -52,9 +55,11 @@ même.
   garde la décision puisqu'il interprète les lignes.
 - **Avertir et importer quand même, comme la v1** : un match incomplet
   entrerait dans les faits sans que personne ne l'ait voulu.
-- **Une commande `recordMatches` pour la saisie et l'import** : la saisie
-  n'envoie qu'un match ; partager les vérifications et l'écriture suffit à
-  garantir les mêmes faits.
+- **Une seule commande `recordMatches` pour la saisie et l'import**, comme le
+  ticket le disait (« la même commande de création de matchs ») : la saisie
+  n'envoie qu'un match, et l'import a ses propres refus (fichier, pseudos).
+  Partager les vérifications et l'écriture garantit les mêmes faits ; un test
+  le vérifie en comparant un match importé et le même match saisi.
 
 ## Conséquences
 

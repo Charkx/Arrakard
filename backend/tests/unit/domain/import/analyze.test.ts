@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeImport, teamsAreRosters, type ImportPlayer } from '#domain/import/analyze.ts';
+import { analyzeImport, type ImportPlayer } from '#domain/import/analyze.ts';
 import type { SheetMatch, SheetSide, StatsSheet } from '#domain/import/stats-sheet.ts';
 
 const side = (team: string, rawName: string): SheetSide => ({
@@ -170,17 +170,5 @@ describe('analyzeImport', () => {
     ]);
     expect(analysis.unknownTeams).toEqual([]);
     expect(analysis.transfers).toEqual([]);
-  });
-});
-
-describe('teamsAreRosters', () => {
-  it.each([
-    ['league_div1', true],
-    ['league_div2', true],
-    ['tournament', true],
-    ['inhouse', false],
-    ['lan', false],
-  ] as const)('les équipes d’une édition %s sont des rosters : %s', (type, rosters) => {
-    expect(teamsAreRosters(type)).toBe(rosters);
   });
 });

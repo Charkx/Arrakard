@@ -76,36 +76,40 @@ export function parseDuration(raw: number): number {
   return minutes * 60 + Math.round((raw - minutes) * 100);
 }
 
-/** Une ligne de la feuille et son numéro dans le fichier Excel. */
-interface NumberedRow {
-  readonly row: SheetRow;
-  readonly lineNumber: number;
+/** Une ligne brute de la feuille, et son numéro dans le fichier Excel. */
+export interface NumberedRow {
+  readonly line: number;
+  readonly cells: SheetRow;
+}
+
+/**
+ * Lit la feuille LIGUE1_STATS, l'en-tête en ligne 1 et les données à la suite,
+ * sans trou. Voir `parseNumberedStatsSheet`.
+ */
+export function parseStatsSheet(rows: readonly SheetRow[]): SheetParseResult {
+  return parseNumberedStatsSheet(rows.map((cells, i) => ({ line: i + 2, cells })));
 }
 
 /**
  * Lit la feuille LIGUE1_STATS : une ligne par rôle, équipe A puis équipe B
- * (« .1 » ou « _1 »). `lineNumbers` donne le numéro de chaque ligne dans le
- * fichier Excel, que les avertissements citent ; par défaut, l'en-tête est la
- * ligne 1 et les données suivent sans trou.
+ * (« .1 » ou « _1 »). Les avertissements citent le numéro de chaque ligne dans
+ * le fichier Excel.
  */
-export function parseStatsSheet(
-  rows: readonly SheetRow[],
-  lineNumbers: readonly number[] = rows.map((_, i) => i + 2),
-): SheetParseResult {
+export function parseNumberedStatsSheet(numbered: readonly NumberedRow[]): SheetParseResult {
+  const rows = numbered.map((row) => row.cells);
   const headerError = validateHeader(rows);
   if (headerError) return { ok: false, error: headerError };
 
   const warnings: string[] = [];
   const groups = new Map<number, [NumberedRow, ...NumberedRow[]]>();
-  rows.forEach((row, i) => {
-    const matchNumber = numeric(row.MATCH);
-    const isTotalsRow = !matchNumber || text(row['NOM DU JOUEUR']) === '';
-    if (isTotalsRow) return;
-    const numbered = { row, lineNumber: lineNumbers[i] ?? i + 2 };
+  for (const row of numbered) {
+    const matchNumber = numeric(row.cells.MATCH);
+    const isTotalsRow = !matchNumber || text(row.cells['NOM DU JOUEUR']) === '';
+    if (isTotalsRow) continue;
     const group = groups.get(matchNumber);
-    if (group) group.push(numbered);
-    else groups.set(matchNumber, [numbered]);
-  });
+    if (group) group.push(row);
+    else groups.set(matchNumber, [row]);
+  }
 
   if (groups.size === 0) {
     return {
@@ -141,9 +145,9 @@ function parseMatch(
   warnings: string[],
 ): SheetMatch {
   const lines: SheetLine[] = [];
-  for (const { row, lineNumber } of rows) {
+  for (const { cells: row, line } of rows) {
     const warn = (message: string) => {
-      warnings.push(`Ligne ${lineNumber} (match ${matchNumber}) : ${message}`);
+      warnings.push(`Ligne ${line} (match ${matchNumber}) : ${message}`);
     };
     const rawRole = text(row.POSTE);
     const role = ROLE_SYNONYMS[rawRole.toUpperCase()];
@@ -154,12 +158,13 @@ function parseMatch(
     lines.push({ role, sides: [side(row, 'A', warn), side(row, 'B', warn)] });
   }
   if (lines.length !== ROLES.length) {
-    warnings.push(`Match ${matchNumber} : ${lines.length} ligne(s) au lieu de 5.`);
+    const at = rows.map((row) => row.line).join(', ');
+    warnings.push(`Match ${matchNumber} (lignes ${at}) : ${lines.length} ligne(s) au lieu de 5.`);
   }
   lines.sort((a, b) => ROLES.indexOf(a.role) - ROLES.indexOf(b.role));
 
   // Les infos de match sont portées par la première ligne du groupe.
-  const first = rows[0].row;
+  const first = rows[0].cells;
   return {
     matchNumber,
     winnerTeam: text(first.GAGNANT),

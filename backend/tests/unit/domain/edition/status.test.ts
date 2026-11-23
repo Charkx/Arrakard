@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { editionStatus, type EditionStatusFacts } from '#domain/edition/status.ts';
+import { editionStatus, teamsAreRosters, type EditionStatusFacts } from '#domain/edition/status.ts';
 
 const TODAY = '2026-11-22';
 
@@ -81,5 +81,17 @@ describe('editionStatus (ADR 0013)', () => {
     expect(editionStatus(league({ closedAt }), TODAY)).toBe('completed');
     expect(editionStatus(league({ closedAt, date: '2026-12-01' }), TODAY)).toBe('completed');
     expect(editionStatus(league({ closedAt, date: '2026-09-01' }), TODAY)).toBe('completed');
+  });
+});
+
+describe('teamsAreRosters', () => {
+  it.each([
+    ['league_div1', true],
+    ['league_div2', true],
+    ['tournament', true],
+    ['inhouse', false],
+    ['lan', false],
+  ] as const)('les équipes d’une édition %s sont des rosters : %s', (type, rosters) => {
+    expect(teamsAreRosters(type)).toBe(rosters);
   });
 });

@@ -1,4 +1,4 @@
-import type { SheetLine } from '../../data/admin-source.ts';
+import type { NumberedRow } from '@arrakis/backend/domain';
 
 /** Le fichier ne contient pas la feuille des statistiques. */
 export class MissingSheet extends Error {
@@ -14,7 +14,7 @@ export class MissingSheet extends Error {
  * seulement : le serveur interprète les colonnes (ADR 0038). SheetJS n'est
  * chargé qu'au premier import, comme la connexion (ADR 0024).
  */
-export async function readStatsSheet(file: ArrayBuffer): Promise<SheetLine[]> {
+export async function readStatsSheet(file: ArrayBuffer): Promise<NumberedRow[]> {
   const { read, utils } = await import('xlsx');
   const workbook = read(file, { type: 'array' });
   const name =

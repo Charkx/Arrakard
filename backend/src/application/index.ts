@@ -17,11 +17,7 @@ export type { EditionDetails, EditionRepository, EditionState, Publication } fro
 export { recordMatch } from './commands/record-match.ts';
 export type { RecordMatchInput, RecordMatchOutcome } from './commands/record-match.ts';
 export { importEdition } from './commands/import-edition.ts';
-export type {
-  ImportedRow,
-  ImportEditionInput,
-  ImportEditionOutcome,
-} from './commands/import-edition.ts';
+export type { ImportEditionInput, ImportEditionOutcome } from './commands/import-edition.ts';
 export { createEdition } from './commands/create-edition.ts';
 export type { CreateEditionInput, CreateEditionOutcome } from './commands/create-edition.ts';
 export { updateEdition } from './commands/update-edition.ts';
