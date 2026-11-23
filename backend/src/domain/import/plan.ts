@@ -84,9 +84,16 @@ export function planImport(
     [...refs.values()].flatMap((r) => (r.kind === 'existing' ? [r.playerId] : [])),
   );
   const transfers = analysis.transfers.filter((t) => stillMatched.has(t.playerId));
-  for (const { playerId } of transfers) {
+  for (const { playerId, fromTeamTag, toTeamTag } of transfers) {
     if (decisions.transfers[playerId] === undefined) {
-      errors.push(`Décision manquante pour le transfert de « ${playerId} ».`);
+      // Un transfert vient toujours d'un nom rattaché à ce joueur (`analyzeImport`).
+      const nickname =
+        analysis.names.find(
+          ({ resolution }) => resolution.kind === 'matched' && resolution.playerId === playerId,
+        )?.nickname ?? playerId;
+      errors.push(
+        `Décision manquante pour le transfert de « ${nickname} » (${fromTeamTag} → ${toTeamTag}).`,
+      );
     }
   }
 

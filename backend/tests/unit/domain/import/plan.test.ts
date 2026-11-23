@@ -92,7 +92,7 @@ describe('planImport', () => {
   describe('pseudos non reconnus', () => {
     const sheet = oneLineSheet(['ARK', 'ARK Newbie'], ['BLB', 'BLB Zed']);
 
-    it('exigent une décision', () => {
+    it('exigent une décision, qui nomme le joueur et ses deux équipes', () => {
       expect(plan(sheet)).toEqual({
         ok: false,
         errors: ['Décision manquante pour le joueur « Newbie ».'],
@@ -166,7 +166,7 @@ describe('planImport', () => {
     const sheet = oneLineSheet(['ARK', 'ARK Meta'], ['NKR', 'NKR Baited']);
     const names = { baited: { kind: 'new' } } as const;
 
-    it('exigent une décision', () => {
+    it('exigent une décision, qui nomme le joueur et ses deux équipes', () => {
       expect(plan(sheet, { ...noDecision, names })).toEqual({
         ok: false,
         errors: ['Décision manquante pour l’équipe « NKR ».'],
@@ -197,12 +197,12 @@ describe('planImport', () => {
   describe('transferts', () => {
     const sheet = oneLineSheet(['BLB', 'BLB Meta'], ['ARK', 'ARK Zed']);
 
-    it('exigent une décision', () => {
+    it('exigent une décision, qui nomme le joueur et ses deux équipes', () => {
       expect(plan(sheet)).toEqual({
         ok: false,
         errors: [
-          'Décision manquante pour le transfert de « meta ».',
-          'Décision manquante pour le transfert de « zed ».',
+          'Décision manquante pour le transfert de « Meta » (ARK → BLB).',
+          'Décision manquante pour le transfert de « Zed » (BLB → ARK).',
         ],
       });
     });

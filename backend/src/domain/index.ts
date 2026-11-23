@@ -58,6 +58,8 @@ export type {
   PlannedPerformance,
   PlayerRef,
 } from './import/plan.ts';
+export { plannedMatchEntries } from './import/entries.ts';
+export type { PlannedEntriesResult } from './import/entries.ts';
 export type {
   EditionFact,
   EditionType,
