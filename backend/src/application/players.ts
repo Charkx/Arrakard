@@ -28,6 +28,10 @@ export interface PlayerRepository {
    * équipes, archivées comprises.
    */
   importDirectory(organizationId: string): Promise<ImportDirectory>;
+  /** Crée un joueur de ce pseudo, sans alias ni équipe, et rend son identifiant. */
+  create(organizationId: string, nickname: string): Promise<string>;
+  /** Ajoute cette graphie, déjà normalisée, aux alias du joueur (ADR 0004). */
+  addAlias(organizationId: string, playerId: string, alias: string): Promise<void>;
   /** Le profil lié à ce compte Discord, s'il y en a un, fusionné ou non (contrainte d'unicité). */
   discordOwner(organizationId: string, discordUserId: string): Promise<string | undefined>;
   /** Lie la carte à ce compte Discord, ou la délie (null). */
@@ -40,6 +44,15 @@ export interface PlayerRepository {
 
 /** Les joueurs et les équipes connus, tels que l'import les voit. */
 export interface ImportDirectory {
+  /** Les joueurs non fusionnés ; leurs alias commencent par leur pseudo. */
   readonly players: readonly ImportPlayer[];
-  readonly teamTags: readonly string[];
+  /** Toutes les équipes, archivées comprises. */
+  readonly teams: readonly DirectoryTeam[];
+}
+
+/** Une équipe, telle que l'import la voit. */
+export interface DirectoryTeam {
+  readonly id: string;
+  readonly tag: string;
+  readonly archived: boolean;
 }

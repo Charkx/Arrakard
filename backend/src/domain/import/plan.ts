@@ -6,11 +6,56 @@ import type { StatsSheet } from './stats-sheet.ts';
 export type NameDecision =
   { readonly kind: 'existing'; readonly playerId: string } | { readonly kind: 'new' };
 
+/** Une équipe inconnue : la créer, l'ignorer, ou la relier à une équipe connue (un tag mal écrit). */
+export type TeamDecision = 'create' | 'ignore' | { readonly linkTo: string };
+
 /** Choix de l'admin, indexés par clé de nom, tag d'équipe et identifiant de joueur. */
 export interface ImportDecisions {
   readonly names: Readonly<Record<string, NameDecision>>;
-  readonly unknownTeams: Readonly<Record<string, 'create' | 'ignore'>>;
+  readonly unknownTeams: Readonly<Record<string, TeamDecision>>;
   readonly transfers: Readonly<Record<string, 'apply' | 'ignore'>>;
+}
+
+/** Les décisions d'un import qui n'a encore rien décidé. */
+export const NO_DECISION: ImportDecisions = { names: {}, unknownTeams: {}, transfers: {} };
+
+/**
+ * L'équipe où vont les joueurs d'une équipe de la feuille : elle-même si elle
+ * est connue ou créée, celle à laquelle l'admin l'a reliée, ou aucune (null)
+ * si elle est ignorée ou pas encore décidée.
+ */
+function destinationOf(
+  teamTag: string,
+  unknownTeams: ImportDecisions['unknownTeams'],
+  knownTeamTags: readonly string[],
+): string | null {
+  if (knownTeamTags.includes(teamTag)) return teamTag;
+  const decision = unknownTeams[teamTag];
+  if (decision === 'create') return teamTag;
+  if (decision === undefined || decision === 'ignore') return null;
+  return decision.linkTo;
+}
+
+/**
+ * Les transferts que l'admin doit trancher, selon ce qu'il a décidé des
+ * équipes inconnues : vers l'équipe créée ou reliée ; aucun vers une équipe
+ * ignorée ou pas encore décidée, ni vers l'équipe où le joueur est déjà.
+ */
+export function transfersToDecide(
+  analysis: ImportAnalysis,
+  decisions: ImportDecisions,
+  context: ImportContext,
+): ImportAnalysis['transfers'] {
+  return analysis.transfers.flatMap((transfer) => {
+    const toTeamTag = destinationOf(
+      transfer.toTeamTag,
+      decisions.unknownTeams,
+      context.knownTeamTags,
+    );
+    return toTeamTag === null || toTeamTag === transfer.fromTeamTag
+      ? []
+      : [{ ...transfer, toTeamTag }];
+  });
 }
 
 export type PlayerRef =
@@ -71,10 +116,13 @@ export function planImport(
 
   // 2. Équipes inconnues.
   for (const { teamTag } of analysis.unknownTeams) {
-    if (decisions.unknownTeams[teamTag] === undefined) {
+    const decision = decisions.unknownTeams[teamTag];
+    if (decision === undefined) {
       errors.push(
         `Décision manquante pour l’équipe « ${teamTag} » : aucune équipe connue ne porte ce tag.`,
       );
+    } else if (typeof decision === 'object' && !context.knownTeamTags.includes(decision.linkTo)) {
+      errors.push(`L’équipe « ${decision.linkTo} » n’existe pas (pour « ${teamTag} »).`);
     }
   }
   const newTeams = analysis.unknownTeams
@@ -85,7 +133,9 @@ export function planImport(
   const stillMatched = new Set(
     [...refs.values()].flatMap((r) => (r.kind === 'existing' ? [r.playerId] : [])),
   );
-  const transfers = analysis.transfers.filter((t) => stillMatched.has(t.playerId));
+  const transfers = transfersToDecide(analysis, decisions, context).filter((t) =>
+    stillMatched.has(t.playerId),
+  );
   for (const { playerId, fromTeamTag, toTeamTag } of transfers) {
     if (decisions.transfers[playerId] === undefined) {
       // Un transfert vient toujours d'un nom rattaché à ce joueur (`analyzeImport`).
@@ -102,9 +152,7 @@ export function planImport(
   if (errors.length > 0) return { ok: false, errors };
 
   const teamOfNewPlayer = (teamTag: string | null) =>
-    teamTag !== null && (context.knownTeamTags.includes(teamTag) || newTeams.includes(teamTag))
-      ? teamTag
-      : null;
+    teamTag === null ? null : destinationOf(teamTag, decisions.unknownTeams, context.knownTeamTags);
 
   return {
     ok: true,

@@ -1,6 +1,6 @@
 # 0038 — Importer le fichier Excel d'une édition
 
-- **Statut** : Accepté
+- **Statut** : Accepté, complété par [0039](0039-decider-a-l-import.md)
 - **Date** : 2026-11-23
 
 ## Contexte
@@ -15,6 +15,10 @@ a approuvé SheetJS 0.20.3, pris sur le site de SheetJS (la version de npm,
 0.18.5, a des failles connues), et un faux fichier pour les tests.
 
 ## Décision
+
+> **Complété par [0039](0039-decider-a-l-import.md)** : l'admin décide des
+> pseudos, des équipes et des transferts non reconnus, et un fichier ne
+> s'importe qu'une fois.
 
 **Le navigateur lit, le serveur décide.** Le site lit le fichier avec
 SheetJS, comme la v1 : la feuille `LIGUE1_STATS` (ou la troisième), sans sa

@@ -329,11 +329,84 @@ export function supabaseSession(
       };
       return outcome.matchNumber;
     },
-    async importEdition(editionId, version, rows) {
-      const outcome = (await command('import-edition', { editionId, version, rows })) as {
-        matchIds: readonly string[];
+    async importDirectory() {
+      // Les joueurs, leurs alias et leurs équipes sont publics (ADR 0039).
+      const db = rest(await accessToken());
+      const organization = await organizationId(db, organizationSlug);
+      const [players, teams] = await Promise.all([
+        db
+          .from('import_directory')
+          .select('player_id, nickname, archived, aliases, team_tag, status')
+          .eq('organization_id', organization)
+          .order('nickname')
+          .overrideTypes<
+            {
+              player_id: string;
+              nickname: string;
+              archived: boolean;
+              aliases: string[];
+              team_tag: string | null;
+              status: RosterStatus | null;
+            }[],
+            { merge: false }
+          >(),
+        db
+          .from('teams')
+          .select('tag')
+          .eq('organization_id', organization)
+          .overrideTypes<{ tag: string }[], { merge: false }>(),
+      ]);
+      if (players.error) throw players.error;
+      if (teams.error) throw teams.error;
+      return {
+        players: players.data.map((p) => ({
+          playerId: p.player_id,
+          nickname: p.nickname,
+          aliases: p.aliases,
+          teamTag: p.team_tag,
+          archived: p.archived,
+          status: p.status,
+        })),
+        teamTags: teams.data.map((t) => t.tag),
       };
-      return outcome.matchIds.length;
+    },
+    async importedIn(rows) {
+      // La même empreinte que le serveur : SHA-256 des lignes lues, sérialisées (ADR 0039).
+      const digest = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(JSON.stringify(rows)),
+      );
+      const fingerprint = [...new Uint8Array(digest)]
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('');
+      const db = rest(await accessToken());
+      const { data, error } = await db
+        .from('editions')
+        .select('name')
+        .eq('organization_id', await organizationId(db, organizationSlug))
+        .eq('source_file_hash', fingerprint)
+        .maybeSingle<{ name: string }>();
+      if (error) throw error;
+      return data?.name ?? null;
+    },
+    async importEdition(editionId, version, rows, decisions) {
+      const outcome = (await command('import-edition', {
+        editionId,
+        version,
+        rows,
+        decisions,
+      })) as {
+        matchIds: readonly string[];
+        createdPlayerIds: readonly string[];
+        createdTeamIds: readonly string[];
+        transferredPlayerIds: readonly string[];
+      };
+      return {
+        matches: outcome.matchIds.length,
+        createdPlayers: outcome.createdPlayerIds.length,
+        createdTeams: outcome.createdTeamIds.length,
+        transfers: outcome.transferredPlayerIds.length,
+      };
     },
     async archiveEdition(editionId, version) {
       await command('archive-edition', { editionId, version });

@@ -1,4 +1,5 @@
-import type { Division, MatchEntry, NumberedRow } from '@arrakis/backend/domain';
+import type { Division, ImportDecisions, MatchEntry, NumberedRow } from '@arrakis/backend/domain';
+import type { ImportDirectoryView } from '../features/admin/import-review.ts';
 import type { AdminEdition } from '../features/admin/admin.ts';
 import type { EditionDetails, EditionForm } from '../features/admin/edition-form.ts';
 import type { AdminProfile } from '../features/admin/profiles.ts';
@@ -55,8 +56,17 @@ export interface AdminSource {
   closeEdition(editionId: string, version: number): Promise<void>;
   /** Saisit un match en brouillon ; rend son numéro dans l'édition. */
   recordMatch(editionId: string, version: number, match: MatchEntry): Promise<number>;
-  /** Importe les lignes du fichier Excel d'une édition sans match ; rend le nombre de matchs écrits. */
-  importEdition(editionId: string, version: number, rows: readonly NumberedRow[]): Promise<number>;
+  /** Les joueurs et les équipes connus, pour montrer ce qu'un import devra décider. */
+  importDirectory(): Promise<ImportDirectoryView>;
+  /** Le nom de l'édition où ces lignes ont déjà été importées, ou null (ADR 0039). */
+  importedIn(rows: readonly NumberedRow[]): Promise<string | null>;
+  /** Importe les lignes du fichier Excel d'une édition sans match, avec les décisions de l'admin. */
+  importEdition(
+    editionId: string,
+    version: number,
+    rows: readonly NumberedRow[],
+    decisions: ImportDecisions,
+  ): Promise<ImportSummary>;
   /** Archive une édition sans match. */
   archiveEdition(editionId: string, version: number): Promise<void>;
 }
@@ -85,9 +95,19 @@ export function lazyAdminSource(load: () => Promise<AdminSource>): AdminSource {
     closeEdition: async (editionId, version) => (await source()).closeEdition(editionId, version),
     recordMatch: async (editionId, version, match) =>
       (await source()).recordMatch(editionId, version, match),
-    importEdition: async (editionId, version, rows) =>
-      (await source()).importEdition(editionId, version, rows),
+    importDirectory: async () => (await source()).importDirectory(),
+    importedIn: async (rows) => (await source()).importedIn(rows),
+    importEdition: async (editionId, version, rows, decisions) =>
+      (await source()).importEdition(editionId, version, rows, decisions),
     archiveEdition: async (editionId, version) =>
       (await source()).archiveEdition(editionId, version),
   };
+}
+
+/** Ce qu'un import a écrit : des matchs en brouillon, des joueurs, des équipes, des transferts. */
+export interface ImportSummary {
+  readonly matches: number;
+  readonly createdPlayers: number;
+  readonly createdTeams: number;
+  readonly transfers: number;
 }

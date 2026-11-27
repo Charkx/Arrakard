@@ -123,6 +123,19 @@ function postgresEditions(tx: TransactionSql): EditionRepository {
         where organization_id = ${organizationId} and id = ${editionId}`;
       return newVersion;
     },
+    async importOf(organizationId, readRows) {
+      const [found] = await tx<{ id: string; name: string }[]>`
+        select id, name from editions
+        where organization_id = ${organizationId}
+          and source_file_hash = encode(sha256(convert_to(${readRows}, 'UTF8')), 'hex')`;
+      return found && { editionId: found.id, editionName: found.name };
+    },
+    async recordImport(organizationId, editionId, readRows) {
+      await tx`
+        -- L'empreinte SHA-256 des lignes lues (ADR 0039) ; la v1 hachait le fichier même.
+        update editions set source_file_hash = encode(sha256(convert_to(${readRows}, 'UTF8')), 'hex')
+        where organization_id = ${organizationId} and id = ${editionId}`;
+    },
     async recordDraftMatch(organizationId, editionId, entry, version) {
       const newVersion = await bumpVersion(tx, organizationId, editionId, version);
       const [next] = await tx<{ match_number: number }[]>`
@@ -465,36 +478,42 @@ function postgresPlayers(tx: TransactionSql): PlayerRepository {
     async importDirectory(organizationId) {
       const players = await tx<
         {
-          id: string;
-          nickname: string;
+          player_id: string;
           archived: boolean;
           aliases: string[];
           team_tag: string | null;
           status: RosterStatus | null;
         }[]
       >`
-        select p.id, p.nickname, p.archived,
-               coalesce(array_agg(a.alias) filter (where a.alias is not null), '{}') as aliases,
-               t.tag as team_tag, m.status
-        from players p
-        left join player_aliases a on a.organization_id = p.organization_id and a.player_id = p.id
-        left join team_memberships m
-          on m.organization_id = p.organization_id and m.player_id = p.id and m.left_on is null
-        left join teams t on t.organization_id = m.organization_id and t.id = m.team_id
-        where p.organization_id = ${organizationId} and p.merged_into is null
-        group by p.id, t.tag, m.status`;
-      const teams = await tx<{ tag: string }[]>`
-        select tag from teams where organization_id = ${organizationId}`;
+        select player_id, archived, aliases, team_tag, status
+        from import_directory where organization_id = ${organizationId}`;
+      const teams = await tx<{ id: string; tag: string; archived: boolean }[]>`
+        select id, tag, archived_at is not null as archived
+        from teams where organization_id = ${organizationId}`;
       return {
         players: players.map((p) => ({
-          playerId: p.id,
-          aliases: [p.nickname, ...p.aliases],
+          playerId: p.player_id,
+          aliases: p.aliases,
           teamTag: p.team_tag,
           archived: p.archived,
           status: p.status,
         })),
-        teamTags: teams.map((t) => t.tag),
+        teams,
       };
+    },
+    async create(organizationId, nickname) {
+      const [created] = await tx<{ id: string }[]>`
+        insert into players (organization_id, nickname)
+        values (${organizationId}, ${nickname})
+        returning id`;
+      if (!created) throw new Error(`Joueur ${nickname} : écriture impossible.`);
+      return created.id;
+    },
+    async addAlias(organizationId, playerId, alias) {
+      await tx`
+        insert into player_aliases (organization_id, player_id, alias)
+        values (${organizationId}, ${playerId}, ${alias})
+        on conflict do nothing`;
     },
     async discordOwner(organizationId, discordUserId) {
       const [player] = await tx<{ id: string }[]>`

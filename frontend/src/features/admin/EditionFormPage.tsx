@@ -54,6 +54,7 @@ export function EditionFormPage() {
                 <ImportPanel
                   editionId={editionId}
                   version={state.data.edition.version}
+                  type={state.data.edition.type}
                   onImported={reload}
                 />
               )}

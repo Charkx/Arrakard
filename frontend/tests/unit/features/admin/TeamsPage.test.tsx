@@ -58,6 +58,8 @@ function serving(rosters: Rosters = ROSTERS) {
     archiveEdition: () => Promise.reject(new Error('Hors sujet.')),
     closeEdition: () => Promise.reject(new Error('Hors sujet.')),
     recordMatch: () => Promise.reject(new Error('Hors sujet.')),
+    importDirectory: () => Promise.reject(new Error('Hors sujet.')),
+    importedIn: () => Promise.reject(new Error('Hors sujet.')),
     importEdition: () => Promise.reject(new Error('Hors sujet.')),
   } satisfies AdminSource;
 }

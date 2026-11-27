@@ -75,7 +75,21 @@ describe('plannedMatchEntries', () => {
     });
   });
 
-  it('un nouveau joueur, sans identifiant, ne devient pas une feuille', () => {
+  it('un nouveau joueur prend l’identifiant que l’import lui a donné', () => {
+    const match = aMatch();
+    const performances = match.performances.map((p, i) =>
+      i === 0 ? { ...p, player: { kind: 'new', key: 'baited' } as const } : p,
+    );
+
+    const result = plannedMatchEntries([{ ...match, performances }], {
+      baited: 'p-baited',
+    });
+
+    if (!result.ok) throw new Error(result.errors.join());
+    expect(result.entries[0]?.entry.lines[0]?.sides[0].playerId).toBe('p-baited');
+  });
+
+  it('un nouveau joueur sans identifiant ne devient pas une feuille de match', () => {
     const match = aMatch();
     const performances = match.performances.map((p, i) =>
       i === 0 ? { ...p, player: { kind: 'new', key: 'baited' } as const } : p,

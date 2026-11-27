@@ -91,3 +91,44 @@ export function aWorkbook(statsSheetName = 'LIGUE1_STATS'): ArrayBuffer {
   );
   return write(book, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
 }
+
+/**
+ * Un faux fichier d'un match complet, NOX contre ION (qui gagne) : `names`
+ * donne les cinq joueurs de NOX puis les cinq d'ION, du TOP au SUP.
+ */
+export function aMatchWorkbook(names: readonly string[]): ArrayBuffer {
+  const roles = ['TOP', 'JGL', 'MID', 'ADC', 'SUP'];
+  const book = utils.book_new();
+  utils.book_append_sheet(
+    book,
+    utils.aoa_to_sheet([
+      ['TOTAUX'],
+      HEADER,
+      ...roles.map((role, i) => [
+        1,
+        'ION',
+        30.0,
+        'NOX',
+        'LOSE',
+        role,
+        names[i] ?? '',
+        'Ornn',
+        1,
+        2,
+        3,
+        9000,
+        'ION',
+        'WIN',
+        role,
+        names[i + 5] ?? '',
+        'Sion',
+        2,
+        1,
+        4,
+        9500,
+      ]),
+    ]),
+    'LIGUE1_STATS',
+  );
+  return write(book, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
+}

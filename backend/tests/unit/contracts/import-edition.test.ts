@@ -14,7 +14,24 @@ describe('importEditionRequest', () => {
     expect(importEditionRequest.parse(IMPORT).rows[0]?.cells['NOM DU JOUEUR']).toBe('Zéphyr');
   });
 
+  it('accepte les décisions de l’admin', () => {
+    const decided = importEditionRequest.parse({
+      ...IMPORT,
+      decisions: {
+        names: { zephir: { kind: 'existing', playerId: ID }, baited: { kind: 'new' } },
+        unknownTeams: { NKR: 'create' },
+        transfers: { [ID]: 'ignore' },
+      },
+    });
+
+    expect(decided.decisions?.names.baited).toEqual({ kind: 'new' });
+  });
+
   it.each([
+    [
+      'une décision inconnue',
+      { decisions: { names: {}, unknownTeams: { NKR: 'peut-être' }, transfers: {} } },
+    ],
     ['aucune ligne', { rows: [] }],
     ['un numéro de ligne nul', { rows: [{ line: 0, cells: {} }] }],
     ['une cellule objet', { rows: [{ line: 3, cells: { MATCH: { x: 1 } } }] }],

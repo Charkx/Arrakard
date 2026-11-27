@@ -58,6 +58,8 @@ interface StoredOrganization {
   readonly discordLinks: Map<string, string>;
   /** Les alias, par joueur. */
   readonly aliases: Map<string, Set<string>>;
+  /** Les fichiers importés : lignes lues → édition. */
+  readonly imports: Map<string, string>;
   readonly commandLog: CommandLogEntry[];
   readonly publications: Publication[];
   projections?: Projections;
@@ -213,6 +215,17 @@ export function inMemoryStore(): InMemoryStore {
         return Promise.resolve().then(() =>
           bump(find(organizationId), editionId, version, { closedAt }),
         );
+      },
+      importOf(organizationId, readRows) {
+        const organization = find(organizationId);
+        const editionId = organization.imports.get(readRows);
+        if (editionId === undefined) return Promise.resolve(undefined);
+        const editionName = organization.editionRecords.get(editionId)?.name ?? editionId;
+        return Promise.resolve({ editionId, editionName });
+      },
+      recordImport(organizationId, editionId, readRows) {
+        find(organizationId).imports.set(readRows, editionId);
+        return Promise.resolve();
       },
       recordDraftMatch(organizationId, editionId, entry, version) {
         return Promise.resolve().then(() => {
@@ -485,8 +498,26 @@ export function inMemoryStore(): InMemoryStore {
                 status: current?.status ?? null,
               };
             }),
-          teamTags: [...organization.teams.values()].map((t) => t.tag),
+          teams: [...organization.teams].map(([id, t]) => ({
+            id,
+            tag: t.tag,
+            archived: t.archivedAt !== null,
+          })),
         });
+      },
+      create(organizationId, nickname) {
+        const organization = find(organizationId);
+        const id = crypto.randomUUID();
+        organization.facts = {
+          ...organization.facts,
+          players: [...organization.facts.players, { id, nickname }],
+        };
+        return Promise.resolve(id);
+      },
+      addAlias(organizationId, playerId, alias) {
+        const { aliases } = find(organizationId);
+        aliases.set(playerId, new Set([...(aliases.get(playerId) ?? []), alias]));
+        return Promise.resolve();
       },
       discordOwner(organizationId, discordUserId) {
         const owner = [...find(organizationId).discordLinks].find(([, d]) => d === discordUserId);
@@ -537,6 +568,7 @@ export function inMemoryStore(): InMemoryStore {
           ]),
         ),
         drafts: new Map(),
+        imports: new Map(),
         seasons: new Map(
           facts.seasons.map((s, i) => [
             s.id,
